@@ -2,76 +2,100 @@
   <div class="squad-wrap">
 
     <!-- HERO -->
-    <div class="squad-hero">
-      <div class="logo-wrap">
-        <img v-if="teamLogo" :src="teamLogo" class="team-logo" alt="Logo" />
-        <div v-else class="logo-placeholder">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+    <div class="hero">
+      <div class="hero-logo-wrap">
+        <img v-if="teamLogo" :src="teamLogo" class="hero-logo" alt="Logo" />
+        <div v-else class="hero-logo-ph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/>
             <path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
           </svg>
         </div>
       </div>
-      <div class="hero-info">
-        <h1 class="team-name">{{ teamName || 'La tua squadra' }}</h1>
+      <div class="hero-text">
+        <h1 class="hero-name">{{ teamName || 'La tua squadra' }}</h1>
         <span class="hero-sub">{{ totalPlayers }} / {{ maxPlayers }} giocatori</span>
       </div>
     </div>
 
     <!-- BUDGET -->
-    <div class="budget-block">
-      <div class="budget-top">
-        <span class="budget-label">Budget disponibile</span>
-        <span class="budget-val">{{ budgetLeft }} <em>cr.</em></span>
-      </div>
-      <div class="budget-track"><div class="budget-fill" :style="{ width: budgetPct + '%' }"></div></div>
-      <div class="budget-bot">
-        <span>Spesi: {{ budgetSpent }} cr.</span>
-        <span>Totale: {{ budgetTotal }} cr.</span>
+    <div class="grp" style="margin-top:12px;">
+      <div class="grp-card budget-card">
+        <div class="budget-row">
+          <div>
+            <div class="budget-lbl">Budget disponibile</div>
+            <div class="budget-val">{{ budgetLeft }} <span class="budget-unit">crediti</span></div>
+          </div>
+          <div class="budget-pct-wrap">
+            <svg viewBox="0 0 36 36" class="pct-ring">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--sep2)" stroke-width="2.5"/>
+              <circle
+                cx="18" cy="18" r="15.9" fill="none"
+                stroke="var(--green)" stroke-width="2.5"
+                stroke-dasharray="100 100"
+                :stroke-dashoffset="100 - budgetPct"
+                stroke-linecap="round"
+                transform="rotate(-90 18 18)"
+              />
+            </svg>
+            <span class="pct-num">{{ Math.round(budgetPct) }}%</span>
+          </div>
+        </div>
+        <div class="budget-track"><div class="budget-fill" :style="{ width: budgetPct + '%' }"></div></div>
+        <div class="budget-detail">
+          <span>Spesi: {{ budgetSpent }} cr.</span>
+          <span>Totale: {{ budgetTotal }} cr.</span>
+        </div>
       </div>
     </div>
 
     <!-- CAMPIONATO NON INIZIATO -->
-    <div v-if="!competitionStarted" class="pending-block">
-      <div class="pending-badge">In attesa</div>
-      <p class="pending-title">Campionato non ancora iniziato</p>
-      <p class="pending-sub">Il mercato e aperto. Costruisci la tua rosa.</p>
-      <div class="role-stats">
-        <div v-for="r in roles" :key="r.v" class="rstat">
-          <span class="rstat-n">{{ roleCount(r.v) }}</span>
-          <span :class="['rstat-label', r.v]">{{ r.v }}</span>
+    <div v-if="!competitionStarted" class="grp">
+      <div class="grp-card pending-card">
+        <div class="pending-pill">In attesa</div>
+        <p class="pending-title">Campionato non ancora iniziato</p>
+        <p class="pending-sub">Il mercato e aperto. Costruisci la tua rosa prima del fischio d'inizio.</p>
+        <div class="role-counters">
+          <div v-for="r in roles" :key="r.v" class="rc-item">
+            <span class="rc-n">{{ roleCount(r.v) }}</span>
+            <span class="rbadge" :class="r.v">{{ r.v }}</span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ROSA -->
-    <div class="roster">
-      <div v-for="r in roles" :key="r.v" class="role-group">
-        <div class="rg-header">
-          <span :class="['role-badge', r.v]">{{ r.v }}</span>
-          <span class="rg-title">{{ r.label }}</span>
-          <span class="rg-count">{{ roleCount(r.v) }}</span>
-        </div>
-
+    <div v-for="r in roles" :key="r.v" class="grp">
+      <div class="grp-label-row">
+        <span class="rbadge" :class="r.v">{{ r.v }}</span>
+        <span class="grp-label">{{ r.label }}</span>
+        <span class="grp-count">{{ roleCount(r.v) }}</span>
+      </div>
+      <div class="grp-card">
         <template v-if="playersByRole(r.v).length">
-          <div v-for="p in playersByRole(r.v)" :key="p.id" class="sq-row">
-            <img :src="p.image_path" :alt="p.name" class="sq-avatar" @error="e => e.target.src = fallback" />
-            <div class="sq-info">
-              <span class="sq-name">{{ p.name }}</span>
-              <span class="sq-country">{{ p.country }}</span>
+          <div v-for="p in playersByRole(r.v)" :key="p.id" class="grp-row">
+            <img :src="p.image_path" :alt="p.name" class="sq-av" @error="e => e.target.src = fallback" />
+            <div class="row-text">
+              <span class="row-title">{{ p.name }}</span>
+              <span class="row-sub">{{ p.country }}</span>
             </div>
-            <div class="sq-right">
-              <span class="sq-price">{{ p.price || '—' }}</span>
-              <button class="btn-remove" @click="removePlayer(p)" title="Rimuovi">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <div class="row-right">
+              <span v-if="p.price" class="sq-price">{{ p.price }}</span>
+              <button class="rm-btn" @click="removePlayer(p)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
             </div>
           </div>
         </template>
-
-        <div v-else class="rg-empty">Nessun {{ r.label.toLowerCase() }} in rosa</div>
+        <div v-else class="grp-row" style="color: var(--text-3); font-size:14px;">
+          Nessun {{ r.label.toLowerCase() }} in rosa
+        </div>
       </div>
     </div>
+
+    <div style="height:16px;"></div>
 
   </div>
 </template>
@@ -90,7 +114,7 @@ const teamName           = ref('');
 const teamLogo           = ref('');
 const maxPlayers         = 25;
 
-const fallback = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%232d2d2d'/%3E%3Ccircle cx='20' cy='16' r='7' fill='%233e3e42'/%3E%3Cellipse cx='20' cy='34' rx='12' ry='8' fill='%233e3e42'/%3E%3C/svg%3E`;
+const fallback = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%231c1c1e'/%3E%3Ccircle cx='20' cy='16' r='7' fill='%232c2c2e'/%3E%3Cellipse cx='20' cy='34' rx='12' ry='8' fill='%232c2c2e'/%3E%3C/svg%3E`;
 
 const roles = [
   { v: 'POR', label: 'Portieri' },
@@ -104,198 +128,121 @@ onMounted(async () => {
   if (!props.user) return;
   try {
     const res = await axios.get(`/api/users/${props.user.uid}/squad`);
-    myPlayers.value          = res.data.players            || [];
-    budgetSpent.value        = res.data.spent              || 0;
-    budgetTotal.value        = res.data.budget             || 500;
-    teamLogo.value           = res.data.team_logo          || '';
+    myPlayers.value          = res.data.players             || [];
+    budgetSpent.value        = res.data.spent               || 0;
+    budgetTotal.value        = res.data.budget              || 500;
+    teamLogo.value           = res.data.team_logo           || '';
     competitionStarted.value = res.data.competition_started || false;
   } catch { /* mock */ }
 });
 
-const budgetLeft  = computed(() => budgetTotal.value - budgetSpent.value);
-const budgetPct   = computed(() => Math.max(0, (budgetLeft.value / budgetTotal.value) * 100));
-const totalPlayers = computed(() => myPlayers.value.length);
-const roleCount   = r => myPlayers.value.filter(p => p.position === r).length;
+const budgetLeft    = computed(() => budgetTotal.value - budgetSpent.value);
+const budgetPct     = computed(() => Math.max(0, Math.min(100, (budgetLeft.value / budgetTotal.value) * 100)));
+const totalPlayers  = computed(() => myPlayers.value.length);
+const roleCount     = r => myPlayers.value.filter(p => p.position === r).length;
 const playersByRole = r => myPlayers.value.filter(p => p.position === r);
-
-const removePlayer = p => {
-  myPlayers.value = myPlayers.value.filter(x => x.id !== p.id);
-};
+const removePlayer  = p => { myPlayers.value = myPlayers.value.filter(x => x.id !== p.id); };
 </script>
 
 <style scoped>
 .squad-wrap { padding-bottom: 24px; }
 
 /* HERO */
-.squad-hero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 14px;
-  border-bottom: 1px solid var(--border);
+.hero {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--sep);
 }
 
-.logo-wrap { flex-shrink: 0; }
+.hero-logo-wrap { flex-shrink: 0; }
 
-.team-logo {
-  width: 56px; height: 56px;
-  border-radius: var(--radius-lg);
-  object-fit: contain;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+.hero-logo {
+  width: 56px; height: 56px; border-radius: var(--r-lg);
+  object-fit: contain; background: var(--bg-1); border: 1px solid var(--sep2);
 }
 
-.logo-placeholder {
-  width: 56px; height: 56px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted);
+.hero-logo-ph {
+  width: 56px; height: 56px; border-radius: var(--r-lg);
+  background: var(--bg-1); border: 1px solid var(--sep2);
+  display: flex; align-items: center; justify-content: center; color: var(--text-3);
 }
-.logo-placeholder svg { width: 24px; height: 24px; }
+.hero-logo-ph svg { width: 24px; height: 24px; }
 
-.hero-info { display: flex; flex-direction: column; gap: 3px; }
-.team-name { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
-.hero-sub  { font-size: 12px; color: var(--text-muted); }
+.hero-text { display: flex; flex-direction: column; gap: 2px; }
+.hero-name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.hero-sub  { font-size: 13px; color: var(--text-2); }
 
 /* BUDGET */
-.budget-block {
-  margin: 12px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+.budget-card { padding: 16px; }
+
+.budget-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+.budget-lbl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-2); margin-bottom: 4px; }
+.budget-val { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--green); }
+.budget-unit { font-size: 13px; font-weight: 400; color: var(--text-2); }
+
+.budget-pct-wrap { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+.pct-ring { width: 44px; height: 44px; }
+.pct-num {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--text-2);
 }
 
-.budget-top { display: flex; justify-content: space-between; align-items: baseline; }
-.budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); font-weight: 600; }
-.budget-val { font-size: 20px; font-weight: 800; color: var(--success); }
-.budget-val em { font-size: 12px; font-weight: 500; color: var(--text-muted); font-style: normal; }
+.budget-track { height: 3px; background: var(--sep2); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.budget-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .4s ease; }
 
-.budget-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.budget-fill  { height: 100%; background: var(--success); border-radius: 2px; transition: width .4s; }
-
-.budget-bot { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.budget-detail { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); }
 
 /* PENDING */
-.pending-block {
-  margin: 0 14px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
+.pending-card { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+
+.pending-pill {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 3px 10px; border-radius: 10px;
+  background: var(--yellow-d); color: var(--yellow); border: 1px solid rgba(255,214,10,.2);
 }
 
-.pending-badge {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 3px 10px;
-  border-radius: 3px;
-  background: rgba(220,220,170,.1);
-  color: var(--warning);
-  border: 1px solid rgba(220,220,170,.2);
+.pending-title { font-size: 15px; font-weight: 700; }
+.pending-sub   { font-size: 13px; color: var(--text-2); line-height: 1.5; max-width: 260px; }
+
+.role-counters {
+  display: flex; gap: 0; margin-top: 4px; width: 100%;
+  background: var(--bg-2); border-radius: var(--r); overflow: hidden;
 }
 
-.pending-title { font-size: 14px; font-weight: 700; }
-.pending-sub   { font-size: 12px; color: var(--text-muted); }
-
-.role-stats {
-  display: flex;
-  width: 100%;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  margin-top: 4px;
+.rc-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 12px 8px; border-right: 1px solid var(--sep);
 }
+.rc-item:last-child { border-right: none; }
 
-.rstat {
-  flex: 1;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 3px; padding: 10px 6px;
-  border-right: 1px solid var(--border);
-}
-.rstat:last-child { border-right: none; }
+.rc-n { font-size: 22px; font-weight: 800; line-height: 1; }
 
-.rstat-n { font-size: 20px; font-weight: 800; }
-
-.rstat-label {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
-}
-.rstat-label.POR { color: var(--tag-por); }
-.rstat-label.DIF { color: var(--tag-dif); }
-.rstat-label.CEN { color: var(--tag-cen); }
-.rstat-label.ATT { color: var(--tag-att); }
-
-/* ROSTER */
-.roster { padding: 0 14px; display: flex; flex-direction: column; gap: 10px; }
-
-.role-group {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.rg-header {
+/* ROSTER GROUP LABEL */
+.grp-label-row {
   display: flex; align-items: center; gap: 8px;
-  padding: 9px 12px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  padding: 0 4px; margin-bottom: 6px;
+}
+.grp-label { font-size: 13px; font-weight: 600; flex: 1; }
+.grp-count {
+  font-size: 12px; color: var(--text-2); background: var(--bg-2);
+  padding: 2px 8px; border-radius: 10px; font-weight: 600;
 }
 
-.rg-title { font-size: 12px; font-weight: 600; flex: 1; }
-
-.rg-count {
-  font-size: 11px; font-weight: 700;
-  padding: 2px 7px; border-radius: 3px;
-  background: var(--border);
-  color: var(--text-muted);
+/* SQUAD ROW (overrides shared grp-row) */
+.sq-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover; background: var(--bg-2); flex-shrink: 0;
 }
 
-.sq-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  transition: background .1s;
-}
-.sq-row:last-child { border-bottom: none; }
-.sq-row:active { background: var(--bg-panel); }
+.sq-price { font-size: 13px; font-weight: 600; color: var(--accent); }
 
-.sq-avatar {
-  width: 34px; height: 34px;
-  border-radius: 50%; object-fit: cover;
-  background: var(--bg-panel); flex-shrink: 0;
-}
-
-.sq-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.sq-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sq-country { font-size: 11px; color: var(--text-muted); }
-
-.sq-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.sq-price { font-size: 12px; font-weight: 700; color: var(--accent-btn); }
-
-.btn-remove {
-  width: 26px; height: 26px;
-  background: rgba(244,71,71,.08);
-  border: none; border-radius: var(--radius);
-  color: var(--danger);
+.rm-btn {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--red-d); border: none; color: var(--red);
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background .1s;
 }
-.btn-remove:active { background: rgba(244,71,71,.2); }
-.btn-remove svg { width: 12px; height: 12px; }
-
-.rg-empty { padding: 12px; font-size: 12px; color: var(--text-muted); font-style: italic; }
+.rm-btn:active { background: rgba(255,69,58,.3); }
+.rm-btn svg { width: 12px; height: 12px; }
 </style>
