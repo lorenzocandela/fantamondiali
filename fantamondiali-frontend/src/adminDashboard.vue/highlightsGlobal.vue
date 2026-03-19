@@ -1,0 +1,1 @@
+<template><h2>Classifica</h2></template>

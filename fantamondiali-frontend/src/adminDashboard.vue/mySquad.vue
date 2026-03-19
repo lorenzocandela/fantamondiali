@@ -1,0 +1,1 @@
+<template><h2>La mia squadra</h2></template>
