@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-const Listone = () => import('./components/Listone.vue')
-const MiaSquadra = () => import('./components/MiaSquadra.vue')
-const Classifica = () => import('./components/Classifica.vue')
-const Impostazioni = () => import('./components/Impostazioni.vue')
-const Admin = () => import('./components/Admin.vue')
+const Listone = () => import('./components/listGlobal.vue')
+const MiaSquadra = () => import('./components/mySquad.vue')
+const Classifica = () => import('./components/highlightsGlobal.vue')
+const Impostazioni = () => import('./components/settingGlobal.vue')
+const Admin = () => import('./components/adminDashboard.vue')
 
 const routes = [
   { path: '/', redirect: '/listone' },
