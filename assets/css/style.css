@@ -144,14 +144,6 @@ img { display: block; }
     font-weight: 400;
 }
 
-.auth-card {
-    background: var(--surface);
-    border-radius: var(--r-2xl);
-    border: 1px solid var(--border-md);
-    box-shadow: var(--sh-lg);
-    overflow: hidden;
-}
-
 .seg-wrap { padding: 14px 14px 0; }
 
 .seg-control {
