@@ -29,12 +29,10 @@ self.addEventListener('fetch', e => {
 
     const url = new URL(e.request.url);
 
-    // API calls: network first, no cache
     if (url.pathname.includes('get_api.php') || url.pathname.includes('clear_cache.php')) {
         return;
     }
 
-    // Firebase: network only
     if (url.hostname.includes('firestore.googleapis.com') || url.hostname.includes('firebase')) {
         return;
     }
