@@ -62,15 +62,11 @@
 <div id="main-app" class="main-app hidden">
 
     <header class="top-bar">
-        <img src="logo_fm26_clean.png" alt="Logo FantaMondiali" class="top-bar-logo">
         <div class="top-right">
             <div class="credits-pill">
                 <span class="material-icons-round">toll</span>
                 <span id="credits-val">500</span>
             </div>
-            <button id="btn-logout" class="icon-btn" aria-label="Esci">
-                <span class="material-icons-round">logout</span>
-            </button>
         </div>
     </header>
 
