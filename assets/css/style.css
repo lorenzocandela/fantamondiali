@@ -17,11 +17,11 @@
     --text-3:     #b0b0b8;
     --text-inv:   #ffffff;
 
-    --blue:       #1e90ff;
-    --blue-2:     #1e90ff4d;
-    --blue-soft:  #1e90ff34;
-    --blue-mid:   rgba(30,144,255,0.10);
-    --blue-glow:  rgba(30,144,255,0.20);
+    --blue:       #0066cc;
+    --blue-2:     #0077ed;
+    --blue-soft:  #f0f5ff;
+    --blue-mid:   rgba(0,102,204,0.10);
+    --blue-glow:  rgba(0,102,204,0.20);
 
     --green:      #28b463;
     --green-soft: rgba(40,180,99,0.10);
@@ -99,6 +99,9 @@ img { display: block; }
     background:
         radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,102,204,0.06) 0%, transparent 70%),
         var(--bg);
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
 }
 
 .auth-inner {
@@ -293,7 +296,66 @@ img { display: block; }
 
 /* ─── APP SHELL ─────────────────────────────── */
 
-.main-app { min-height: 100vh; background: var(--bg); }
+.main-app { min-height: 100vh; background: var(--bg); position: relative; z-index: 1; }
+
+/* ─── AVATAR BUTTON (top bar) ────────────────── */
+
+.avatar-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--border-md);
+    background: var(--blue);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    padding: 0;
+}
+
+.avatar-btn:hover { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); }
+
+.avatar-btn-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.avatar-btn-initials {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    font-family: var(--sans);
+}
+
+/* ─── LOGOUT BUTTON (profilo) ────────────────── */
+
+.btn-logout-full {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--red-soft);
+    color: var(--red);
+    border: none;
+    border-radius: var(--r-sm);
+    padding: 13px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    transition: all 0.15s var(--ease);
+}
+
+.btn-logout-full:hover { background: var(--red); color: #fff; }
+.btn-logout-full .material-icons-round { font-size: 18px; }
 
 .top-bar {
     position: sticky;

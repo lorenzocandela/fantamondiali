@@ -529,6 +529,7 @@ async function saveProfilo() {
         await setDoc(doc(db, 'users', window.__user.uid), { team_name: teamName }, { merge: true });
         window.__user.team_name = teamName;
         document.getElementById('squad-team-name').textContent = teamName;
+        updateTopbarAvatar();
         toast('Profilo aggiornato');
     } catch (err) { console.error("Errore profilo:", err); toast('Errore salvataggio', 'error'); }
     finally { btn.disabled = false; btn.textContent = 'Salva modifiche'; }
@@ -558,6 +559,24 @@ async function toggleJoinCompetition() {
     }
 }
 
+function updateTopbarAvatar() {
+    const user     = window.__user ?? {};
+    const img      = document.getElementById('topbar-avatar-img');
+    const initials = document.getElementById('topbar-avatar-initials');
+    if (!img || !initials) return;
+
+    if (user.avatar) {
+        img.src = user.avatar;
+        img.classList.remove('hidden');
+        initials.classList.add('hidden');
+    } else {
+        img.classList.add('hidden');
+        initials.classList.remove('hidden');
+        const raw = user.team_name ?? user.email ?? '?';
+        initials.textContent = raw.split(/[\s@]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+}
+
 function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file || !window.__user?.uid) return;
@@ -567,9 +586,11 @@ function handleAvatarUpload(e) {
     reader.onload = async ev => {
         try {
             await setDoc(doc(db, 'users', window.__user.uid), { avatar: ev.target.result }, { merge: true });
+            window.__user.avatar = ev.target.result;
             document.getElementById('profilo-avatar-img').src = ev.target.result;
             document.getElementById('profilo-avatar-img').classList.remove('hidden');
             document.getElementById('profilo-avatar-initials').classList.add('hidden');
+            updateTopbarAvatar();
             toast('Foto profilo aggiornata');
         } catch (err) { console.error("Errore avatar:", err); toast('Errore upload', 'error'); }
     };
@@ -605,11 +626,6 @@ function showPage(name) {
     if (name === 'profilo')      loadProfilo();
 }
 
-document.getElementById('nav-listone').addEventListener('click',      () => showPage('listone'));
-document.getElementById('nav-squadra').addEventListener('click',      () => showPage('squadra'));
-document.getElementById('nav-competizioni').addEventListener('click', () => showPage('competizioni'));
-document.getElementById('nav-profilo').addEventListener('click',      () => showPage('profilo'));
-document.getElementById('nav-admin').addEventListener('click',        () => showPage('admin'));
 
 document.querySelectorAll('#role-filter-row .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -649,8 +665,6 @@ document.getElementById('trigger-logo-upload').addEventListener('click',
 
 
 // ─── CALENDARIO MONDIALI 2026 ────────────────────────────────────────────────
-// Fonte: FIFA World Cup 2026 schedule (USA/Canada/Mexico, 11 Jun – 19 Jul 2026)
-// Ogni giornata raggruppa i giorni in cui si giocano le partite di quel turno.
 const MATCHDAY_SCHEDULE = [
     { round: 1,  label: 'Fase a gironi – Giornata 1', start: '2026-06-11', end: '2026-06-14' },
     { round: 2,  label: 'Fase a gironi – Giornata 2', start: '2026-06-15', end: '2026-06-19' },
@@ -672,11 +686,9 @@ function getCurrentMatchday() {
         if (today >= start && today <= end) return { ...md, status: 'live' };
     }
 
-    // Prima dell'inizio
     const first = new Date(MATCHDAY_SCHEDULE[0].start);
     if (today < first) return { ...MATCHDAY_SCHEDULE[0], status: 'upcoming' };
 
-    // Dopo la fine — siamo in pausa tra giornate, punta alla prossima
     for (let i = 0; i < MATCHDAY_SCHEDULE.length - 1; i++) {
         const endCur   = new Date(MATCHDAY_SCHEDULE[i].end);
         const startNxt = new Date(MATCHDAY_SCHEDULE[i + 1].start);
@@ -685,7 +697,6 @@ function getCurrentMatchday() {
         }
     }
 
-    // Torneo finito
     const last = MATCHDAY_SCHEDULE[MATCHDAY_SCHEDULE.length - 1];
     return { ...last, status: 'ended' };
 }
@@ -873,6 +884,7 @@ document.getElementById('btn-clear-cache')?.addEventListener('click', async () =
 document.addEventListener('app:ready', async e => {
     const user = e.detail;
     document.getElementById('squad-team-name').textContent = user.team_name ?? '';
+    updateTopbarAvatar();
 
     const userSnap = await getDoc(doc(db, 'users', user.uid));
     if (userSnap.exists() && userSnap.data().role === 'admin') {
@@ -887,13 +899,14 @@ document.addEventListener('app:ready', async e => {
 document.getElementById('nav-listone').addEventListener('click',      () => showPage('listone'));
 document.getElementById('nav-squadra').addEventListener('click',      () => showPage('squadra'));
 document.getElementById('nav-competizioni').addEventListener('click', () => showPage('competizioni'));
-document.getElementById('nav-profilo').addEventListener('click',      () => showPage('profilo'));
 document.getElementById('nav-admin').addEventListener('click', () => {
     showPage('admin');
     loadAdminStats();
     syncAdminUI();
     renderMatchdayAdmin();
 });
+
+document.addEventListener('goto:profilo', () => showPage('profilo'));
 
 // ════════════════════════════════════════════════════════════════════════════
 // SISTEMA PUNTEGGIO
@@ -908,7 +921,6 @@ const SCORE_TABLE = {
 };
 
 function calcPlayerScore(player, stats) {
-    // stats = { rating, goals, assists, yellow_cards, red_cards, played }
     if (!stats || !stats.played) return 0;
 
     let score = stats.rating ?? 6;
@@ -926,7 +938,6 @@ function calcPlayerScore(player, stats) {
 }
 
 function calcTeamScore(players, roundStats) {
-    // roundStats = { [player_id]: { rating, goals, ... } }
     return players.reduce((sum, p) => {
         const ps = roundStats?.[String(p.id)] ?? null;
         return sum + calcPlayerScore(p, ps);
@@ -938,11 +949,9 @@ function calcTeamScore(players, roundStats) {
 // ════════════════════════════════════════════════════════════════════════════
 
 function generateRoundRobin(teams) {
-    // teams = [{ uid, team_name }]
     const n    = teams.length;
     const list = [...teams];
 
-    // Con dispari aggiungi un ghost (bye)
     if (n % 2 !== 0) list.push({ uid: 'bye', team_name: 'Turno libero' });
 
     const total  = list.length;
@@ -1148,7 +1157,6 @@ function renderCalStandings() {
     `).join('');
 }
 
-// Nav giornata
 document.getElementById('cal-round-prev')?.addEventListener('click', () => {
     if (calRound > 1) { calRound--; renderCalRound(); }
 });
@@ -1156,7 +1164,6 @@ document.getElementById('cal-round-next')?.addEventListener('click', () => {
     if (calRound < calSchedule.length) { calRound++; renderCalRound(); }
 });
 
-// Seg scontri/classifica
 document.querySelectorAll('.cal-seg-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.cal-seg-btn').forEach(b => b.classList.remove('active'));
@@ -1267,8 +1274,6 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
             const awayUser = usersMap[m.away];
             if (!homeUser || !awayUser) return;
 
-            // Simulazione statistica — in produzione qui arriveranno dati reali
-            // Per ora: punteggio = somma dei rating medi della rosa (placeholder)
             const homeScore = simulateTeamScore(homeUser.players ?? []);
             const awayScore = simulateTeamScore(awayUser.players ?? []);
 
@@ -1282,7 +1287,6 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
 
         await setDoc(doc(db, 'settings', 'calendar'), { results }, { merge: true });
 
-        // Mostra risultati
         const resultEl = document.getElementById('admin-score-result');
         resultEl.classList.remove('hidden');
         resultEl.innerHTML = rd.matches.map(m => {
@@ -1308,14 +1312,11 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
 });
 
 function simulateTeamScore(players) {
-    // Placeholder: media rating rosa + rumore casuale ±3
-    // Sostituire con dati reali API quando disponibili
     if (!players.length) return 0;
     const base = players.reduce((s, p) => s + (p.price ?? 10), 0) / players.length;
     return base + (Math.random() * 6 - 3);
 }
 
-// Nav listener calendario
 document.getElementById('nav-calendario')?.addEventListener('click', () => {
     showPage('calendario');
     loadCalendario();

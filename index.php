@@ -67,8 +67,9 @@
                         <span class="material-icons-round">toll</span>
                         <span id="credits-val">500</span>
                     </div>
-                    <button id="btn-logout" class="icon-btn" aria-label="Esci">
-                        <span class="material-icons-round">logout</span>
+                    <button id="btn-profile-avatar" class="avatar-btn" aria-label="Profilo">
+                        <img id="topbar-avatar-img" class="avatar-btn-img hidden" src="" alt="Avatar">
+                        <span id="topbar-avatar-initials" class="avatar-btn-initials">?</span>
                     </button>
                 </div>
             </header>
@@ -212,6 +213,13 @@
                     </p>
                     <button id="btn-join-comp" class="btn-join">
                         Iscriviti alla competizione
+                    </button>
+                </div>
+
+                <div class="profilo-section">
+                    <button id="btn-logout" class="btn-logout-full">
+                        <span class="material-icons-round">logout</span>
+                        Esci dall'account
                     </button>
                 </div>
 
@@ -411,9 +419,6 @@
                 </button>
                 <button class="tab-item" id="nav-competizioni">
                     <span class="material-icons-round">emoji_events</span>
-                </button>
-                <button class="tab-item" id="nav-profilo">
-                    <span class="material-icons-round">person</span>
                 </button>
                 <button class="tab-item hidden" id="nav-admin">
                     <span class="material-icons-round">admin_panel_settings</span>

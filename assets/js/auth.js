@@ -12,18 +12,17 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const authScreen    = document.getElementById('auth-screen');
-const mainApp       = document.getElementById('main-app');
-const tabLogin      = document.getElementById('tab-login');
-const tabRegister   = document.getElementById('tab-register');
-const registerFields= document.getElementById('register-fields');
-const btnSubmit     = document.getElementById('btn-submit');
-const btnLabel      = document.getElementById('btn-label');
-const btnLogout     = document.getElementById('btn-logout');
-const errBox        = document.getElementById('error-msg');
-const errText       = document.getElementById('error-text');
-const togglePwd     = document.getElementById('toggle-pwd');
-const pwdInput      = document.getElementById('password');
+const authScreen     = document.getElementById('auth-screen');
+const mainApp        = document.getElementById('main-app');
+const tabLogin       = document.getElementById('tab-login');
+const tabRegister    = document.getElementById('tab-register');
+const registerFields = document.getElementById('register-fields');
+const btnSubmit      = document.getElementById('btn-submit');
+const btnLabel       = document.getElementById('btn-label');
+const errBox         = document.getElementById('error-msg');
+const errText        = document.getElementById('error-text');
+const togglePwd      = document.getElementById('toggle-pwd');
+const pwdInput       = document.getElementById('password');
 
 let isRegister = false;
 
@@ -124,7 +123,16 @@ onAuthStateChanged(auth, async user => {
     }
 });
 
-btnLogout.addEventListener('click', () => signOut(auth));
+document.getElementById('btn-logout')?.addEventListener('click', () => signOut(auth));
+
+document.getElementById('btn-profile-avatar')?.addEventListener('click', () => {
+    if (typeof showPage === 'function') showPage('profilo');
+    else document.dispatchEvent(new CustomEvent('goto:profilo'));
+});
+
+document.addEventListener('goto:profilo', () => {
+    if (typeof showPage === 'function') showPage('profilo');
+});
 
 function mapAuthError(code) {
     const map = {
