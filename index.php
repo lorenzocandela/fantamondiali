@@ -390,6 +390,9 @@
                     </button>
                     <div id="admin-score-result" class="admin-score-result hidden"></div>
                 </div>
+
+                <div class="admin-section">
+                    <div class="admin-section-title">Cache API</div>
                     <div class="admin-control-info" style="margin-bottom:12px">
                         <div class="admin-control-label">Listone giocatori</div>
                         <div class="admin-control-desc">Elimina la cache per forzare il ricaricamento dall'API al prossimo accesso</div>
