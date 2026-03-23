@@ -214,8 +214,7 @@
                         Aggiungi FantaMondiali alla home del tuo dispositivo per un'esperienza a schermo intero.
                     </p>
                     <button id="btn-install-pwa" class="btn-join" style="background:var(--blue-mid);color:var(--blue)">
-                        <span class="material-icons-round">install_mobile</span>
-                        Installa app
+                        Download
                     </button>
                 </div>
 
