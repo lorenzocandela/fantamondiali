@@ -17,13 +17,13 @@
 <div id="auth-screen" class="auth-screen">
     <div class="auth-inner">
         <div class="auth-brand">
-            <img src="logo_fm26.png" alt="Logo FantaMondiali" class="auth-logo">
+            <img src="logo_fm26_clean.png" alt="Logo FantaMondiali" class="auth-logo">
         </div>
 
         <div class="auth-card">
             <div class="seg-wrap">
                 <div class="seg-control">
-                    <button id="tab-login"    class="seg-btn active">Accedi</button>
+                    <button id="tab-login" class="seg-btn active">Accedi</button>
                     <button id="tab-register" class="seg-btn">Registrati</button>
                 </div>
             </div>
@@ -31,7 +31,7 @@
                 <div id="register-fields" class="hidden">
                     <div class="field">
                         <label class="field-lbl" for="team-name">Nome squadra</label>
-                        <input id="team-name" class="field-in" type="text" placeholder="Es. Gli Invincibili" autocomplete="off">
+                        <input id="team-name" class="field-in" type="text" placeholder="Nome squadra..." autocomplete="off">
                     </div>
                 </div>
                 <div class="field">
@@ -62,7 +62,7 @@
 <div id="main-app" class="main-app hidden">
 
     <header class="top-bar">
-        <span class="top-logo">Fanta<span>Mondiali</span></span>
+        <img src="logo_fm26_clean.png" alt="Logo FantaMondiali" class="top-bar-logo">
         <div class="top-right">
             <div class="credits-pill">
                 <span class="material-icons-round">toll</span>
