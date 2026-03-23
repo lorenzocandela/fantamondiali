@@ -466,8 +466,8 @@ img { display: block; }
 
 .search-icon {
     position: absolute;
-    left: 36px;
-    top: 50%;
+    left: 33px;
+    top: 20px;
     transform: translateY(-50%);
     color: var(--text-3);
     pointer-events: none;
