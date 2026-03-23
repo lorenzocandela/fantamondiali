@@ -250,7 +250,7 @@
                     <span class="material-icons-round">sports_soccer</span>
                 </div>
                 <div class="admin-stat-val" id="admin-stat-players">-</div>
-                <div class="admin-stat-lbl">Giocatori totali</div>
+                <div class="admin-stat-lbl">Giocatori</div>
             </div>
         </div>
 
@@ -261,12 +261,12 @@
                     <div class="admin-control-label" id="admin-market-status-text">Mercato chiuso</div>
                     <div class="admin-control-desc">Gli utenti non possono acquistare giocatori</div>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-market">
-                    <span class="toggle-track">
-                        <span class="toggle-thumb"></span>
-                    </span>
-                </label>
+                <div class="admin-toggle-btn-wrap">
+                    <button class="admin-toggle-btn" id="toggle-market" data-state="off">
+                        <span class="admin-toggle-dot"></span>
+                        <span class="admin-toggle-label">Off</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -274,62 +274,51 @@
             <div class="admin-section-title">Competizione</div>
             <div class="admin-control-row">
                 <div class="admin-control-info">
-                    <div class="admin-control-label" id="admin-comp-status-text">Competizione non attiva</div>
+                    <div class="admin-control-label" id="admin-comp-status-text">Non attiva</div>
                     <div class="admin-control-desc">Abilita la competizione ufficiale</div>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-competition">
-                    <span class="toggle-track">
-                        <span class="toggle-thumb"></span>
-                    </span>
-                </label>
+                <div class="admin-toggle-btn-wrap">
+                    <button class="admin-toggle-btn" id="toggle-competition" data-state="off">
+                        <span class="admin-toggle-dot"></span>
+                        <span class="admin-toggle-label">Off</span>
+                    </button>
+                </div>
             </div>
-            <div class="admin-control-row" style="margin-top:8px">
+            <div class="admin-control-row">
                 <div class="admin-control-info">
-                    <div class="admin-control-label">Registrazioni aperte</div>
+                    <div class="admin-control-label">Registrazioni</div>
                     <div class="admin-control-desc">Permetti iscrizioni nuovi utenti</div>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggle-registrations" checked>
-                    <span class="toggle-track">
-                        <span class="toggle-thumb"></span>
-                    </span>
-                </label>
+                <div class="admin-toggle-btn-wrap">
+                    <button class="admin-toggle-btn" id="toggle-registrations" data-state="on">
+                        <span class="admin-toggle-dot"></span>
+                        <span class="admin-toggle-label">On</span>
+                    </button>
+                </div>
             </div>
         </div>
 
         <div class="admin-section">
-            <div class="admin-section-title">Giornate</div>
-            <div class="admin-matchday-row">
-                <div class="admin-control-info">
-                    <div class="admin-control-label">Giornata corrente</div>
-                    <div class="admin-control-desc">Imposta la giornata di campionato attiva</div>
-                </div>
-                <div class="admin-matchday-stepper">
-                    <button class="stepper-btn" id="matchday-minus">
-                        <span class="material-icons-round">remove</span>
-                    </button>
-                    <span class="stepper-val" id="admin-matchday-val">1</span>
-                    <button class="stepper-btn" id="matchday-plus">
-                        <span class="material-icons-round">add</span>
-                    </button>
+            <div class="admin-section-title">Giornata corrente</div>
+            <div class="admin-matchday-display">
+                <div class="admin-matchday-num" id="admin-matchday-num">-</div>
+                <div class="admin-matchday-info">
+                    <div class="admin-matchday-label" id="admin-matchday-label">Calcolo in corso...</div>
+                    <div class="admin-matchday-dates" id="admin-matchday-dates"></div>
                 </div>
             </div>
-            <button class="admin-action-btn" id="btn-save-matchday">
-                <span class="material-icons-round">save</span>
-                Salva giornata
-            </button>
+            <div id="admin-matchday-list" class="admin-matchday-list"></div>
         </div>
 
         <div class="admin-section">
             <div class="admin-section-title">Cache API</div>
             <div class="admin-control-info" style="margin-bottom:12px">
-                <div class="admin-control-label">Aggiornamento listone</div>
-                <div class="admin-control-desc">Invalida la cache e ricarica i dati dall'API al prossimo accesso</div>
+                <div class="admin-control-label">Listone giocatori</div>
+                <div class="admin-control-desc">Elimina la cache per forzare il ricaricamento dall'API al prossimo accesso</div>
             </div>
             <button class="admin-action-btn danger" id="btn-clear-cache">
                 <span class="material-icons-round">refresh</span>
-                Invalida cache
+                Reset cache
             </button>
         </div>
 

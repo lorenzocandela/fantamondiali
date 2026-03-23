@@ -647,6 +647,98 @@ document.getElementById('trigger-avatar-upload').addEventListener('click',
 document.getElementById('trigger-logo-upload').addEventListener('click',
     () => document.getElementById('logo-upload').click());
 
+
+// ─── CALENDARIO MONDIALI 2026 ────────────────────────────────────────────────
+// Fonte: FIFA World Cup 2026 schedule (USA/Canada/Mexico, 11 Jun – 19 Jul 2026)
+// Ogni giornata raggruppa i giorni in cui si giocano le partite di quel turno.
+const MATCHDAY_SCHEDULE = [
+    { round: 1,  label: 'Fase a gironi – Giornata 1', start: '2026-06-11', end: '2026-06-14' },
+    { round: 2,  label: 'Fase a gironi – Giornata 2', start: '2026-06-15', end: '2026-06-19' },
+    { round: 3,  label: 'Fase a gironi – Giornata 3', start: '2026-06-20', end: '2026-06-25' },
+    { round: 4,  label: 'Ottavi di finale',            start: '2026-06-27', end: '2026-07-03' },
+    { round: 5,  label: 'Quarti di finale',            start: '2026-07-04', end: '2026-07-05' },
+    { round: 6,  label: 'Semifinali',                  start: '2026-07-07', end: '2026-07-08' },
+    { round: 7,  label: 'Finale 3° posto + Finale',    start: '2026-07-11', end: '2026-07-19' },
+];
+
+function getCurrentMatchday() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const md of MATCHDAY_SCHEDULE) {
+        const start = new Date(md.start);
+        const end   = new Date(md.end);
+        end.setHours(23, 59, 59);
+        if (today >= start && today <= end) return { ...md, status: 'live' };
+    }
+
+    // Prima dell'inizio
+    const first = new Date(MATCHDAY_SCHEDULE[0].start);
+    if (today < first) return { ...MATCHDAY_SCHEDULE[0], status: 'upcoming' };
+
+    // Dopo la fine — siamo in pausa tra giornate, punta alla prossima
+    for (let i = 0; i < MATCHDAY_SCHEDULE.length - 1; i++) {
+        const endCur   = new Date(MATCHDAY_SCHEDULE[i].end);
+        const startNxt = new Date(MATCHDAY_SCHEDULE[i + 1].start);
+        if (today > endCur && today < startNxt) {
+            return { ...MATCHDAY_SCHEDULE[i + 1], status: 'next' };
+        }
+    }
+
+    // Torneo finito
+    const last = MATCHDAY_SCHEDULE[MATCHDAY_SCHEDULE.length - 1];
+    return { ...last, status: 'ended' };
+}
+
+function renderMatchdayAdmin() {
+    const md    = getCurrentMatchday();
+    const numEl = document.getElementById('admin-matchday-num');
+    const lbl   = document.getElementById('admin-matchday-label');
+    const dates = document.getElementById('admin-matchday-dates');
+    const list  = document.getElementById('admin-matchday-list');
+
+    if (!numEl) return;
+
+    const statusMap = {
+        live:     { text: 'In corso',    cls: 'md-live' },
+        upcoming: { text: 'Prossima',    cls: 'md-upcoming' },
+        next:     { text: 'Prossima',    cls: 'md-upcoming' },
+        ended:    { text: 'Concluso',    cls: 'md-ended' },
+    };
+
+    const s = statusMap[md.status] ?? statusMap.upcoming;
+
+    numEl.textContent = md.round;
+    numEl.className   = `admin-matchday-num ${s.cls}`;
+    lbl.textContent   = md.label;
+    dates.innerHTML   = `
+        <span class="md-date-range">${formatDate(md.start)} – ${formatDate(md.end)}</span>
+        <span class="md-status-pill ${s.cls}">${s.text}</span>
+    `;
+
+    list.innerHTML = MATCHDAY_SCHEDULE.map(m => {
+        const isCurrent = m.round === md.round;
+        const isPast    = m.round < md.round ||
+            (md.status === 'ended' && m.round === md.round);
+        return `
+        <div class="md-row ${isCurrent ? 'current' : ''} ${isPast ? 'past' : ''}">
+            <div class="md-row-num">${m.round}</div>
+            <div class="md-row-info">
+                <div class="md-row-label">${m.label}</div>
+                <div class="md-row-dates">${formatDate(m.start)} – ${formatDate(m.end)}</div>
+            </div>
+            ${isCurrent ? '<span class="md-row-badge">corrente</span>' : ''}
+        </div>`;
+    }).join('');
+}
+
+function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+}
+
+// ─── SYSTEM SETTINGS ────────────────────────────────────────────────────────
+
 async function loadSystemSettings() {
     try {
         const snap = await getDoc(doc(db, 'settings', 'system'));
@@ -660,31 +752,30 @@ async function loadSystemSettings() {
     }
 }
 
+function setToggleState(id, on) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.dataset.state = on ? 'on' : 'off';
+    btn.querySelector('.admin-toggle-label').textContent = on ? 'On' : 'Off';
+}
+
 function syncAdminUI() {
     const s = window.__settings ?? {};
 
-    const mktToggle  = document.getElementById('toggle-market');
-    const compToggle = document.getElementById('toggle-competition');
-    const regToggle  = document.getElementById('toggle-registrations');
-    const mktLabel   = document.getElementById('admin-market-status-text');
-    const compLabel  = document.getElementById('admin-comp-status-text');
-    const mdVal      = document.getElementById('admin-matchday-val');
+    setToggleState('toggle-market',        s.market_open === true);
+    setToggleState('toggle-competition',   s.competition_active === true);
+    setToggleState('toggle-registrations', s.registrations_open !== false);
 
-    if (mktToggle) {
-        mktToggle.checked    = s.market_open === true;
+    const mktLabel  = document.getElementById('admin-market-status-text');
+    const compLabel = document.getElementById('admin-comp-status-text');
+
+    if (mktLabel) {
         mktLabel.textContent = s.market_open ? 'Mercato aperto' : 'Mercato chiuso';
         mktLabel.style.color = s.market_open ? 'var(--green)' : 'var(--red)';
     }
-    if (compToggle) {
-        compToggle.checked    = s.competition_active === true;
-        compLabel.textContent = s.competition_active ? 'Competizione attiva' : 'Competizione non attiva';
+    if (compLabel) {
+        compLabel.textContent = s.competition_active ? 'Attiva' : 'Non attiva';
         compLabel.style.color = s.competition_active ? 'var(--green)' : 'var(--text-2)';
-    }
-    if (regToggle) {
-        regToggle.checked = s.registrations_open !== false;
-    }
-    if (mdVal) {
-        mdVal.textContent = s.current_matchday ?? 1;
     }
 }
 
@@ -702,6 +793,21 @@ async function saveSetting(key, value) {
         syncAdminUI();
     }
 }
+
+function wireToggle(id, settingKey, onMsg, offMsg) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+        const newState = btn.dataset.state !== 'on';
+        if (settingKey === 'market_open') COMPETITION_ACTIVE = newState;
+        await saveSetting(settingKey, newState);
+        toast(newState ? onMsg : offMsg);
+    });
+}
+
+wireToggle('toggle-market',        'market_open',         'Mercato aperto',          'Mercato chiuso');
+wireToggle('toggle-competition',   'competition_active',  'Competizione attivata',   'Competizione disattivata');
+wireToggle('toggle-registrations', 'registrations_open',  'Registrazioni aperte',    'Registrazioni chiuse');
 
 async function loadAdminStats() {
     try {
@@ -741,59 +847,28 @@ function renderAdminUsers(snap) {
             </div>
             <div class="admin-user-info">
                 <div class="admin-user-name">${u.team_name ?? 'Senza nome'}</div>
-                <div class="admin-user-meta">${u.email ?? ''} · ${(u.players ?? []).length} giocatori · ${u.credits ?? 500} cr.</div>
+                <div class="admin-user-meta">${u.email ?? ''} · ${(u.players ?? []).length} gioc. · ${u.credits ?? 500} cr.</div>
             </div>
             <div class="admin-user-badges">
-                ${u.role === 'admin' ? '<span class="admin-badge">admin</span>' : ''}
-                ${u.competition_joined ? '<span class="joined-mini">iscritto</span>' : ''}
+                ${u.role === 'admin'       ? '<span class="admin-badge">admin</span>'   : ''}
+                ${u.competition_joined     ? '<span class="joined-mini">iscritto</span>' : ''}
             </div>
         </div>
     `).join('');
 }
 
-document.getElementById('toggle-market')?.addEventListener('change', async e => {
-    COMPETITION_ACTIVE = e.target.checked;
-    await saveSetting('market_open', e.target.checked);
-    toast(e.target.checked ? 'Mercato aperto' : 'Mercato chiuso');
-});
-
-document.getElementById('toggle-competition')?.addEventListener('change', async e => {
-    await saveSetting('competition_active', e.target.checked);
-    toast(e.target.checked ? 'Competizione attivata' : 'Competizione disattivata');
-});
-
-document.getElementById('toggle-registrations')?.addEventListener('change', async e => {
-    await saveSetting('registrations_open', e.target.checked);
-    toast(e.target.checked ? 'Registrazioni aperte' : 'Registrazioni chiuse');
-});
-
-document.getElementById('matchday-minus')?.addEventListener('click', () => {
-    const el = document.getElementById('admin-matchday-val');
-    const cur = parseInt(el.textContent) || 1;
-    if (cur > 1) el.textContent = cur - 1;
-});
-
-document.getElementById('matchday-plus')?.addEventListener('click', () => {
-    const el = document.getElementById('admin-matchday-val');
-    el.textContent = (parseInt(el.textContent) || 1) + 1;
-});
-
-document.getElementById('btn-save-matchday')?.addEventListener('click', async () => {
-    const val = parseInt(document.getElementById('admin-matchday-val').textContent) || 1;
-    await saveSetting('current_matchday', val);
-    toast(`Giornata ${val} salvata`);
-});
-
 document.getElementById('btn-clear-cache')?.addEventListener('click', async () => {
     try {
         const res  = await fetch('clear_cache.php');
         const data = await res.json();
-        toast(data.status === 'ok' ? 'Cache invalidata' : 'Errore cache',
+        toast(data.status === 'ok' ? 'Cache resettata' : 'Errore cache',
               data.status === 'ok' ? 'success' : 'error');
     } catch {
         toast('clear_cache.php non trovato', 'error');
     }
 });
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
 
 document.addEventListener('app:ready', async e => {
     const user = e.detail;
@@ -817,4 +892,5 @@ document.getElementById('nav-admin').addEventListener('click', () => {
     showPage('admin');
     loadAdminStats();
     syncAdminUI();
+    renderMatchdayAdmin();
 });

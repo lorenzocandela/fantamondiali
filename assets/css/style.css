@@ -1527,6 +1527,7 @@ img { display: block; }
     .modal-overlay { align-items: center; padding: 24px; }
     .modal-sheet { border-radius: var(--r-2xl); box-shadow: var(--sh-xl); }
 }
+
 /* ─── ADMIN ─────────────────────────────────── */
 
 .admin-stats-row {
@@ -1625,110 +1626,178 @@ img { display: block; }
     font-family: var(--mono);
 }
 
-/* ─── TOGGLE SWITCH ──────────────────────────── */
+/* ─── ADMIN TOGGLE BUTTON ────────────────────── */
 
-.toggle-switch {
-    position: relative;
-    display: inline-flex;
+.admin-toggle-btn-wrap { flex-shrink: 0; }
+
+.admin-toggle-btn {
+    display: flex;
     align-items: center;
-    flex-shrink: 0;
-    cursor: pointer;
-}
-
-.toggle-switch input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-track {
-    width: 48px;
-    height: 28px;
-    background: var(--surface-4);
+    gap: 6px;
+    padding: 6px 12px 6px 8px;
     border-radius: var(--r-pill);
     border: 1.5px solid var(--border-md);
-    position: relative;
+    background: var(--surface-3);
+    color: var(--text-2);
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: var(--mono);
+    cursor: pointer;
     transition:
-        background 0.22s var(--ease),
-        border-color 0.22s var(--ease);
-    display: flex;
-    align-items: center;
+        background 0.18s var(--ease),
+        border-color 0.18s var(--ease),
+        color 0.18s var(--ease);
+    letter-spacing: 0.2px;
+    min-width: 68px;
+    justify-content: center;
 }
 
-.toggle-thumb {
-    position: absolute;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background: #fff;
+.admin-toggle-dot {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.1);
-    transition: transform 0.22s var(--spring);
+    background: var(--text-3);
+    flex-shrink: 0;
+    transition: background 0.18s var(--ease);
 }
 
-.toggle-switch input:checked + .toggle-track {
+.admin-toggle-btn[data-state="on"] {
+    background: var(--green-soft);
+    border-color: rgba(40,180,99,0.25);
+    color: var(--green);
+}
+
+.admin-toggle-btn[data-state="on"] .admin-toggle-dot {
     background: var(--green);
-    border-color: var(--green);
 }
 
-.toggle-switch input:checked + .toggle-track .toggle-thumb {
-    transform: translateX(20px);
+.admin-toggle-btn:hover {
+    border-color: rgba(0,0,0,0.16);
 }
 
-.toggle-switch input:focus-visible + .toggle-track {
-    box-shadow: 0 0 0 3px var(--blue-mid);
-}
+/* ─── MATCHDAY DISPLAY ───────────────────────── */
 
-/* ─── MATCHDAY STEPPER ───────────────────────── */
-
-.admin-matchday-row {
+.admin-matchday-display {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 12px;
+    gap: 14px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 12px;
 }
 
-.admin-matchday-stepper {
+.admin-matchday-num {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -2px;
+    line-height: 1;
+    min-width: 48px;
+    text-align: center;
+    flex-shrink: 0;
+    color: var(--text-2);
+}
+
+.admin-matchday-num.md-live     { color: var(--green); }
+.admin-matchday-num.md-upcoming { color: var(--blue); }
+.admin-matchday-num.md-ended    { color: var(--text-3); }
+
+.admin-matchday-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+}
+
+.admin-matchday-dates {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.md-date-range {
+    font-size: 12px;
+    color: var(--text-2);
+    font-family: var(--mono);
+}
+
+.md-status-pill {
+    font-size: 10.5px;
+    font-weight: 700;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: var(--r-pill);
     background: var(--surface-3);
+    color: var(--text-2);
+}
+
+.md-status-pill.md-live     { background: var(--green-soft); color: var(--green); }
+.md-status-pill.md-upcoming { background: var(--blue-mid);   color: var(--blue); }
+.md-status-pill.md-ended    { background: var(--surface-3);  color: var(--text-3); }
+
+/* ─── MATCHDAY LIST ──────────────────────────── */
+
+.admin-matchday-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.md-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
     border-radius: var(--r-sm);
-    border: 1px solid var(--border-md);
-    overflow: hidden;
+    background: transparent;
+    transition: background 0.12s;
+}
+
+.md-row:hover { background: var(--surface-2); }
+
+.md-row.current {
+    background: var(--blue-mid);
+    border: 1px solid rgba(0,102,204,0.12);
+}
+
+.md-row.past { opacity: 0.5; }
+
+.md-row-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-3);
+    width: 20px;
+    text-align: center;
     flex-shrink: 0;
 }
 
-.stepper-btn {
-    width: 34px;
-    height: 34px;
-    background: transparent;
-    border: none;
-    color: var(--text-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.13s;
+.md-row.current .md-row-num { color: var(--blue); }
+
+.md-row-info { flex: 1; min-width: 0; }
+
+.md-row-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
 }
 
-.stepper-btn:hover { background: var(--surface-4); color: var(--text); }
-.stepper-btn .material-icons-round { font-size: 16px; }
-
-.stepper-val {
-    min-width: 36px;
-    text-align: center;
+.md-row-dates {
+    font-size: 11px;
+    color: var(--text-2);
     font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    border-left: 1px solid var(--border-md);
-    border-right: 1px solid var(--border-md);
-    padding: 0 2px;
-    line-height: 34px;
+    margin-top: 1px;
+}
+
+.md-row-badge {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--mono);
+    color: var(--blue);
+    background: var(--blue-soft);
+    padding: 2px 8px;
+    border-radius: var(--r-pill);
+    flex-shrink: 0;
 }
 
 /* ─── ADMIN BUTTONS ──────────────────────────── */
@@ -1753,11 +1822,7 @@ img { display: block; }
 .admin-action-btn:hover { background: var(--blue); color: #fff; }
 .admin-action-btn .material-icons-round { font-size: 17px; }
 
-.admin-action-btn.danger {
-    background: var(--red-soft);
-    color: var(--red);
-}
-
+.admin-action-btn.danger { background: var(--red-soft); color: var(--red); }
 .admin-action-btn.danger:hover { background: var(--red); color: #fff; }
 
 /* ─── ADMIN USERS LIST ───────────────────────── */
