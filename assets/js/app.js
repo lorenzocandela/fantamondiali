@@ -894,3 +894,429 @@ document.getElementById('nav-admin').addEventListener('click', () => {
     syncAdminUI();
     renderMatchdayAdmin();
 });
+
+// ════════════════════════════════════════════════════════════════════════════
+// SISTEMA PUNTEGGIO
+// ════════════════════════════════════════════════════════════════════════════
+
+const SCORE_TABLE = {
+    goal:          { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
+    assist:        3,
+    yellow_card:  -0.5,
+    red_card:     -1,
+    clean_sheet:   { POR: 1, DIF: 1 },
+};
+
+function calcPlayerScore(player, stats) {
+    // stats = { rating, goals, assists, yellow_cards, red_cards, played }
+    if (!stats || !stats.played) return 0;
+
+    let score = stats.rating ?? 6;
+
+    const goalBonus = SCORE_TABLE.goal[player.role] ?? 6;
+    score += (stats.goals   ?? 0) * goalBonus;
+    score += (stats.assists ?? 0) * SCORE_TABLE.assist;
+    score += (stats.yellow_cards ?? 0) * SCORE_TABLE.yellow_card;
+    score += (stats.red_cards    ?? 0) * SCORE_TABLE.red_card;
+
+    const cs = SCORE_TABLE.clean_sheet[player.role];
+    if (cs && stats.clean_sheet) score += cs;
+
+    return Math.round(score * 100) / 100;
+}
+
+function calcTeamScore(players, roundStats) {
+    // roundStats = { [player_id]: { rating, goals, ... } }
+    return players.reduce((sum, p) => {
+        const ps = roundStats?.[String(p.id)] ?? null;
+        return sum + calcPlayerScore(p, ps);
+    }, 0);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// GENERATORE CALENDARIO ROUND-ROBIN
+// ════════════════════════════════════════════════════════════════════════════
+
+function generateRoundRobin(teams) {
+    // teams = [{ uid, team_name }]
+    const n    = teams.length;
+    const list = [...teams];
+
+    // Con dispari aggiungi un ghost (bye)
+    if (n % 2 !== 0) list.push({ uid: 'bye', team_name: 'Turno libero' });
+
+    const total  = list.length;
+    const rounds = total - 1;
+    const fixed  = list[0];
+    const rotate = list.slice(1);
+    const schedule = [];
+
+    for (let r = 0; r < rounds; r++) {
+        const round   = [];
+        const current = [fixed, ...rotate];
+
+        for (let i = 0; i < total / 2; i++) {
+            const home = current[i];
+            const away = current[total - 1 - i];
+            if (home.uid !== 'bye' && away.uid !== 'bye') {
+                round.push({ home: home.uid, away: away.uid,
+                             home_name: home.team_name, away_name: away.team_name });
+            }
+        }
+
+        schedule.push({ round: r + 1, matches: round });
+        rotate.push(rotate.shift()); // rotazione
+    }
+
+    return schedule;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CLASSIFICA
+// ════════════════════════════════════════════════════════════════════════════
+
+function buildStandings(teams, schedule, results) {
+    const table = {};
+    teams.forEach(t => {
+        table[t.uid] = { uid: t.uid, name: t.team_name, logo: t.team_logo ?? null,
+                         pts: 0, w: 0, d: 0, l: 0, pf: 0, pa: 0 };
+    });
+
+    schedule.forEach(rd => {
+        const res = results?.[String(rd.round)];
+        if (!res) return;
+
+        rd.matches.forEach(m => {
+            const r = res[`${m.home}_${m.away}`];
+            if (!r || r.home_score === undefined) return;
+
+            const h = table[m.home];
+            const a = table[m.away];
+            if (!h || !a) return;
+
+            h.pf += r.home_score; h.pa += r.away_score;
+            a.pf += r.away_score; a.pa += r.home_score;
+
+            if (r.home_score > r.away_score) {
+                h.pts += 3; h.w++; a.l++;
+            } else if (r.home_score < r.away_score) {
+                a.pts += 3; a.w++; h.l++;
+            } else {
+                h.pts++; a.pts++; h.d++; a.d++;
+            }
+        });
+    });
+
+    return Object.values(table).sort((a, b) =>
+        b.pts - a.pts || (b.pf - b.pa) - (a.pf - a.pa) || b.pf - a.pf
+    );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB CALENDARIO — UI
+// ════════════════════════════════════════════════════════════════════════════
+
+let calSchedule = [];
+let calResults  = {};
+let calTeams    = [];
+let calRound    = 1;
+
+async function loadCalendario() {
+    document.getElementById('cal-subtitle').textContent = 'caricamento...';
+
+    try {
+        const [calSnap, usersSnap] = await Promise.all([
+            getDoc(doc(db, 'settings', 'calendar')),
+            getDocs(collection(db, 'users')),
+        ]);
+
+        calTeams = [];
+        usersSnap.forEach(d => {
+            const data = d.data();
+            if (data.competition_joined) {
+                calTeams.push({ uid: d.id, team_name: data.team_name ?? 'Squadra',
+                                team_logo: data.team_logo ?? null,
+                                players: data.players ?? [] });
+            }
+        });
+
+        if (!calSnap.exists() || !calSnap.data().schedule) {
+            document.getElementById('cal-matches-list').innerHTML = `
+                <div class="empty-state">
+                    <span class="material-icons-round">calendar_month</span>
+                    <h3>Calendario non ancora generato</h3>
+                    <p>L'admin deve generarlo dalla dashboard</p>
+                </div>`;
+            document.getElementById('cal-subtitle').textContent =
+                `${calTeams.length} squadre iscritte`;
+            return;
+        }
+
+        calSchedule = calSnap.data().schedule ?? [];
+        calResults  = calSnap.data().results  ?? {};
+        calRound    = getCurrentMatchday().round;
+        if (calRound > calSchedule.length) calRound = calSchedule.length;
+
+        document.getElementById('cal-subtitle').textContent =
+            `${calTeams.length} squadre · ${calSchedule.length} giornate`;
+
+        renderCalRound();
+
+    } catch (err) {
+        console.error('Errore calendario:', err);
+        document.getElementById('cal-matches-list').innerHTML =
+            `<div class="empty-state"><span class="material-icons-round">wifi_off</span><h3>Errore</h3><p>${err.message}</p></div>`;
+    }
+}
+
+function renderCalRound() {
+    const rd = calSchedule[calRound - 1];
+    if (!rd) return;
+
+    const roundNames = ['GJ1','GJ2','GJ3','Ottavi','Quarti','Semifinali','Finale'];
+    document.getElementById('cal-round-label').textContent =
+        `G${calRound} — ${roundNames[calRound - 1] ?? ''}`;
+
+    const res = calResults[String(calRound)] ?? {};
+
+    document.getElementById('cal-matches-list').innerHTML = rd.matches.map(m => {
+        const key = `${m.home}_${m.away}`;
+        const r   = res[key];
+        const played = r?.home_score !== undefined;
+
+        return `
+        <div class="cal-match-card ${played ? 'played' : ''}">
+            <div class="cal-team home">
+                <div class="cal-team-logo-wrap">
+                    ${logoHtml(m.home, calTeams)}
+                </div>
+                <div class="cal-team-name">${m.home_name}</div>
+            </div>
+            <div class="cal-score-box">
+                ${played
+                    ? `<span class="cal-score">${r.home_score}</span>
+                       <span class="cal-score-sep">–</span>
+                       <span class="cal-score">${r.away_score}</span>`
+                    : `<span class="cal-score-tbd">vs</span>`
+                }
+            </div>
+            <div class="cal-team away">
+                <div class="cal-team-logo-wrap">
+                    ${logoHtml(m.away, calTeams)}
+                </div>
+                <div class="cal-team-name">${m.away_name}</div>
+            </div>
+        </div>`;
+    }).join('');
+
+    const prev = document.getElementById('cal-round-prev');
+    const next = document.getElementById('cal-round-next');
+    prev.disabled = calRound <= 1;
+    next.disabled = calRound >= calSchedule.length;
+}
+
+function logoHtml(uid, teams) {
+    const t = teams.find(t => t.uid === uid);
+    if (t?.team_logo) {
+        return `<img src="${t.team_logo}" class="cal-team-logo" alt="${t.team_name}" onerror="this.style.display='none'">`;
+    }
+    const initial = (t?.team_name ?? '?')[0].toUpperCase();
+    return `<div class="cal-team-logo-placeholder">${initial}</div>`;
+}
+
+function renderCalStandings() {
+    const standings = buildStandings(calTeams, calSchedule, calResults);
+    const list = document.getElementById('cal-standings-list');
+
+    if (!standings.length) {
+        list.innerHTML = `<div class="empty-state"><span class="material-icons-round">leaderboard</span><h3>Nessuna squadra</h3></div>`;
+        return;
+    }
+
+    list.innerHTML = standings.map((s, i) => `
+        <div class="cal-standing-row ${i === 0 ? 'first' : ''}">
+            <div class="cal-standing-pos">${i + 1}</div>
+            <div class="cal-team-logo-wrap small">
+                ${logoHtml(s.uid, calTeams)}
+            </div>
+            <div class="cal-standing-info">
+                <div class="cal-standing-name">${s.name}</div>
+                <div class="cal-standing-meta">${s.w}V ${s.d}P ${s.l}S · ${s.pf} pf</div>
+            </div>
+            <div class="cal-standing-pts">${s.pts}</div>
+        </div>
+    `).join('');
+}
+
+// Nav giornata
+document.getElementById('cal-round-prev')?.addEventListener('click', () => {
+    if (calRound > 1) { calRound--; renderCalRound(); }
+});
+document.getElementById('cal-round-next')?.addEventListener('click', () => {
+    if (calRound < calSchedule.length) { calRound++; renderCalRound(); }
+});
+
+// Seg scontri/classifica
+document.querySelectorAll('.cal-seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.cal-seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const v = btn.dataset.view;
+        document.getElementById('cal-view-scontri').classList.toggle('hidden',    v !== 'scontri');
+        document.getElementById('cal-view-classifica').classList.toggle('hidden', v !== 'classifica');
+        if (v === 'classifica') renderCalStandings();
+    });
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// ADMIN — GENERA CALENDARIO
+// ════════════════════════════════════════════════════════════════════════════
+
+let previewSchedule = [];
+
+document.getElementById('btn-preview-calendar')?.addEventListener('click', async () => {
+    const snap = await getDocs(collection(db, 'users'));
+    const teams = [];
+    snap.forEach(d => {
+        const data = d.data();
+        if (data.competition_joined) {
+            teams.push({ uid: d.id, team_name: data.team_name ?? 'Squadra' });
+        }
+    });
+
+    if (teams.length < 2) {
+        toast('Servono almeno 2 squadre iscritte', 'error');
+        return;
+    }
+
+    previewSchedule = generateRoundRobin(teams);
+
+    const preview = document.getElementById('admin-cal-preview');
+    const roundNames = ['GJ1','GJ2','GJ3','Ottavi','Quarti','Semifinali','Finale'];
+
+    preview.innerHTML = previewSchedule.map(rd => `
+        <div class="admin-cal-round">
+            <div class="admin-cal-round-label">G${rd.round} — ${roundNames[rd.round - 1] ?? ''}</div>
+            ${rd.matches.map(m => `
+                <div class="admin-cal-match">
+                    <span>${m.home_name}</span>
+                    <span class="admin-cal-vs">vs</span>
+                    <span>${m.away_name}</span>
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+
+    preview.classList.remove('hidden');
+
+    const saveBtn = document.getElementById('btn-generate-calendar');
+    saveBtn.disabled = false;
+    saveBtn.style.background = 'var(--green-soft)';
+    saveBtn.style.color = 'var(--green)';
+    toast(`${teams.length} squadre · ${previewSchedule.length} giornate`);
+});
+
+document.getElementById('btn-generate-calendar')?.addEventListener('click', async () => {
+    if (!previewSchedule.length) return;
+
+    try {
+        await setDoc(doc(db, 'settings', 'calendar'), {
+            schedule:    previewSchedule,
+            results:     {},
+            generated_at: new Date().toISOString(),
+        });
+        toast('Calendario salvato');
+        document.getElementById('btn-generate-calendar').disabled = true;
+    } catch (err) {
+        toast('Errore salvataggio: ' + err.message, 'error');
+    }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// ADMIN — CALCOLA PUNTEGGI
+// ════════════════════════════════════════════════════════════════════════════
+
+document.getElementById('btn-calc-scores')?.addEventListener('click', async () => {
+    const roundNum = parseInt(document.getElementById('admin-score-round').value);
+    if (!roundNum) { toast('Seleziona una giornata', 'error'); return; }
+
+    const btn = document.getElementById('btn-calc-scores');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Calcolo...';
+
+    try {
+        const [calSnap, usersSnap] = await Promise.all([
+            getDoc(doc(db, 'settings', 'calendar')),
+            getDocs(collection(db, 'users')),
+        ]);
+
+        if (!calSnap.exists()) { toast('Nessun calendario trovato', 'error'); return; }
+
+        const schedule = calSnap.data().schedule ?? [];
+        const results  = calSnap.data().results  ?? {};
+        const rd       = schedule.find(r => r.round === roundNum);
+        if (!rd) { toast('Giornata non trovata nel calendario', 'error'); return; }
+
+        const usersMap = {};
+        usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
+
+        const roundResults = {};
+
+        rd.matches.forEach(m => {
+            const homeUser = usersMap[m.home];
+            const awayUser = usersMap[m.away];
+            if (!homeUser || !awayUser) return;
+
+            // Simulazione statistica — in produzione qui arriveranno dati reali
+            // Per ora: punteggio = somma dei rating medi della rosa (placeholder)
+            const homeScore = simulateTeamScore(homeUser.players ?? []);
+            const awayScore = simulateTeamScore(awayUser.players ?? []);
+
+            roundResults[`${m.home}_${m.away}`] = {
+                home_score: Math.round(homeScore * 10) / 10,
+                away_score: Math.round(awayScore * 10) / 10,
+            };
+        });
+
+        results[String(roundNum)] = roundResults;
+
+        await setDoc(doc(db, 'settings', 'calendar'), { results }, { merge: true });
+
+        // Mostra risultati
+        const resultEl = document.getElementById('admin-score-result');
+        resultEl.classList.remove('hidden');
+        resultEl.innerHTML = rd.matches.map(m => {
+            const r = roundResults[`${m.home}_${m.away}`];
+            if (!r) return '';
+            const winner = r.home_score > r.away_score ? m.home_name
+                         : r.away_score > r.home_score ? m.away_name : 'Pareggio';
+            return `<div class="admin-score-row-item">
+                <span>${m.home_name} <strong>${r.home_score}</strong></span>
+                <span>–</span>
+                <span><strong>${r.away_score}</strong> ${m.away_name}</span>
+            </div>`;
+        }).join('');
+
+        toast(`Giornata ${roundNum} calcolata`);
+
+    } catch (err) {
+        toast('Errore: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons-round">calculate</span> Calcola punteggi giornata';
+    }
+});
+
+function simulateTeamScore(players) {
+    // Placeholder: media rating rosa + rumore casuale ±3
+    // Sostituire con dati reali API quando disponibili
+    if (!players.length) return 0;
+    const base = players.reduce((s, p) => s + (p.price ?? 10), 0) / players.length;
+    return base + (Math.random() * 6 - 3);
+}
+
+// Nav listener calendario
+document.getElementById('nav-calendario')?.addEventListener('click', () => {
+    showPage('calendario');
+    loadCalendario();
+});
