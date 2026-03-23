@@ -17,9 +17,9 @@
     --text-3:     #b0b0b8;
     --text-inv:   #ffffff;
 
-    --blue:       #0066cc;
-    --blue-2:     #0077ed;
-    --blue-soft:  #f0f5ff;
+    --blue:       #0652DD;
+    --blue-2:     #0651ddbd;
+    --blue-soft:  #0651dd2c;
     --blue-mid:   rgba(0,102,204,0.10);
     --blue-glow:  rgba(0,102,204,0.20);
 
@@ -144,19 +144,11 @@ img { display: block; }
     font-weight: 400;
 }
 
-.auth-card {
-    background: var(--surface);
-    border-radius: var(--r-2xl);
-    border: 1px solid var(--border-md);
-    box-shadow: var(--sh-lg);
-    overflow: hidden;
-}
-
 .seg-wrap { padding: 14px 14px 0; }
 
 .seg-control {
     display: flex;
-    background: var(--surface-3);
+    background: #0000000a;
     border-radius: var(--r-md);
     padding: 3px;
     gap: 2px;
@@ -264,7 +256,7 @@ img { display: block; }
     background: var(--blue);
     color: #fff;
     border: none;
-    border-radius: var(--r-sm);
+    border-radius: 60px;
     padding: 13px 16px;
     font-weight: 600;
     font-size: 14.5px;
