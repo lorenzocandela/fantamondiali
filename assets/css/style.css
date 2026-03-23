@@ -203,7 +203,7 @@ img { display: block; }
     border-radius: var(--r-sm);
     padding: 11px 14px;
     color: var(--text);
-    font-size: 14.5px;
+    font-size: 13px;
     outline: none;
     transition:
         border-color 0.16s var(--ease),

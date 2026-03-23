@@ -52,7 +52,7 @@
                     <span id="error-text"></span>
                 </div>
                 <button id="btn-submit" class="btn-cta">
-                    <span id="btn-label">ACCEDI</span>
+                    <span id="btn-label">Accedi</span>
                 </button>
             </div>
         </div>
