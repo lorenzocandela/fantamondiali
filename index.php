@@ -225,26 +225,119 @@
     <section id="page-admin" class="page">
         <div class="content-header">
             <div>
-                <h2 class="page-title">Admin Panel</h2>
-                <p class="page-subtitle">gestione sistema</p>
+                <h2 class="page-title">Admin</h2>
+                <p class="page-subtitle" id="admin-subtitle">pannello di controllo</p>
             </div>
         </div>
 
-        <div class="profilo-section">
-            <div class="profilo-section-title">Stato Mercato</div>
-            <p class="profilo-section-desc">
-                Apri o chiudi il mercato. Quando è chiuso, gli utenti non possono comprare o vendere giocatori.
-            </p>
-            
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; padding: 15px; background: var(--surface-2); border-radius: var(--r-sm); border: 1px solid var(--border-md);">
-                <div>
-                    <strong id="admin-market-status-text" style="font-size: 15px;">Mercato Aperto</strong>
+        <div class="admin-stats-row">
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:var(--blue-mid);color:var(--blue)">
+                    <span class="material-icons-round">group</span>
                 </div>
-                <button id="btn-toggle-market" class="btn-cta" style="width: auto; padding: 8px 16px; margin: 0;">
-                    Chiudi Mercato
-                </button>
+                <div class="admin-stat-val" id="admin-stat-users">-</div>
+                <div class="admin-stat-lbl">Utenti</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:var(--green-soft);color:var(--green)">
+                    <span class="material-icons-round">emoji_events</span>
+                </div>
+                <div class="admin-stat-val" id="admin-stat-joined">-</div>
+                <div class="admin-stat-lbl">Iscritti</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:var(--amber-soft);color:var(--amber)">
+                    <span class="material-icons-round">sports_soccer</span>
+                </div>
+                <div class="admin-stat-val" id="admin-stat-players">-</div>
+                <div class="admin-stat-lbl">Giocatori totali</div>
             </div>
         </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title">Mercato</div>
+            <div class="admin-control-row">
+                <div class="admin-control-info">
+                    <div class="admin-control-label" id="admin-market-status-text">Mercato chiuso</div>
+                    <div class="admin-control-desc">Gli utenti non possono acquistare giocatori</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-market">
+                    <span class="toggle-track">
+                        <span class="toggle-thumb"></span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title">Competizione</div>
+            <div class="admin-control-row">
+                <div class="admin-control-info">
+                    <div class="admin-control-label" id="admin-comp-status-text">Competizione non attiva</div>
+                    <div class="admin-control-desc">Abilita la competizione ufficiale</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-competition">
+                    <span class="toggle-track">
+                        <span class="toggle-thumb"></span>
+                    </span>
+                </label>
+            </div>
+            <div class="admin-control-row" style="margin-top:8px">
+                <div class="admin-control-info">
+                    <div class="admin-control-label">Registrazioni aperte</div>
+                    <div class="admin-control-desc">Permetti iscrizioni nuovi utenti</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle-registrations" checked>
+                    <span class="toggle-track">
+                        <span class="toggle-thumb"></span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title">Giornate</div>
+            <div class="admin-matchday-row">
+                <div class="admin-control-info">
+                    <div class="admin-control-label">Giornata corrente</div>
+                    <div class="admin-control-desc">Imposta la giornata di campionato attiva</div>
+                </div>
+                <div class="admin-matchday-stepper">
+                    <button class="stepper-btn" id="matchday-minus">
+                        <span class="material-icons-round">remove</span>
+                    </button>
+                    <span class="stepper-val" id="admin-matchday-val">1</span>
+                    <button class="stepper-btn" id="matchday-plus">
+                        <span class="material-icons-round">add</span>
+                    </button>
+                </div>
+            </div>
+            <button class="admin-action-btn" id="btn-save-matchday">
+                <span class="material-icons-round">save</span>
+                Salva giornata
+            </button>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title">Cache API</div>
+            <div class="admin-control-info" style="margin-bottom:12px">
+                <div class="admin-control-label">Aggiornamento listone</div>
+                <div class="admin-control-desc">Invalida la cache e ricarica i dati dall'API al prossimo accesso</div>
+            </div>
+            <button class="admin-action-btn danger" id="btn-clear-cache">
+                <span class="material-icons-round">refresh</span>
+                Invalida cache
+            </button>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title">Utenti</div>
+            <div id="admin-users-list" class="admin-users-list"></div>
+        </div>
+
     </section>
 
     <nav class="tab-bar">

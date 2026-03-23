@@ -651,57 +651,170 @@ async function loadSystemSettings() {
     try {
         const snap = await getDoc(doc(db, 'settings', 'system'));
         if (snap.exists()) {
-            COMPETITION_ACTIVE = snap.data().market_open === true;
+            const d = snap.data();
+            COMPETITION_ACTIVE = d.market_open === true;
+            window.__settings  = d;
         }
     } catch (err) {
-        console.error("Errore caricamento impostazioni:", err);
+        console.error("Errore impostazioni:", err);
     }
 }
 
-function updateAdminUI() {
-    const statusText = document.getElementById('admin-market-status-text');
-    const btnToggle = document.getElementById('btn-toggle-market');
-    
-    if (COMPETITION_ACTIVE) {
-        statusText.textContent = 'Mercato Aperto';
-        statusText.style.color = 'var(--green)';
-        btnToggle.textContent = 'Chiudi Mercato';
-        btnToggle.style.background = 'var(--red)';
-    } else {
-        statusText.textContent = 'Mercato Chiuso';
-        statusText.style.color = 'var(--red)';
-        btnToggle.textContent = 'Apri Mercato';
-        btnToggle.style.background = 'var(--green)';
+function syncAdminUI() {
+    const s = window.__settings ?? {};
+
+    const mktToggle  = document.getElementById('toggle-market');
+    const compToggle = document.getElementById('toggle-competition');
+    const regToggle  = document.getElementById('toggle-registrations');
+    const mktLabel   = document.getElementById('admin-market-status-text');
+    const compLabel  = document.getElementById('admin-comp-status-text');
+    const mdVal      = document.getElementById('admin-matchday-val');
+
+    if (mktToggle) {
+        mktToggle.checked    = s.market_open === true;
+        mktLabel.textContent = s.market_open ? 'Mercato aperto' : 'Mercato chiuso';
+        mktLabel.style.color = s.market_open ? 'var(--green)' : 'var(--red)';
+    }
+    if (compToggle) {
+        compToggle.checked    = s.competition_active === true;
+        compLabel.textContent = s.competition_active ? 'Competizione attiva' : 'Competizione non attiva';
+        compLabel.style.color = s.competition_active ? 'var(--green)' : 'var(--text-2)';
+    }
+    if (regToggle) {
+        regToggle.checked = s.registrations_open !== false;
+    }
+    if (mdVal) {
+        mdVal.textContent = s.current_matchday ?? 1;
     }
 }
 
-document.getElementById('btn-toggle-market').addEventListener('click', async () => {
+async function saveSetting(key, value) {
     try {
-        const newState = !COMPETITION_ACTIVE;
-        await setDoc(doc(db, 'settings', 'system'), { market_open: newState }, { merge: true });
-        COMPETITION_ACTIVE = newState;
-        updateAdminUI();
+        await setDoc(doc(db, 'settings', 'system'), { [key]: value }, { merge: true });
+        if (!window.__settings) window.__settings = {};
+        window.__settings[key] = value;
+        syncAdminUI();
         buildSubtitle();
         renderPlayers(getFiltered(), displayCount);
-        
-        toast(newState ? 'Mercato Aperto per tutti!' : 'Mercato Chiuso!');
     } catch (err) {
-        console.error("Errore cambio mercato:", err);
+        console.error("Errore setting:", err);
         toast('Errore di permessi', 'error');
+        syncAdminUI();
+    }
+}
+
+async function loadAdminStats() {
+    try {
+        const snap  = await getDocs(collection(db, 'users'));
+        let joined  = 0;
+        let players = 0;
+        snap.forEach(d => {
+            const data = d.data();
+            if (data.competition_joined) joined++;
+            players += (data.players ?? []).length;
+        });
+        document.getElementById('admin-stat-users').textContent   = snap.size;
+        document.getElementById('admin-stat-joined').textContent  = joined;
+        document.getElementById('admin-stat-players').textContent = players;
+        renderAdminUsers(snap);
+    } catch (err) {
+        console.error("Errore stats admin:", err);
+    }
+}
+
+function renderAdminUsers(snap) {
+    const list = document.getElementById('admin-users-list');
+    if (!list) return;
+
+    const rows = [];
+    snap.forEach(d => rows.push({ uid: d.id, ...d.data() }));
+
+    if (!rows.length) {
+        list.innerHTML = `<div class="empty-state"><p>Nessun utente</p></div>`;
+        return;
+    }
+
+    list.innerHTML = rows.map(u => `
+        <div class="admin-user-row">
+            <div class="comp-team-logo-placeholder" style="width:34px;height:34px;font-size:13px;flex-shrink:0">
+                ${(u.team_name ?? u.email ?? '?')[0].toUpperCase()}
+            </div>
+            <div class="admin-user-info">
+                <div class="admin-user-name">${u.team_name ?? 'Senza nome'}</div>
+                <div class="admin-user-meta">${u.email ?? ''} · ${(u.players ?? []).length} giocatori · ${u.credits ?? 500} cr.</div>
+            </div>
+            <div class="admin-user-badges">
+                ${u.role === 'admin' ? '<span class="admin-badge">admin</span>' : ''}
+                ${u.competition_joined ? '<span class="joined-mini">iscritto</span>' : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+document.getElementById('toggle-market')?.addEventListener('change', async e => {
+    COMPETITION_ACTIVE = e.target.checked;
+    await saveSetting('market_open', e.target.checked);
+    toast(e.target.checked ? 'Mercato aperto' : 'Mercato chiuso');
+});
+
+document.getElementById('toggle-competition')?.addEventListener('change', async e => {
+    await saveSetting('competition_active', e.target.checked);
+    toast(e.target.checked ? 'Competizione attivata' : 'Competizione disattivata');
+});
+
+document.getElementById('toggle-registrations')?.addEventListener('change', async e => {
+    await saveSetting('registrations_open', e.target.checked);
+    toast(e.target.checked ? 'Registrazioni aperte' : 'Registrazioni chiuse');
+});
+
+document.getElementById('matchday-minus')?.addEventListener('click', () => {
+    const el = document.getElementById('admin-matchday-val');
+    const cur = parseInt(el.textContent) || 1;
+    if (cur > 1) el.textContent = cur - 1;
+});
+
+document.getElementById('matchday-plus')?.addEventListener('click', () => {
+    const el = document.getElementById('admin-matchday-val');
+    el.textContent = (parseInt(el.textContent) || 1) + 1;
+});
+
+document.getElementById('btn-save-matchday')?.addEventListener('click', async () => {
+    const val = parseInt(document.getElementById('admin-matchday-val').textContent) || 1;
+    await saveSetting('current_matchday', val);
+    toast(`Giornata ${val} salvata`);
+});
+
+document.getElementById('btn-clear-cache')?.addEventListener('click', async () => {
+    try {
+        const res  = await fetch('clear_cache.php');
+        const data = await res.json();
+        toast(data.status === 'ok' ? 'Cache invalidata' : 'Errore cache',
+              data.status === 'ok' ? 'success' : 'error');
+    } catch {
+        toast('clear_cache.php non trovato', 'error');
     }
 });
 
 document.addEventListener('app:ready', async e => {
     const user = e.detail;
     document.getElementById('squad-team-name').textContent = user.team_name ?? '';
-    
+
     const userSnap = await getDoc(doc(db, 'users', user.uid));
     if (userSnap.exists() && userSnap.data().role === 'admin') {
         document.getElementById('nav-admin').classList.remove('hidden');
     }
-    
+
     await loadSystemSettings();
-    updateAdminUI();
-    
+    syncAdminUI();
     await Promise.all([loadListone(), loadSquadra()]);
+});
+
+document.getElementById('nav-listone').addEventListener('click',      () => showPage('listone'));
+document.getElementById('nav-squadra').addEventListener('click',      () => showPage('squadra'));
+document.getElementById('nav-competizioni').addEventListener('click', () => showPage('competizioni'));
+document.getElementById('nav-profilo').addEventListener('click',      () => showPage('profilo'));
+document.getElementById('nav-admin').addEventListener('click', () => {
+    showPage('admin');
+    loadAdminStats();
+    syncAdminUI();
 });
