@@ -17,11 +17,7 @@
 <div id="auth-screen" class="auth-screen">
     <div class="auth-inner">
         <div class="auth-brand">
-            <div class="brand-icon">
-                <span class="material-icons-round">sports_soccer</span>
-            </div>
-            <h1 class="brand-name">Fanta<span>Mondiali</span></h1>
-            <p class="brand-sub">Il tuo campionato dei Mondiali 2026</p>
+            <img src="logo_fm26.png" alt="Logo FantaMondiali" class="auth-logo">
         </div>
 
         <div class="auth-card">
