@@ -1321,3 +1321,41 @@ document.getElementById('nav-calendario')?.addEventListener('click', () => {
     showPage('calendario');
     loadCalendario();
 });
+
+// ════════════════════════════════════════════════════════════════════════════
+// PWA — INSTALL
+// ════════════════════════════════════════════════════════════════════════════
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+let _pwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _pwaPrompt = e;
+    updatePwaBtnVisibility();
+});
+
+window.addEventListener('appinstalled', () => {
+    _pwaPrompt = null;
+    updatePwaBtnVisibility();
+    toast('App installata!');
+});
+
+function updatePwaBtnVisibility() {
+    const wrap = document.getElementById('pwa-install-section');
+    if (!wrap) return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                      || window.navigator.standalone === true;
+    wrap.style.display = (isStandalone || !_pwaPrompt) ? 'none' : '';
+}
+
+document.getElementById('btn-install-pwa')?.addEventListener('click', async () => {
+    if (!_pwaPrompt) return;
+    _pwaPrompt.prompt();
+    const { outcome } = await _pwaPrompt.userChoice;
+    if (outcome === 'accepted') _pwaPrompt = null;
+    updatePwaBtnVisibility();
+});

@@ -7,6 +7,8 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
         <title>FM26</title>
+        <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" href="logo_fm26.png">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="assets/css/style.css">
@@ -203,6 +205,17 @@
 
                     <button id="btn-save-profilo" class="btn-cta" style="margin-top:8px">
                         Salva modifiche
+                    </button>
+                </div>
+
+                <div class="profilo-section" id="pwa-install-section" style="display:none">
+                    <div class="profilo-section-title">Installa app</div>
+                    <p class="profilo-section-desc">
+                        Aggiungi FantaMondiali alla home del tuo dispositivo per un'esperienza a schermo intero.
+                    </p>
+                    <button id="btn-install-pwa" class="btn-join" style="background:var(--blue-mid);color:var(--blue)">
+                        <span class="material-icons-round">install_mobile</span>
+                        Installa app
                     </button>
                 </div>
 
