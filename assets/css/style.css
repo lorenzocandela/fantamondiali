@@ -17,11 +17,11 @@
     --text-3:     #b0b0b8;
     --text-inv:   #ffffff;
 
-    --blue:       #0652DD;
-    --blue-2:     #0651ddbd;
-    --blue-soft:  #0651dd2c;
-    --blue-mid:   rgba(0,102,204,0.10);
-    --blue-glow:  rgba(0,102,204,0.20);
+    --blue:       #303952;
+    --blue-2:     #303952ba;
+    --blue-soft:  #3039522c;
+    --blue-mid:   rgba(48,57,82,0.10);
+    --blue-glow:  rgba(48,57,82,0.20);
 
     --green:      #28b463;
     --green-soft: rgba(40,180,99,0.10);
