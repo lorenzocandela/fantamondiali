@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAUlVRrqZg8qL6_eYwSrp0czllt2IHL0eg",
@@ -15,3 +16,12 @@ const firebaseApp = initializeApp(firebaseConfig);
 
 export const auth = getAuth(firebaseApp);
 export const db   = getFirestore(firebaseApp);
+
+let messaging = null;
+try {
+    messaging = getMessaging(firebaseApp);
+} catch (e) {
+    console.warn('FCM non supportato in questo browser');
+}
+
+export { messaging, getToken, onMessage };

@@ -7,6 +7,7 @@ import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
 import { loadCalendario, renderMatchdayAdmin } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
 import { loadFormazione, loadAdminModules } from './formation.js';
+import { initNotifications, requestNotificationPermission } from './notifications.js';
 
 window.__addPlayer = (player, customPrice) => addPlayer(player, customPrice);
 window.__myTeam    = [];
@@ -184,6 +185,13 @@ document.addEventListener('app:ready', async e => {
     await loadSystemSettings();
     syncAdminUI();
     await Promise.all([loadListone(), loadSquadra()]);
+
+    // notifiche push
+    await initNotifications();
+    // chiedi permesso dopo 3 secondi se non ancora concesso
+    if ('Notification' in window && Notification.permission === 'default') {
+        setTimeout(() => requestNotificationPermission(), 3000);
+    }
 
     // aggiorna meta rosa nel profilo
     updateProfiloSquadMeta();
