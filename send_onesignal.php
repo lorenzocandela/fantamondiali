@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -7,14 +8,16 @@ $APP_ID = $_ENV['ONESIGNAL_APP_ID'];
 $REST_API_KEY = $_ENV['ONESIGNAL_REST_API_KEY'];
 
 $data = json_decode(file_get_contents('php://input'), true);
+
 $title = (!empty($data['title'])) ? $data['title'] : 'FantaMondiali 2026';
 $message = (!empty($data['message'])) ? $data['message'] : 'Nuovo aggiornamento disponibile!';
+
 $content = array("en" => $message, "it" => $message);
 $headings = array("en" => $title, "it" => $title);
 
 $fields = array(
     'app_id' => $APP_ID,
-    'included_segments' => array('Total Subscriptions'), 
+    'included_segments' => array('Total Subscriptions'),
     'contents' => $content,
     'headings' => $headings
 );
@@ -32,16 +35,6 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
 $response = curl_exec($ch);
 curl_close($ch);
-
-// --- LOGGING DEBUG ---
-$log_entry = [
-    'timestamp' => date('Y-m-d H:i:s'),
-    'payload_sent' => $fields,
-    'onesignal_response' => json_decode($response, true)
-];
-$current_logs = file_exists('push_debug.json') ? json_decode(file_get_contents('push_debug.json'), true) : [];
-array_unshift($current_logs, $log_entry); // Metti l'ultimo log in cima
-file_put_contents('push_debug.json', json_encode(array_slice($current_logs, 0, 20))); // Tieni gli ultimi 20
 
 echo $response;
 ?>
