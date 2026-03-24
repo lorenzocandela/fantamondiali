@@ -12,9 +12,9 @@ $message = $data['message'] ?? 'Messaggio di prova';
 
 $fields = array(
     'app_id' => $APP_ID,
-    'included_segments' => array('Total Subscriptions'), 
-    'contents' => $content,
-    'headings' => $headings
+    'included_segments' => array('Total Subscribers'),
+    'contents' => array("en" => $message, "it" => $message),
+    'headings' => array("en" => $title, "it" => $title)
 );
 
 $ch = curl_init();
