@@ -58,33 +58,7 @@ function wireToggle(id, settingKey, onMsg, offMsg) {
         if (settingKey === 'market_open') window.__competitionActive = newState;
         await saveSetting(settingKey, newState);
         toast(newState ? onMsg : offMsg);
-
-        // push notification
-        const notifMap = {
-            market_open:        { on: { title: 'Mercato aperto!', body: 'Corri ad acquistare i tuoi giocatori' }, off: { title: 'Mercato chiuso', body: 'Gli acquisti sono sospesi' } },
-            competition_active: { on: { title: 'Competizione attivata!', body: 'La competizione ufficiale è iniziata' }, off: null },
-        };
-        const notif = notifMap[settingKey];
-        if (notif) {
-            const msg = newState ? notif.on : notif.off;
-            if (msg) sendPushNotification(msg.title, msg.body);
-        }
     });
-}
-
-async function sendPushNotification(title, message) {
-    try {
-        await fetch('send_onesignal.php', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ title, message }),
-        });
-        console.log("Richiesta inviata a send_onesignal.php");
-    } catch (err) {
-        console.warn('Errore invio OneSignal:', err);
-    }
 }
 
 wireToggle('toggle-market',        'market_open',        'Mercato aperto',        'Mercato chiuso');
@@ -135,15 +109,15 @@ function buildUserRow(u) {
             ${u.competition_joined ? '<span class="joined-mini">iscritto</span>' : ''}
         </div>
         <button class="admin-user-menu-btn" data-uid="${u.uid}" aria-label="Azioni">
-            <span class="material-symbols-outlined">more_vert</span>
+            <span class="material-icons-round">more_vert</span>
         </button>
         <div class="admin-user-actions hidden" data-uid="${u.uid}">
             <button class="admin-user-action-btn reset" data-uid="${u.uid}">
-                <span class="material-symbols-outlined">restart_alt</span>
+                <span class="material-icons-round">restart_alt</span>
                 Reset rosa
             </button>
             <button class="admin-user-action-btn delete" data-uid="${u.uid}">
-                <span class="material-symbols-outlined">delete_outline</span>
+                <span class="material-icons-round">delete_outline</span>
                 Elimina account
             </button>
         </div>
@@ -289,7 +263,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
 
     const btn = document.getElementById('btn-calc-scores');
     btn.disabled = true;
-    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Chiamata API...';
+    btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Chiamata API...';
 
     try {
         // 1. recupera rating giocatori dalla API (o fallback simulato)
@@ -300,7 +274,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         const playerStats = scoresData.players ?? {};
         const source      = scoresData.source;
 
-        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Calcolo formazioni...';
+        btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Calcolo formazioni...';
 
         // 2. carica calendario e utenti
         const [calSnap, usersSnap] = await Promise.all([
@@ -387,7 +361,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         resultEl.classList.remove('hidden');
         resultEl.innerHTML = `
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;color:var(--text-2);font-family:var(--mono)">
-                <span class="material-symbols-outlined" style="font-size:13px">${source === 'real' ? 'sports_soccer' : 'casino'}</span>
+                <span class="material-icons-round" style="font-size:13px">${source === 'real' ? 'sports_soccer' : 'casino'}</span>
                 dati ${source === 'real' ? 'reali API' : 'simulati (torneo non iniziato)'}
             </div>
             ${rd.matches.map(m => {
@@ -401,12 +375,11 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
             }).join('')}`;
 
         toast(`Giornata ${roundNum} calcolata · ${source === 'real' ? 'dati reali' : 'simulazione'}`);
-        sendPushNotification('Punteggi pubblicati!', `Giornata ${roundNum} calcolata. Vai a vedere i risultati!`);
 
     } catch (err) {
         toast('Errore: ' + err.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span class="material-symbols-outlined">calculate</span> Calcola punteggi giornata';
+        btn.innerHTML = '<span class="material-icons-round">calculate</span> Calcola punteggi giornata';
     }
 });
