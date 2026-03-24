@@ -74,14 +74,14 @@ function wireToggle(id, settingKey, onMsg, offMsg) {
 
 async function sendPushNotification(title, message) {
     try {
-        await fetch('send_onesignal.php', {
+        await fetch('/send_onesignal.php', { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, message }),
         });
-    } catch (err) { console.error('Errore OneSignal:', err); }
+        console.log("Richiesta inviata alla root");
+    } catch (err) { console.error('Errore fetch:', err); }
 }
-
 wireToggle('toggle-market',        'market_open',        'Mercato aperto',        'Mercato chiuso');
 wireToggle('toggle-competition',   'competition_active', 'Competizione attivata', 'Competizione disattivata');
 wireToggle('toggle-registrations', 'registrations_open', 'Registrazioni aperte',  'Registrazioni chiuse');
