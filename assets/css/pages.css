@@ -407,6 +407,7 @@
     content: '';
     position: absolute;
     inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 90% 50%, var(--blue-soft) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -1032,7 +1033,7 @@
     width: 100%;
     display: flex;
     gap: 6px;
-    padding-top: 8px;
+    padding-top: 4px;
     border-top: 1px solid var(--border);
     margin-top: 2px;
 }
@@ -1135,3 +1136,146 @@
     font-family: var(--sans);
     transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
 }
+
+/* ─── profilo aggiornato ─────────────────────── */
+
+.profilo-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 0 20px 14px;
+}
+
+.profilo-stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: var(--sh-xs);
+}
+
+.profilo-stat-box.highlight {
+    background: var(--blue-soft);
+    border-color: rgba(0,102,204,0.12);
+}
+
+.profilo-stat-val {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    color: var(--text);
+}
+
+.profilo-stat-box.highlight .profilo-stat-val { color: var(--blue); }
+
+.profilo-stat-lbl {
+    font-size: 9.5px;
+    color: var(--text-2);
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.profilo-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.profilo-section-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    font-family: var(--mono);
+}
+
+/* rosa nel profilo */
+
+.profilo-squad-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.profilo-squad-empty {
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: center;
+    padding: 16px 0 4px;
+}
+
+.profilo-squad-group { display: flex; flex-direction: column; gap: 3px; }
+
+.profilo-squad-role-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    font-family: var(--mono);
+    padding: 4px 2px 2px;
+}
+
+.profilo-squad-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    transition: box-shadow 0.12s;
+}
+
+.profilo-squad-row:hover { box-shadow: var(--sh-xs); }
+
+.profilo-squad-photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-3);
+    border: 1.5px solid var(--border-md);
+    flex-shrink: 0;
+}
+
+.profilo-squad-info { flex: 1; min-width: 0; }
+
+.profilo-squad-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profilo-squad-meta {
+    font-size: 10.5px;
+    color: var(--text-2);
+    font-family: var(--mono);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profilo-squad-price {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue);
+    font-family: var(--mono);
+    letter-spacing: -0.3px;
+    flex-shrink: 0;
+}
+
+.profilo-squad-price .material-icons-round { font-size: 11px; }

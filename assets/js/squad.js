@@ -20,7 +20,7 @@ export async function loadSquadra() {
     bumpCredits(credits);
     document.getElementById('stat-count').textContent      = window.__myTeam.length;
     document.getElementById('stat-spent').textContent      = spent;
-    document.getElementById('squad-team-name').textContent = data.team_name ?? '';
+    document.getElementById('squad-team-name') && (document.getElementById('squad-team-name').textContent = data.team_name ?? '');
     document.getElementById('squad-team-meta').textContent = `${window.__myTeam.length} giocatori · ${credits} crediti`;
 
     renderSquad();
@@ -73,7 +73,7 @@ export async function addPlayer(player) {
 
     const credits = window.__user.credits ?? 0;
     if (credits < player.price)          { toast(`Crediti insufficienti (servono ${player.price})`, 'error'); return; }
-    if ((window.__myTeam ?? []).length >= 25) { toast('Rosa completa (max 25 giocatori)', 'error'); return; }
+    if ((window.__myTeam ?? []).length >= 25) { toast('Rosa completa (max 29 giocatori)', 'error'); return; }
 
     const playerData = {
         id: player.id, name: player.name, photo: player.photo,
@@ -112,6 +112,7 @@ export async function removePlayer(playerId) {
 
 export async function loadCompetizioni() {
     const container = document.getElementById('comp-teams-list');
+    if (!container) return;
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 20px"><div class="skel-line" style="width:55%"></div></div>`;
     try {
         const snap  = await getDocs(collection(db, 'users'));

@@ -34,10 +34,10 @@ window.addEventListener('appinstalled', () => {
 function updatePwaBtnVisibility() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const visible      = !isStandalone && !!_pwaPrompt;
-    [
-        document.getElementById('pwa-install-section'),
-        document.getElementById('pwa-install-section-auth'),
-    ].forEach(el => { if (el) el.style.display = visible ? '' : 'none'; });
+    ['pwa-install-section', 'pwa-install-section-auth'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = visible ? '' : 'none';
+    });
 }
 
 async function handlePwaClick() {
@@ -56,10 +56,10 @@ document.getElementById('btn-install-pwa-auth')?.addEventListener('click', handl
 initTabPill();
 
 document.getElementById('nav-listone')?.addEventListener('click',      () => showPage('listone'));
-document.getElementById('nav-squadra')?.addEventListener('click',      () => { showPage('squadra'); loadSquadra(); });
 document.getElementById('nav-formazione')?.addEventListener('click',   () => { showPage('formazione'); loadFormazione(); });
 document.getElementById('nav-calendario')?.addEventListener('click',   () => { showPage('calendario'); loadCalendario(); });
 document.getElementById('nav-competizioni')?.addEventListener('click', () => { showPage('competizioni'); loadCompetizioni(); });
+document.getElementById('nav-profilo')?.addEventListener('click',      () => { showPage('profilo'); loadProfilo(); });
 document.getElementById('nav-admin')?.addEventListener('click', () => {
     showPage('admin');
     loadAdminStats();
@@ -91,7 +91,6 @@ document.getElementById('trigger-logo-upload')?.addEventListener('click',   () =
 
 document.addEventListener('app:ready', async e => {
     const user = e.detail;
-    document.getElementById('squad-team-name').textContent = user.team_name ?? '';
     updateTopbarAvatar();
 
     const userSnap = await getDoc(doc(db, 'users', user.uid));

@@ -159,7 +159,59 @@ export async function loadProfilo() {
 
     window.__user = { ...window.__user, ...data };
     renderProfiloHero();
+    renderProfiloStats(data);
+    renderProfiloSquad(data.players ?? []);
 }
+
+function renderProfiloStats(data) {
+    const players = data.players ?? [];
+    const credits = data.credits ?? 500;
+    const spent   = 500 - credits;
+    const p = document.getElementById('profilo-stat-players');
+    const s = document.getElementById('profilo-stat-spent');
+    const cr = document.getElementById('profilo-stat-credits');
+    if (p)  p.textContent  = players.length;
+    if (s)  s.textContent  = spent;
+    if (cr) cr.textContent = credits;
+}
+
+function renderProfiloSquad(players) {
+    const list  = document.getElementById('profilo-squad-list');
+    const count = document.getElementById('profilo-rosa-count');
+    if (!list) return;
+    if (count) count.textContent = players.length + ' giocatori';
+
+    if (!players.length) {
+        list.innerHTML = '<div class="profilo-squad-empty">Nessun giocatore in rosa</div>';
+        return;
+    }
+
+    const grouped = { POR: [], DIF: [], CEN: [], ATT: [] };
+    players.forEach(p => (grouped[p.role] ?? grouped.CEN).push(p));
+
+    const ph = (name) => `https://placehold.co/32x32/f2f2f7/aeaeb2?text=${encodeURIComponent(name?.[0] ?? '?')}`;
+
+    list.innerHTML = Object.entries(grouped).map(([role, rp]) => {
+        if (!rp.length) return '';
+        return `
+            <div class="profilo-squad-group">
+                <div class="profilo-squad-role-label">${role} · ${rp.length}</div>
+                ${rp.map(p => `
+                    <div class="profilo-squad-row">
+                        <img class="profilo-squad-photo" src="${p.photo ?? ''}" alt="${p.name}"
+                            onerror="this.src='${ph(p.name)}'">
+                        <div class="profilo-squad-info">
+                            <div class="profilo-squad-name">${p.name}</div>
+                            <div class="profilo-squad-meta">${p.team ?? ''} · ${p.nationality ?? ''}</div>
+                        </div>
+                        <span class="profilo-squad-price">
+                            <span class="material-icons-round">toll</span>${p.price}
+                        </span>
+                    </div>`).join('')}
+            </div>`;
+    }).join('');
+}
+
 
 export async function saveProfilo() {
     const teamName = document.getElementById('profilo-team-name-in').value.trim();
@@ -170,7 +222,7 @@ export async function saveProfilo() {
     try {
         await setDoc(doc(db, 'users', window.__user.uid), { team_name: teamName }, { merge: true });
         window.__user.team_name = teamName;
-        document.getElementById('squad-team-name').textContent = teamName;
+        document.getElementById('squad-team-name') && (document.getElementById('squad-team-name').textContent = teamName);
         updateTopbarAvatar();
         renderProfiloHero();
         toast('Profilo aggiornato');
