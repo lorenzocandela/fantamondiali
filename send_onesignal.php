@@ -1,6 +1,11 @@
 <?php
-$APP_ID = "74d236f6-3c61-476d-a2ce-f71beed3c045";
-$REST_API_KEY = "os_v2_app_otjdn5r4mfdw3iwo64n65u6aivdhvyqzfw6ewou3tumlkfyt5sik4i2osmz6c4qgg6ikyoka2tvrjb7ubmamdz7iyciswq4wh7dmm5i";
+require __DIR__ . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$APP_ID = $_ENV['ONESIGNAL_APP_ID'];
+$REST_API_KEY = $_ENV['ONESIGNAL_REST_API_KEY'];
 
 $data = json_decode(file_get_contents('php://input'), true);
 $title = $data['title'] ?? 'FantaMondiali 2026';
@@ -11,7 +16,7 @@ $headings = array("en" => $title, "it" => $title);
 
 $fields = array(
     'app_id' => $APP_ID,
-    'included_segments' => array('All'),
+    'included_segments' => array('Subscribed Users'),
     'contents' => $content,
     'headings' => $headings
 );
