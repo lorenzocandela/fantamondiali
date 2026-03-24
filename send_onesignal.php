@@ -1,6 +1,6 @@
 <?php
 $APP_ID = "74d236f6-3c61-476d-a2ce-f71beed3c045";
-$REST_API_KEY = "os_v2_app_otjdn5r4mfdw3iwo64n65u6aixf6rxqoxziuf55q3kmgpbuzw6mktni4bpsj5tbzmrraevmd5z7vp6u7jhmulcc36bocrmhrdtpvfxa";
+$REST_API_KEY = "os_v2_app_otjdn5r4mfdw3iwo64n65u6aivdhvyqzfw6ewou3tumlkfyt5sik4i2osmz6c4qgg6ikyoka2tvrjb7ubmamdz7iyciswq4wh7dmm5i";
 
 $data = json_decode(file_get_contents('php://input'), true);
 $title = $data['title'] ?? 'FantaMondiali 2026';
