@@ -9,21 +9,21 @@
     <div class="admin-stats-row">
         <div class="admin-stat-card">
             <div class="admin-stat-icon" style="background:var(--blue-mid);color:var(--blue)">
-                <span class="material-icons-round">group</span>
+                <span class="material-symbols-outlined">group</span>
             </div>
             <div class="admin-stat-val" id="admin-stat-users">-</div>
             <div class="admin-stat-lbl">Utenti</div>
         </div>
         <div class="admin-stat-card">
             <div class="admin-stat-icon" style="background:var(--green-soft);color:var(--green)">
-                <span class="material-icons-round">emoji_events</span>
+                <span class="material-symbols-outlined">emoji_events</span>
             </div>
             <div class="admin-stat-val" id="admin-stat-joined">-</div>
             <div class="admin-stat-lbl">Iscritti</div>
         </div>
         <div class="admin-stat-card">
             <div class="admin-stat-icon" style="background:var(--amber-soft);color:var(--amber)">
-                <span class="material-icons-round">sports_soccer</span>
+                <span class="material-symbols-outlined">sports_soccer</span>
             </div>
             <div class="admin-stat-val" id="admin-stat-players">-</div>
             <div class="admin-stat-lbl">Giocatori</div>
@@ -95,15 +95,15 @@
         <div id="admin-cal-preview" class="admin-cal-preview hidden"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="admin-action-btn" id="btn-preview-calendar" style="flex:1">
-                <span class="material-icons-round">preview</span>
+                <span class="material-symbols-outlined">preview</span>
                 Anteprima
             </button>
             <button class="admin-action-btn" id="btn-generate-calendar" style="flex:1;background:var(--green-soft);color:var(--green)" disabled>
-                <span class="material-icons-round">save</span>
+                <span class="material-symbols-outlined">save</span>
                 Genera e salva
             </button>
             <button class="admin-action-btn danger" id="btn-reset-calendar" style="flex:1">
-                <span class="material-icons-round">delete_sweep</span>
+                <span class="material-symbols-outlined">delete_sweep</span>
                 Reset
             </button>
         </div>
@@ -128,7 +128,7 @@
             </select>
         </div>
         <button class="admin-action-btn" id="btn-calc-scores" style="margin-top:8px">
-            <span class="material-icons-round">calculate</span>
+            <span class="material-symbols-outlined">calculate</span>
             Calcola punteggi giornata
         </button>
         <div id="admin-score-result" class="admin-score-result hidden"></div>
@@ -144,7 +144,7 @@
         <div class="admin-module-input-row" style="margin-top:10px">
             <input id="admin-module-input" class="field-in" type="text" placeholder="es. 4-3-3" style="font-family:var(--mono)">
             <button class="admin-action-btn" id="btn-add-module" style="flex-shrink:0;white-space:nowrap">
-                <span class="material-icons-round">add</span>
+                <span class="material-symbols-outlined">add</span>
                 Aggiungi
             </button>
         </div>
@@ -157,7 +157,7 @@
             <div class="admin-control-desc">Elimina la cache per forzare il ricaricamento dall'API al prossimo accesso</div>
         </div>
         <button class="admin-action-btn danger" id="btn-clear-cache">
-            <span class="material-icons-round">refresh</span>
+            <span class="material-symbols-outlined">refresh</span>
             Reset cache
         </button>
     </div>

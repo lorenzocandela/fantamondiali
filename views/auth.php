@@ -27,12 +27,12 @@
                     <div class="pwd-row">
                         <input id="password" class="field-in" type="password" placeholder="Minimo 6 caratteri" autocomplete="current-password">
                         <button id="toggle-pwd" class="pwd-eye" type="button" aria-label="Mostra password">
-                            <span class="material-icons-round">visibility</span>
+                            <span class="material-symbols-outlined">visibility</span>
                         </button>
                     </div>
                 </div>
                 <div id="error-msg" class="err-box">
-                    <span class="material-icons-round">error_outline</span>
+                    <span class="material-symbols-outlined">error_outline</span>
                     <span id="error-text"></span>
                 </div>
                 <button id="btn-submit" class="btn-cta">
@@ -43,7 +43,7 @@
 
         <div id="pwa-install-section-auth" style="display:none;margin-top:16px;text-align:center">
             <button id="btn-install-pwa-auth" class="btn-cta" style="background:transparent;border:1.5px solid rgba(0,0,0,0.12);color:var(--text-2);font-size:14px;gap:6px">
-                <span class="material-icons-round" style="font-size:18px">install_mobile</span>
+                <span class="material-symbols-outlined" style="font-size:18px">install_mobile</span>
                 Installa app
             </button>
         </div>

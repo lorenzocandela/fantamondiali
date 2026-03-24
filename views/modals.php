@@ -31,13 +31,13 @@
                 <div id="price-wheel" class="price-picker-wheel"></div>
             </div>
             <div class="price-picker-val">
-                <span class="material-icons-round">toll</span>
+                <span class="material-symbols-outlined">toll</span>
                 <span id="price-picker-display">1</span>
             </div>
         </div>
 
         <button id="modal-btn-add" class="modal-btn-add">
-            <span class="material-icons-round">add_circle</span>
+            <span class="material-symbols-outlined">add_circle</span>
             <span id="modal-btn-label">Aggiungi</span>
         </button>
     </div>

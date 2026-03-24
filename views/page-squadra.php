@@ -7,7 +7,7 @@
     </div>
     <div class="squad-header">
         <div class="squad-icon">
-            <span class="material-icons-round">shield</span>
+            <span class="material-symbols-outlined">shield</span>
         </div>
         <div>
             <div class="squad-info-name" id="squad-team-name">-</div>

@@ -41,6 +41,7 @@ export function initTabPill() {
 
 export function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'page-enter'));
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
 
     const page = document.getElementById(`page-${name}`);
     const tab  = document.getElementById(`nav-${name}`);
@@ -49,19 +50,16 @@ export function showPage(name) {
     page.classList.add('active', 'page-enter');
     page.addEventListener('animationend', () => page.classList.remove('page-enter'), { once: true });
 
-    if (tab) {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+    if (tab) tab.classList.add('active');
 
-        const bar  = document.querySelector('.tab-bar');
-        const pill = bar?.querySelector('.tab-pill');
-        if (pill && !tab.classList.contains('hidden')) {
-            const br = bar.getBoundingClientRect();
-            const tr = tab.getBoundingClientRect();
-            pill.style.left   = (tr.left - br.left) + 'px';
-            pill.style.width  = tr.width + 'px';
-            pill.style.height = tr.height + 'px';
-        }
+    const bar  = document.querySelector('.tab-bar');
+    const pill = bar?.querySelector('.tab-pill');
+    if (pill && tab && !tab.classList.contains('hidden')) {
+        const br = bar.getBoundingClientRect();
+        const tr = tab.getBoundingClientRect();
+        pill.style.left   = (tr.left - br.left) + 'px';
+        pill.style.width  = tr.width + 'px';
+        pill.style.height = tr.height + 'px';
     }
 }
 
@@ -82,6 +80,24 @@ export function updateTopbarAvatar() {
         initials.classList.remove('hidden');
         const raw = user.team_name ?? user.email ?? '?';
         initials.textContent = raw.split(/[\s@]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    updateTopbarTeamLogo();
+}
+
+export function updateTopbarTeamLogo() {
+    const user     = window.__user ?? {};
+    const logoImg  = document.getElementById('topbar-team-logo-img');
+    const fallback = document.getElementById('topbar-team-logo-fallback');
+    if (!logoImg || !fallback) return;
+
+    if (user.team_logo) {
+        logoImg.src = user.team_logo;
+        logoImg.classList.remove('hidden');
+        fallback.classList.add('hidden');
+    } else {
+        logoImg.classList.add('hidden');
+        fallback.classList.remove('hidden');
     }
 }
 
@@ -117,14 +133,14 @@ export function renderProfiloHero() {
         <div class="profilo-hero-avatar-wrap" id="trigger-avatar-upload-hero">
             ${avatarHtml}
             <div class="profilo-avatar-overlay">
-                <span class="material-icons-round">photo_camera</span>
+                <span class="material-symbols-outlined">photo_camera</span>
             </div>
         </div>
         <div class="profilo-hero-info">
             <div class="profilo-hero-team">${teamName}</div>
             <div class="profilo-hero-email">${user.email ?? ''}</div>
             <div class="profilo-hero-badge ${isJoined ? 'active' : ''}">
-                <span class="material-icons-round">${isJoined ? 'emoji_events' : 'sports_soccer'}</span>
+                <span class="material-symbols-outlined">${isJoined ? 'emoji_events' : 'sports_soccer'}</span>
                 ${isJoined ? 'Iscritto' : 'Non iscritto'}
             </div>
         </div>
@@ -208,7 +224,7 @@ function renderProfiloSquad(players) {
                             <div class="profilo-squad-meta">${p.team ?? ''} · ${p.nationality ?? ''}</div>
                         </div>
                         <span class="profilo-squad-price">
-                            <span class="material-icons-round">toll</span>${p.price}
+                            <span class="material-symbols-outlined">toll</span>${p.price}
                         </span>
                     </div>`).join('')}
             </div>`;
@@ -280,6 +296,7 @@ export function handleLogoUpload(e) {
             prev.src = ev.target.result;
             prev.classList.remove('hidden');
             renderProfiloHero();
+            updateTopbarTeamLogo();
             toast('Logo squadra aggiornato');
         } catch { toast('Errore upload logo', 'error'); }
     };

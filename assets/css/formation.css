@@ -18,7 +18,7 @@
     line-height: 1.4;
 }
 
-.form-warning .material-icons-round { font-size: 15px; flex-shrink: 0; }
+.form-warning .material-symbols-outlined { font-size: 15px; flex-shrink: 0; }
 .form-warning-error { background: var(--red-soft);   color: var(--red);   border: 1px solid rgba(232,57,42,0.14); }
 .form-warning-warn  { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(217,119,6,0.12); }
 .form-warning-info  { background: var(--blue-mid);   color: var(--blue);  border: 1px solid rgba(0,102,204,0.12); }
@@ -165,7 +165,7 @@
 }
 
 .form-slot.tappable:hover .form-slot-tap-hint { opacity: 0.6; }
-.form-slot-tap-hint .material-icons-round { font-size: 12px; color: #fff; }
+.form-slot-tap-hint .material-symbols-outlined { font-size: 12px; color: #fff; }
 
 /* slot vuoto */
 
@@ -204,7 +204,7 @@
     margin-bottom: 10px;
 }
 
-.form-bench-title .material-icons-round { font-size: 14px; }
+.form-bench-title .material-symbols-outlined { font-size: 14px; }
 
 .form-bench-count {
     background: var(--surface-3);
@@ -258,7 +258,7 @@
     font-weight: 600;
 }
 
-.form-lock-badge .material-icons-round { font-size: 15px; }
+.form-lock-badge .material-symbols-outlined { font-size: 15px; }
 
 /* ─── picker overlay ─────────────────────────────── */
 
@@ -336,7 +336,7 @@
 }
 
 .fpicker-close:hover { background: var(--surface-4); }
-.fpicker-close .material-icons-round { font-size: 17px; }
+.fpicker-close .material-symbols-outlined { font-size: 17px; }
 
 .fpicker-actions {
     padding: 10px 16px 6px;
@@ -362,7 +362,7 @@
 }
 
 .fpicker-remove-btn:hover { background: var(--red); color: #fff; }
-.fpicker-remove-btn .material-icons-round { font-size: 16px; }
+.fpicker-remove-btn .material-symbols-outlined { font-size: 16px; }
 
 .fpicker-list {
     overflow-y: auto;
@@ -482,7 +482,7 @@
 }
 
 .admin-module-del:hover { background: var(--red-soft); color: var(--red); }
-.admin-module-del .material-icons-round { font-size: 15px; }
+.admin-module-del .material-symbols-outlined { font-size: 15px; }
 
 .admin-module-input-row { display: flex; gap: 8px; align-items: center; }
 .admin-module-input-row .field-in { flex: 1; padding: 9px 12px; font-family: var(--mono); font-size: 13px; }
@@ -598,4 +598,4 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-.fround-back-btn .material-icons-round { font-size: 20px; }
+.fround-back-btn .material-symbols-outlined { font-size: 20px; }

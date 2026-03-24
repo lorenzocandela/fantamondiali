@@ -64,7 +64,7 @@ document.getElementById('nav-calendario')?.addEventListener('click', () => {
     showPage('calendario'); 
     loadCalendario();
 });
-document.getElementById('nav-competizione')?.addEventListener('click', () => { 
+document.getElementById('nav-competizioni')?.addEventListener('click', () => { 
     showPage('competizione');
     loadCompetizioni(); 
 });
@@ -80,6 +80,12 @@ document.getElementById('nav-admin')?.addEventListener('click', () => {
 document.getElementById('btn-profile-avatar')?.addEventListener('click', () => {
     showPage('profilo');
     loadProfilo();
+});
+
+// topbar team logo → squadra
+document.getElementById('btn-topbar-logo')?.addEventListener('click', () => {
+    showPage('squadra');
+    loadSquadra();
 });
 
 document.addEventListener('goto:profilo', () => {
@@ -133,7 +139,7 @@ function renderSquadSheet() {
 
     if (!team.length) {
         list.innerHTML = `<div class="empty-state" style="padding:40px 20px">
-            <span class="material-icons-round">sports_soccer</span>
+            <span class="material-symbols-outlined">sports_soccer</span>
             <h3>Rosa vuota</h3>
             <p>Acquista giocatori dal Listone</p>
         </div>`;
@@ -157,7 +163,7 @@ function renderSquadSheet() {
                     <div class="squad-sheet-meta">${p.team ?? ''} · ${p.nationality ?? ''}</div>
                 </div>
                 <span class="squad-sheet-price">
-                    <span class="material-icons-round">toll</span>${p.price}
+                    <span class="material-symbols-outlined">toll</span>${p.price}
                 </span>
             </div>`).join('')}
         </div>`;

@@ -60,7 +60,7 @@ tabLogin.addEventListener('click',    () => switchMode(false));
 tabRegister.addEventListener('click', () => switchMode(true));
 
 togglePwd.addEventListener('click', () => {
-    const icon = togglePwd.querySelector('.material-icons-round');
+    const icon = togglePwd.querySelector('.material-symbols-outlined');
     const isPassword = pwdInput.type === 'password';
     pwdInput.type = isPassword ? 'text' : 'password';
     icon.textContent = isPassword ? 'visibility_off' : 'visibility';

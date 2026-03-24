@@ -105,7 +105,7 @@ export function renderPlayers(players, slice) {
         playersGrid.className = activeView === 'grid' ? 'players-grid' : 'players-list';
         playersGrid.innerHTML = `
             <div class="empty-state" style="grid-column:1/-1">
-                <span class="material-icons-round">search_off</span>
+                <span class="material-symbols-outlined">search_off</span>
                 <h3>Nessun risultato</h3>
                 <p>Prova con un altro filtro o ricerca</p>
             </div>`;
@@ -126,9 +126,9 @@ export function renderPlayers(players, slice) {
                 <div class="role-badge badge-${p.role}">${p.role}</div>
                 <div class="player-name">${p.name}</div>
                 <div class="player-nat">${p.nationality}</div>
-                <div class="price-row"><span class="material-icons-round">toll</span>${p.price}</div>
+                <div class="price-row"><span class="material-symbols-outlined">toll</span>${p.price}</div>
                 <button class="btn-add ${locked ? 'locked' : owned ? 'owned' : ''}" data-id="${p.id}">
-                    <span class="material-icons-round">${locked ? 'lock' : owned ? 'check' : 'add'}</span>
+                    <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : 'add'}</span>
                     ${locked ? 'Non attivo' : owned ? 'In rosa' : 'Aggiungi'}
                 </button>
             </div>`;
@@ -152,9 +152,9 @@ export function renderPlayers(players, slice) {
                     </div>
                 </div>
                 <div class="player-row-right">
-                    <div class="player-row-price"><span class="material-icons-round">toll</span>${p.price}</div>
+                    <div class="player-row-price"><span class="material-symbols-outlined">toll</span>${p.price}</div>
                     <button class="btn-add-row ${locked ? 'locked' : owned ? 'owned' : ''}" data-id="${p.id}">
-                        <span class="material-icons-round">${locked ? 'lock' : owned ? 'check' : 'add'}</span>
+                        <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : 'add'}</span>
                     </button>
                 </div>
             </div>`;
@@ -215,7 +215,7 @@ export async function loadListone() {
     } catch (err) {
         playersGrid.innerHTML = `
             <div class="empty-state" style="grid-column:1/-1">
-                <span class="material-icons-round">wifi_off</span>
+                <span class="material-symbols-outlined">wifi_off</span>
                 <h3>Errore caricamento</h3>
                 <p>${err.message}</p>
             </div>`;
@@ -398,7 +398,7 @@ export function openModal(player) {
     const pricePicker = document.getElementById('modal-price-picker');
     const btnAdd = document.getElementById('modal-btn-add');
     const btnLbl = document.getElementById('modal-btn-label');
-    const btnIco = btnAdd.querySelector('.material-icons-round');
+    const btnIco = btnAdd.querySelector('.material-symbols-outlined');
 
     if (locked) {
         pricePicker.classList.add('hidden');

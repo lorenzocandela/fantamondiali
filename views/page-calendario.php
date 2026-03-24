@@ -16,11 +16,11 @@
     <div id="cal-view-scontri">
         <div class="cal-round-nav">
             <button class="cal-nav-btn" id="cal-round-prev">
-                <span class="material-icons-round">chevron_left</span>
+                <span class="material-symbols-outlined">chevron_left</span>
             </button>
             <div class="cal-round-label" id="cal-round-label">Giornata 1</div>
             <button class="cal-nav-btn" id="cal-round-next">
-                <span class="material-icons-round">chevron_right</span>
+                <span class="material-symbols-outlined">chevron_right</span>
             </button>
         </div>
         <div id="cal-matches-list" class="cal-matches-list"></div>

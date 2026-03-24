@@ -6,7 +6,7 @@
             <img id="profilo-avatar-img" class="profilo-avatar hidden" src="" alt="Avatar">
             <div id="profilo-avatar-initials" class="profilo-avatar-initials">-</div>
             <div class="profilo-avatar-overlay">
-                <span class="material-icons-round">photo_camera</span>
+                <span class="material-symbols-outlined">photo_camera</span>
             </div>
         </div>
         <input id="avatar-upload" type="file" accept="image/*" class="hidden">
@@ -18,13 +18,13 @@
     <div style="padding: 0 20px 16px;">
         <button class="profilo-squad-btn" id="btn-open-squad">
             <div class="profilo-squad-btn-left">
-                <span class="material-icons-round">shield</span>
+                <span class="material-symbols-outlined">shield</span>
                 <div>
                     <div class="profilo-squad-btn-label">La mia Rosa</div>
                     <div class="profilo-squad-btn-meta" id="profilo-squad-meta">0 giocatori · 500 crediti</div>
                 </div>
             </div>
-            <span class="material-icons-round">chevron_right</span>
+            <span class="material-symbols-outlined">chevron_right</span>
         </button>
     </div>
 
@@ -40,14 +40,14 @@
             <div class="logo-upload-row">
                 <img id="profilo-logo-preview" class="logo-preview hidden" src="" alt="Logo">
                 <button class="btn-upload" id="trigger-logo-upload" type="button">
-                    <span class="material-icons-round">upload</span>
+                    <span class="material-symbols-outlined">upload</span>
                     Carica logo
                 </button>
                 <input id="logo-upload" type="file" accept="image/*" class="hidden">
             </div>
         </div>
         <button id="btn-save-profilo" class="btn-cta" style="margin-top:4px">
-            <span class="material-icons-round">save</span>
+            <span class="material-symbols-outlined">save</span>
             Salva modifiche
         </button>
     </div>
@@ -66,7 +66,7 @@
         <div class="profilo-section-title">Installa app</div>
         <p class="profilo-section-desc">Aggiungi FantaMondiali alla home per un'esperienza a schermo intero.</p>
         <button id="btn-install-pwa" class="btn-join" style="background:var(--blue-mid);color:var(--blue)">
-            <span class="material-icons-round">install_mobile</span>
+            <span class="material-symbols-outlined">install_mobile</span>
             Installa app
         </button>
     </div>
@@ -74,7 +74,7 @@
     <!-- logout -->
     <div class="profilo-section">
         <button id="btn-logout" class="btn-logout-full">
-            <span class="material-icons-round">logout</span>
+            <span class="material-symbols-outlined">logout</span>
             Esci dall'account
         </button>
     </div>
@@ -87,7 +87,7 @@
         <div class="squad-sheet-header">
             <div class="squad-sheet-title">La mia Rosa</div>
             <button id="btn-close-squad-sheet" class="fpicker-close">
-                <span class="material-icons-round">close</span>
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <div class="squad-sheet-stats">

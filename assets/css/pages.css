@@ -109,7 +109,7 @@
     letter-spacing: -0.3px;
 }
 
-.price-row .material-icons-round { font-size: 12px; }
+.price-row .material-symbols-outlined { font-size: 12px; }
 
 .btn-add {
     width: 100%;
@@ -128,7 +128,7 @@
     letter-spacing: -0.1px;
 }
 
-.btn-add .material-icons-round { font-size: 14px; }
+.btn-add .material-symbols-outlined { font-size: 14px; }
 .btn-add:hover { background: var(--blue); color: #fff; }
 .btn-add.owned { background: var(--green-soft); color: var(--green); cursor: default; }
 .btn-add.owned:hover { background: var(--green-soft); color: var(--green); }
@@ -213,7 +213,7 @@
     letter-spacing: -0.3px;
 }
 
-.player-row-price .material-icons-round { font-size: 12px; }
+.player-row-price .material-symbols-outlined { font-size: 12px; }
 
 .btn-add-row {
     width: 32px;
@@ -229,7 +229,7 @@
     flex-shrink: 0;
 }
 
-.btn-add-row .material-icons-round { font-size: 17px; }
+.btn-add-row .material-symbols-outlined { font-size: 17px; }
 .btn-add-row:hover { background: var(--blue); color: #fff; }
 .btn-add-row.owned { background: var(--green-soft); color: var(--green); cursor: default; }
 .btn-add-row.owned:hover { background: var(--green-soft); color: var(--green); }
@@ -294,7 +294,7 @@
     box-shadow: var(--sh-blue);
 }
 
-.squad-icon .material-icons-round { font-size: 23px; color: #fff; }
+.squad-icon .material-symbols-outlined { font-size: 23px; color: #fff; }
 
 .squad-info-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
 .squad-info-meta { font-size: 11.5px; color: var(--text-2); margin-top: 2px; font-family: var(--mono); }
@@ -384,7 +384,7 @@
     flex-shrink: 0;
 }
 
-.btn-remove .material-icons-round { font-size: 15px; }
+.btn-remove .material-symbols-outlined { font-size: 15px; }
 .btn-remove:hover { background: var(--red-soft); border-color: rgba(232,57,42,0.18); color: var(--red); }
 
 /* profilo */
@@ -453,7 +453,7 @@
     transition: opacity 0.16s;
 }
 
-.profilo-avatar-overlay .material-icons-round { font-size: 22px; color: #fff; }
+.profilo-avatar-overlay .material-symbols-outlined { font-size: 22px; color: #fff; }
 
 .profilo-hero-info { flex: 1; min-width: 0; position: relative; }
 
@@ -494,7 +494,7 @@
 }
 
 .profilo-hero-badge.active { background: var(--green-soft); color: var(--green); }
-.profilo-hero-badge .material-icons-round { font-size: 12px; }
+.profilo-hero-badge .material-symbols-outlined { font-size: 12px; }
 
 .profilo-hero-logo-img {
     width: 56px;
@@ -572,7 +572,7 @@
 }
 
 .btn-upload:hover { background: var(--surface-4); color: var(--text); }
-.btn-upload .material-icons-round { font-size: 16px; }
+.btn-upload .material-symbols-outlined { font-size: 16px; }
 
 .btn-join {
     width: 100%;
@@ -630,7 +630,7 @@
     flex-shrink: 0;
 }
 
-.comp-banner-icon .material-icons-round { font-size: 21px; color: var(--amber); }
+.comp-banner-icon .material-symbols-outlined { font-size: 21px; color: var(--amber); }
 .comp-banner-title { font-size: 14.5px; font-weight: 700; letter-spacing: -0.2px; }
 .comp-banner-sub   { font-size: 12px; color: var(--text-2); margin-top: 1px; }
 
@@ -737,7 +737,7 @@
 
 .cal-nav-btn:hover:not(:disabled) { background: var(--surface-3); color: var(--text); }
 .cal-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.cal-nav-btn .material-icons-round { font-size: 20px; }
+.cal-nav-btn .material-symbols-outlined { font-size: 20px; }
 
 .cal-round-label { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; text-align: center; flex: 1; }
 
@@ -833,7 +833,7 @@
 .admin-stat-card:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
 
 .admin-stat-icon { width: 34px; height: 34px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; }
-.admin-stat-icon .material-icons-round { font-size: 18px; }
+.admin-stat-icon .material-symbols-outlined { font-size: 18px; }
 .admin-stat-val { font-family: var(--mono); font-size: 26px; font-weight: 600; letter-spacing: -1.5px; line-height: 1; }
 .admin-stat-lbl { font-size: 10px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
 
@@ -908,7 +908,7 @@
 .admin-action-btn:active:not(:disabled) { transform: scale(0.98); }
 .admin-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .admin-action-btn.danger:hover:not(:disabled) { background: var(--red-soft); color: var(--red); }
-.admin-action-btn .material-icons-round { font-size: 17px; }
+.admin-action-btn .material-symbols-outlined { font-size: 17px; }
 
 .admin-matchday-display {
     display: flex;
@@ -1027,7 +1027,7 @@
 }
 
 .admin-user-menu-btn:hover { background: var(--surface-3); color: var(--text-2); }
-.admin-user-menu-btn .material-icons-round { font-size: 18px; }
+.admin-user-menu-btn .material-symbols-outlined { font-size: 18px; }
 
 .admin-user-actions {
     width: 100%;
@@ -1069,7 +1069,7 @@
 }
 
 .admin-user-action-btn.delete:hover { background: var(--red); color: #fff; }
-.admin-user-action-btn .material-icons-round { font-size: 14px; }
+.admin-user-action-btn .material-symbols-outlined { font-size: 14px; }
 
 .admin-user-confirm {
     width: 100%;
@@ -1278,7 +1278,7 @@
     flex-shrink: 0;
 }
 
-.profilo-squad-price .material-icons-round { font-size: 11px; }
+.profilo-squad-price .material-symbols-outlined { font-size: 11px; }
 
 /* ─── profilo — bottone rosa ─────────────────── */
 
@@ -1306,7 +1306,7 @@
     gap: 12px;
 }
 
-.profilo-squad-btn-left > .material-icons-round {
+.profilo-squad-btn-left > .material-symbols-outlined {
     font-size: 22px;
     color: var(--blue);
     background: var(--blue-soft);
@@ -1333,7 +1333,7 @@
     margin-top: 2px;
 }
 
-.profilo-squad-btn > .material-icons-round { color: var(--text-3); font-size: 20px; }
+.profilo-squad-btn > .material-symbols-outlined { color: var(--text-3); font-size: 20px; }
 
 /* ─── squad bottom sheet ─────────────────────── */
 
@@ -1466,4 +1466,4 @@
     flex-shrink: 0;
 }
 
-.squad-sheet-price .material-icons-round { font-size: 11px; }
+.squad-sheet-price .material-symbols-outlined { font-size: 11px; }

@@ -8,7 +8,7 @@
 
     <div class="comp-banner">
         <div class="comp-banner-icon">
-            <span class="material-icons-round">emoji_events</span>
+            <span class="material-symbols-outlined">emoji_events</span>
         </div>
         <div>
             <div class="comp-banner-title">FantaMondiali 2026</div>

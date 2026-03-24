@@ -32,7 +32,7 @@ function renderSquad() {
     if (!window.__myTeam?.length) {
         squadList.innerHTML = `
             <div class="empty-state">
-                <span class="material-icons-round">sports_soccer</span>
+                <span class="material-symbols-outlined">sports_soccer</span>
                 <h3>Rosa vuota</h3>
                 <p>Vai nel Listone e aggiungi i tuoi giocatori</p>
             </div>`;
@@ -57,7 +57,7 @@ function renderSquad() {
                         </div>
                         <span class="squad-player-price">${p.price}</span>
                         <button class="btn-remove" data-id="${p.id}" aria-label="Rimuovi">
-                            <span class="material-icons-round">close</span>
+                            <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>`).join('')}
             </div>`;
@@ -132,7 +132,7 @@ export async function loadCompetizioni() {
         if (!teams.length) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <span class="material-icons-round">emoji_events</span>
+                    <span class="material-symbols-outlined">emoji_events</span>
                     <h3>Nessuna squadra iscritta</h3>
                     <p>Vai su Profilo per iscrivere la tua squadra</p>
                 </div>`;

@@ -5,12 +5,12 @@
             <p class="page-subtitle" id="listone-subtitle">caricamento...</p>
         </div>
         <button class="view-toggle-btn" id="view-toggle" aria-label="Cambia vista">
-            <span class="material-icons-round" id="view-toggle-icon">view_list</span>
+            <span class="material-symbols-outlined" id="view-toggle-icon">view_list</span>
         </button>
     </div>
     <div class="search-wrap">
         <div class="search-icon">
-            <span class="material-icons-round">search</span>
+            <span class="material-symbols-outlined">search</span>
         </div>
         <input id="search-in" class="search-in" type="text" placeholder="Cerca giocatore o nazione...">
     </div>

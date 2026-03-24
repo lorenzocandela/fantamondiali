@@ -3,7 +3,7 @@ const toastWrap = document.getElementById('toast-wrap');
 export function toast(msg, type = 'success') {
     const el = document.createElement('div');
     el.className = `toast ${type}`;
-    el.innerHTML = `<span class="material-icons-round">${type === 'success' ? 'check_circle' : 'error_outline'}</span>${msg}`;
+    el.innerHTML = `<span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : 'error_outline'}</span>${msg}`;
     toastWrap.appendChild(el);
     setTimeout(() => {
         el.style.animation = 'toastOut 0.25s ease forwards';
