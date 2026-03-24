@@ -26,14 +26,10 @@ let availableModules = [...DEFAULT_MODULES];
 let activeRound      = null;
 let pickerState      = null;
 
-// ─── entry point ─────────────────────────────────────────────────────────────
-
 export async function loadFormazione() {
     if (!window.__user?.uid) return;
     renderRoundList();
 }
-
-// ─── vista 1: lista giornate ──────────────────────────────────────────────────
 
 function renderRoundList() {
     const current = getCurrentMatchday();
@@ -68,7 +64,7 @@ function renderRoundList() {
                     </div>
                     <div class="fround-card-right">
                         <div class="fround-status fround-status-${statusClass}">${statusLabel}</div>
-                        <span class="material-icons-round fround-arrow">chevron_right</span>
+                        <span class="material-symbols-outlined fround-arrow">chevron_right</span>
                     </div>
                 </div>`;
             }).join('')}
@@ -79,8 +75,6 @@ function renderRoundList() {
     });
 }
 
-// ─── vista 2: formazione per giornata ────────────────────────────────────────
-
 async function openRound(round) {
     activeRound = round;
     const md = MATCHDAY_SCHEDULE.find(m => m.round === round);
@@ -89,14 +83,8 @@ async function openRound(round) {
     const now      = new Date(); now.setHours(0,0,0,0);
     const start    = new Date(md.start);
     const end      = new Date(md.end); end.setHours(23,59,59);
-    const isLive   = now >= start && now <= end;
-    const isFuture = now < start;
-    const isPast   = now > end;
-    const currentMd = getCurrentMatchday();
-    const isEditableRound = md.round === currentMd.round;
-    const isLocked = isPast || !isEditableRound;
+    const isLocked = now > end || md.round !== getCurrentMatchday().round;
 
-    // aggiorna subtitle
     document.getElementById('form-subtitle').textContent = md.label;
 
     const [userSnap, settingsSnap] = await Promise.all([
@@ -106,16 +94,14 @@ async function openRound(round) {
 
     if (!userSnap.exists()) return;
     const data = userSnap.data();
-
     roster = data.players ?? [];
-    if (!roster.length) { renderEmptyRoster(md, isLocked); return; }
+    if (!roster.length) { renderEmptyRoster(); return; }
 
     if (settingsSnap.exists()) {
         const custom = settingsSnap.data().list ?? [];
         availableModules = [...new Set([...DEFAULT_MODULES, ...custom])].sort();
     }
 
-    // lineup per giornata: `lineup_r{round}` oppure fallback alla lineup generica
     const savedKey  = `lineup_r${round}`;
     const savedIds  = data[savedKey] ?? data.lineup ?? [];
     activeModule    = data[`module_r${round}`] ?? data.module ?? '4-3-3';
@@ -128,51 +114,38 @@ async function openRound(round) {
         if (!lineup.find(l => String(l.id) === String(p.id))) lineup.push(p);
     });
 
-    renderFormazione(md, isLocked, isFuture, isPast, isEditableRound);
+    renderFormazione(md, isLocked);
 }
 
-// ─── render formazione ────────────────────────────────────────────────────────
-
-function renderFormazione(md, isLocked, isFuture, isPast, isEditableRound) {
+function renderFormazione(md, isLocked) {
     const s     = lineup.slice(0, 11);
     const b     = lineup.slice(11);
     const warns = validateLineup();
     const { dif, cen, att } = parseModule(activeModule);
 
-    const lockMsg = isPast
-        ? 'Giornata conclusa — solo visualizzazione'
-        : !isEditableRound && isFuture
-            ? `Disponibile dal ${formatDate(md.start)} — modifica solo la giornata corrente`
-            : 'Giornata in corso — formazione bloccata';
-
     const lockBanner = isLocked ? `
         <div class="form-lock-badge" style="margin:0 20px 14px">
-            <span class="material-icons-round">${isPast ? 'history' : 'lock'}</span>
-            ${lockMsg}
+            <span class="material-symbols-outlined">lock</span>
+            Formazione bloccata
         </div>` : '';
-
-    const futureBanner = '';
 
     const warningsHtml = warns.length && !isLocked ? `
         <div class="form-warnings">
             ${warns.map(w => `
                 <div class="form-warning form-warning-${w.level}">
-                    <span class="material-icons-round">${w.icon}</span>${w.text}
+                    <span class="material-symbols-outlined">${w.icon}</span>${w.text}
                 </div>`).join('')}
         </div>` : '';
 
-    const modulesHtml = !isLocked ? `
+    const modulesHtml = `
         <div class="form-module-row">
             <div class="form-module-label">Modulo</div>
             <div class="form-module-chips">
-                ${availableModules.map(m =>
+                ${isLocked ? `<div style="font-weight:700;font-family:var(--mono)">${activeModule}</div>` : 
+                    availableModules.map(m =>
                     `<button class="form-module-chip ${m === activeModule ? 'active' : ''}" data-module="${m}">${m}</button>`
                 ).join('')}
             </div>
-        </div>` : `
-        <div class="form-module-row">
-            <div class="form-module-label">Modulo</div>
-            <div style="font-size:13px;font-weight:700;color:var(--text);font-family:var(--mono)">${activeModule}</div>
         </div>`;
 
     const rows = [
@@ -199,57 +172,45 @@ function renderFormazione(md, isLocked, isFuture, isPast, isEditableRound) {
     const benchHtml = `
         <div class="form-bench">
             <div class="form-bench-title">
-                <span class="material-icons-round">airline_seat_recline_normal</span>
+                <span class="material-symbols-outlined">airline_seat_recline_normal</span>
                 Panchina <span class="form-bench-count">${b.length}</span>
             </div>
             <div class="form-bench-list">
-                ${b.length
-                    ? b.map((p, i) => benchRowHtml(p, i, isLocked)).join('')
-                    : `<div class="form-bench-empty">Tutti i giocatori sono titolari</div>`}
+                ${b.length ? b.map((p, i) => benchRowHtml(p, i, isLocked)).join('') : `<div class="form-bench-empty">Rosa completa schierata</div>`}
             </div>
         </div>`;
 
     const saveBar = !isLocked ? `
         <div class="form-save-bar">
-            <button class="btn-cta" id="btn-save-formazione" style="margin-top:0">
-                <span class="material-icons-round">check_circle</span>Salva formazione GJ${activeRound}
+            <button class="btn-cta" id="btn-save-formazione">
+                <span class="material-symbols-outlined">check_circle</span>Salva formazione G${activeRound}
             </button>
         </div>` : '';
 
-    document.getElementById('formation-content').innerHTML =
-        lockBanner + futureBanner + warningsHtml + modulesHtml + fieldHtml + benchHtml + saveBar;
-
-    document.getElementById('fround-back')?.addEventListener('click', () => {
-        document.getElementById('form-subtitle').textContent = 'schiera i tuoi 11';
-        renderRoundList();
-    });
-
+    document.getElementById('formation-content').innerHTML = lockBanner + warningsHtml + modulesHtml + fieldHtml + benchHtml + saveBar;
+    
+    document.getElementById('fround-back')?.addEventListener('click', () => renderRoundList());
     attachFormationEvents(isLocked);
 }
 
-function renderEmptyRoster(md, isLocked) {
+function renderEmptyRoster() {
     document.getElementById('formation-content').innerHTML = `
         <button class="fround-back-btn" id="fround-back">
-            <span class="material-icons-round">arrow_back</span>
+            <span class="material-symbols-outlined">arrow_back</span> Indietro
         </button>
         <div class="empty-state" style="padding-top:40px">
-            <span class="material-icons-round">sports_soccer</span>
+            <span class="material-symbols-outlined">sports_soccer</span>
             <h3>Rosa vuota</h3>
-            <p>Acquista almeno 11 giocatori dal Listone per schierare la formazione</p>
+            <p>Acquista almeno 11 giocatori dal Listone</p>
         </div>`;
-    document.getElementById('fround-back')?.addEventListener('click', () => {
-        document.getElementById('form-subtitle').textContent = 'schiera i tuoi 11';
-        renderRoundList();
-    });
+    document.getElementById('fround-back')?.addEventListener('click', () => renderRoundList());
 }
-
-// ─── html helpers ─────────────────────────────────────────────────────────────
 
 function slotHtml(p, role, idx, locked) {
     if (!p) return `
         <div class="form-slot empty${!locked ? ' tappable' : ''}" data-role="${role}" data-slot-idx="${idx}">
             <div class="form-slot-inner">
-                <span class="material-icons-round form-slot-add-icon">add_circle_outline</span>
+                <span class="material-symbols-outlined form-slot-add-icon">add_circle_outline</span>
                 <div class="form-slot-role-label">${role}</div>
             </div>
         </div>`;
@@ -257,12 +218,11 @@ function slotHtml(p, role, idx, locked) {
         <div class="form-slot filled${!locked ? ' tappable' : ''}" data-id="${p.id}" data-role="${role}" data-slot-idx="${idx}">
             <div class="form-slot-inner">
                 <div class="form-slot-photo-wrap">
-                    <img class="form-slot-photo" src="${p.photo ?? ''}" alt="${p.name}"
-                        onerror="this.src='https://placehold.co/52x52/1a3a1a/fff?text=${encodeURIComponent(p.name?.[0]??'?')}'">
+                    <img class="form-slot-photo" src="${p.photo ?? ''}" alt="${p.name}" onerror="this.src='https://placehold.co/52x52/1a3a1a/fff?text=?'">
                     <span class="form-slot-role-badge badge-${p.role}">${p.role}</span>
                 </div>
-                <div class="form-slot-name">${shortName(p.name)}</div>
-                ${!locked ? `<div class="form-slot-tap-hint"><span class="material-icons-round">swap_vert</span></div>` : ''}
+                <div class="form-slot-name">${p.name.split(' ').pop()}</div>
+                ${!locked ? `<div class="form-slot-tap-hint"><span class="material-symbols-outlined">swap_vert</span></div>` : ''}
             </div>
         </div>`;
 }
@@ -271,15 +231,12 @@ function benchRowHtml(p, idx, locked) {
     return `
         <div class="form-bench-row${!locked ? ' tappable' : ''}" data-id="${p.id}" data-bench-idx="${idx}">
             <div class="form-bench-order">${idx + 1}</div>
-            <img class="form-bench-photo" src="${p.photo ?? ''}" alt="${p.name}"
-                onerror="this.src='https://placehold.co/36x36/f2f2f7/aeaeb2?text=${encodeURIComponent(p.name?.[0]??'?')}'">
+            <img class="form-bench-photo" src="${p.photo ?? ''}" alt="${p.name}" onerror="this.src='https://placehold.co/36x36/f2f2f7/aeaeb2?text=?'">
             <div class="form-bench-info">
                 <div class="form-bench-name">${p.name}</div>
-                <div class="form-bench-meta">
-                    <span class="role-badge badge-${p.role}" style="margin:0">${p.role}</span>
-                </div>
+                <div class="form-bench-meta"><span class="role-badge badge-${p.role}">${p.role}</span></div>
             </div>
-            ${!locked ? `<span class="material-icons-round form-bench-swap-icon">swap_vert</span>` : ''}
+            ${!locked ? `<span class="material-symbols-outlined form-bench-swap-icon">swap_vert</span>` : ''}
         </div>`;
 }
 

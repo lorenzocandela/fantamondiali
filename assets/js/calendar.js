@@ -151,7 +151,7 @@ export async function loadCalendario() {
         if (!calSnap.exists() || !calSnap.data().schedule) {
             document.getElementById('cal-matches-list').innerHTML = `
                 <div class="empty-state">
-                    <span class="material-icons-round">calendar_month</span>
+                    <span class="material-symbols-outlined">calendar_month</span>
                     <h3>Calendario non ancora generato</h3>
                     <p>L'admin deve generarlo dalla dashboard</p>
                 </div>`;
@@ -166,7 +166,7 @@ export async function loadCalendario() {
         renderCalRound();
     } catch (err) {
         document.getElementById('cal-matches-list').innerHTML =
-            `<div class="empty-state"><span class="material-icons-round">wifi_off</span><h3>Errore</h3><p>${err.message}</p></div>`;
+            `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><h3>Errore</h3><p>${err.message}</p></div>`;
     }
 }
 
@@ -205,7 +205,7 @@ function renderCalStandings() {
     const standings = buildStandings(calTeams, calSchedule, calResults);
     const list      = document.getElementById('cal-standings-list');
     if (!standings.length) {
-        list.innerHTML = `<div class="empty-state"><span class="material-icons-round">leaderboard</span><h3>Nessuna squadra</h3></div>`;
+        list.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">leaderboard</span><h3>Nessuna squadra</h3></div>`;
         return;
     }
     list.innerHTML = standings.map((s, i) => `
@@ -241,21 +241,13 @@ document.querySelectorAll('.cal-seg-btn').forEach(btn => {
 
 
 // admin — genera calendario
-// il round-robin produce n-1 giornate (con n squadre pari).
-// le mappiamo sulle 7 giornate fanta reali con ciclo se servono meno di 7.
-
 const ROUND_LABELS = ['GJ1','GJ2','GJ3','Ottavi','Quarti','Semifinali','Finale'];
 
 let previewSchedule = [];
 
 function buildFullSchedule(teams) {
-    // genera round-robin base
-    const base = generateRoundRobin(teams);  // produce n-1 rounds
-
-    // se il round-robin produce già 7 o più, usa solo i primi 7
+    const base = generateRoundRobin(teams);
     if (base.length >= 7) return base.slice(0, 7).map((rd, i) => ({ ...rd, round: i + 1 }));
-
-    // se produce meno di 7, ripeti il ciclo finché non raggiungiamo 7 giornate
     const full = [];
     let r = 0;
     while (full.length < 7) {
@@ -317,12 +309,12 @@ document.getElementById('btn-reset-calendar')?.addEventListener('click', async (
     const btn = document.getElementById('btn-reset-calendar');
     if (btn.dataset.confirm !== 'yes') {
         btn.dataset.confirm = 'yes';
-        btn.innerHTML = '<span class="material-icons-round">warning</span> Conferma reset';
+        btn.innerHTML = '<span class="material-symbols-outlined">warning</span> Conferma reset';
         btn.style.background = 'var(--red-soft)';
         btn.style.color      = 'var(--red)';
         setTimeout(() => {
             btn.dataset.confirm  = '';
-            btn.innerHTML = '<span class="material-icons-round">delete_sweep</span> Reset calendario';
+            btn.innerHTML = '<span class="material-symbols-outlined">delete_sweep</span> Reset calendario';
             btn.style.background = '';
             btn.style.color      = '';
         }, 3000);
