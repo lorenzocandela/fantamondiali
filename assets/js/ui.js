@@ -19,16 +19,12 @@ export function initTabPill() {
         pill.style.height = tr.height + 'px';
     }
 
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            const active = bar.querySelector('.tab-item.active');
-            if (active) {
-                pill.style.transition = 'none';
-                move(active);
-                requestAnimationFrame(() => { pill.style.transition = ''; });
-            }
-        });
-    });
+    const active = bar.querySelector('.tab-item.active');
+    if (active) {
+        pill.style.transition = 'none';
+        move(active);
+        requestAnimationFrame(() => { pill.style.transition = ''; });
+    }
 
     bar.addEventListener('click', e => {
         const btn = e.target.closest('.tab-item');

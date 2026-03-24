@@ -159,6 +159,23 @@ onAuthStateChanged(auth, async user => {
         authScreen.classList.add('hidden');
         mainApp.classList.remove('hidden');
 
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const bar    = document.querySelector('.tab-bar');
+                const pill   = bar?.querySelector('.tab-pill');
+                const active = bar?.querySelector('.tab-item.active');
+                if (pill && active) {
+                    const br = bar.getBoundingClientRect();
+                    const tr = active.getBoundingClientRect();
+                    pill.style.transition = 'none';
+                    pill.style.left   = (tr.left - br.left) + 'px';
+                    pill.style.width  = tr.width + 'px';
+                    pill.style.height = tr.height + 'px';
+                    requestAnimationFrame(() => { pill.style.transition = ''; });
+                }
+            });
+        });
+
         document.dispatchEvent(new CustomEvent('app:ready', { detail: window.__user }));
     } else {
         resetAppState();
