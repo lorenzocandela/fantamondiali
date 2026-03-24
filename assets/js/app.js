@@ -55,10 +55,19 @@ document.getElementById('btn-install-pwa-auth')?.addEventListener('click', handl
 
 initTabPill();
 
-document.getElementById('nav-listone')?.addEventListener('click',      () => showPage('listone'));
-document.getElementById('nav-formazione')?.addEventListener('click',   () => { showPage('formazione'); loadFormazione(); });
-document.getElementById('nav-calendario')?.addEventListener('click',   () => { showPage('calendario'); loadCalendario(); });
-document.getElementById('nav-competizioni')?.addEventListener('click', () => { showPage('competizioni'); loadCompetizioni(); });
+document.getElementById('nav-listone')?.addEventListener('click', () => showPage('listone'));
+document.getElementById('nav-formazione')?.addEventListener('click', () => { 
+    showPage('formazione'); 
+    loadFormazione(); 
+});
+document.getElementById('nav-calendario')?.addEventListener('click', () => { 
+    showPage('calendario'); 
+    loadCalendario();
+});
+document.getElementById('nav-competizioni')?.addEventListener('click', () => { 
+    showPage('competizione');
+    loadCompetizioni(); 
+});
 document.getElementById('nav-admin')?.addEventListener('click', () => {
     showPage('admin');
     loadAdminStats();

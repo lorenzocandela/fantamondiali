@@ -8,7 +8,7 @@
     <button class="tab-item" id="nav-calendario">
         <span class="material-icons-round">calendar_month</span>
     </button>
-    <button class="tab-item" id="nav-competizioni">
+    <button class="tab-item" id="nav-competizione">
         <span class="material-icons-round">emoji_events</span>
     </button>
     <button class="tab-item hidden" id="nav-admin">
