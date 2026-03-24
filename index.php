@@ -57,6 +57,13 @@
                         </button>
                     </div>
                 </div>
+
+                <div id="pwa-install-section-auth" style="display:none;margin-top:16px;text-align:center">
+                    <button id="btn-install-pwa-auth" class="btn-cta" style="background:transparent;border:1.5px solid rgba(255,255,255,0.2);color:inherit;font-size:14px;gap:6px">
+                        <span class="material-icons-round" style="font-size:18px">install_mobile</span>
+                        Download
+                    </button>
+                </div>
             </div>
         </div>
 

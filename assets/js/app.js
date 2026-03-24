@@ -1345,12 +1345,22 @@ window.addEventListener('appinstalled', () => {
 });
 
 function updatePwaBtnVisibility() {
-    const wrap = document.getElementById('pwa-install-section');
-    if (!wrap) return;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                      || window.navigator.standalone === true;
-    wrap.style.display = (isStandalone || !_pwaPrompt) ? 'none' : '';
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const visible = !isStandalone && !!_pwaPrompt;
+
+    const s1 = document.getElementById('pwa-install-section');
+    const s2 = document.getElementById('pwa-install-section-auth');
+    if (s1) s1.style.display = visible ? '' : 'none';
+    if (s2) s2.style.display = visible ? '' : 'none';
 }
+
+document.getElementById('btn-install-pwa-auth')?.addEventListener('click', async () => {
+    if (!_pwaPrompt) return;
+    _pwaPrompt.prompt();
+    const { outcome } = await _pwaPrompt.userChoice;
+    if (outcome === 'accepted') _pwaPrompt = null;
+    updatePwaBtnVisibility();
+});
 
 document.getElementById('btn-install-pwa')?.addEventListener('click', async () => {
     if (!_pwaPrompt) return;
