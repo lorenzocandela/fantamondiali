@@ -7,14 +7,16 @@ $APP_ID = $_ENV['ONESIGNAL_APP_ID'];
 $REST_API_KEY = $_ENV['ONESIGNAL_REST_API_KEY'];
 
 $data = json_decode(file_get_contents('php://input'), true);
-$title = $data['title'] ?? 'Test';
-$message = $data['message'] ?? 'Messaggio di prova';
+$title = (!empty($data['title'])) ? $data['title'] : 'FantaMondiali 2026';
+$message = (!empty($data['message'])) ? $data['message'] : 'Nuovo aggiornamento disponibile!';
+$content = array("en" => $message, "it" => $message);
+$headings = array("en" => $title, "it" => $title);
 
 $fields = array(
     'app_id' => $APP_ID,
-    'included_segments' => array('Total Subscribers'),
-    'contents' => array("en" => $message, "it" => $message),
-    'headings' => array("en" => $title, "it" => $title)
+    'included_segments' => array('Total Subscriptions'), 
+    'contents' => $content,
+    'headings' => $headings
 );
 
 $ch = curl_init();
