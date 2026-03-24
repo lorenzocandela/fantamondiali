@@ -72,15 +72,15 @@ function wireToggle(id, settingKey, onMsg, offMsg) {
     });
 }
 
-async function sendPushNotification(title, body) {
+async function sendPushNotification(title, message) {
     try {
-        await fetch('send_notification.php', {
+        await fetch('send_onesignal.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, body }),
+            body: JSON.stringify({ title, message }),
         });
     } catch (err) {
-        console.warn('Errore invio notifica:', err);
+        console.warn('Errore invio OneSignal:', err);
     }
 }
 
