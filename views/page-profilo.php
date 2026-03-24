@@ -1,6 +1,6 @@
 <section id="page-profilo" class="page">
 
-    <!-- hero card — generata da ui.js/renderProfiloHero -->
+    <!-- hero — generata da renderProfiloHero() -->
     <div class="profilo-avatar-section" style="display:none">
         <div class="profilo-avatar-wrap" id="trigger-avatar-upload">
             <img id="profilo-avatar-img" class="profilo-avatar hidden" src="" alt="Avatar">
@@ -14,29 +14,18 @@
         <div id="profilo-joined-status" class="joined-badge">Non iscritto</div>
     </div>
 
-    <!-- stat crediti -->
-    <div class="profilo-stats-row">
-        <div class="profilo-stat-box">
-            <div class="profilo-stat-val" id="profilo-stat-players">0</div>
-            <div class="profilo-stat-lbl">Giocatori</div>
-        </div>
-        <div class="profilo-stat-box">
-            <div class="profilo-stat-val" id="profilo-stat-spent">0</div>
-            <div class="profilo-stat-lbl">Spesi</div>
-        </div>
-        <div class="profilo-stat-box highlight">
-            <div class="profilo-stat-val" id="profilo-stat-credits">500</div>
-            <div class="profilo-stat-lbl">Crediti</div>
-        </div>
-    </div>
-
-    <!-- rosa -->
-    <div class="profilo-section">
-        <div class="profilo-section-header">
-            <div class="profilo-section-title">La mia Rosa</div>
-            <span class="profilo-section-count" id="profilo-rosa-count">0 giocatori</span>
-        </div>
-        <div id="profilo-squad-list" class="profilo-squad-list"></div>
+    <!-- pulsante rosa -->
+    <div style="padding: 0 20px 16px;">
+        <button class="profilo-squad-btn" id="btn-open-squad">
+            <div class="profilo-squad-btn-left">
+                <span class="material-icons-round">shield</span>
+                <div>
+                    <div class="profilo-squad-btn-label">La mia Rosa</div>
+                    <div class="profilo-squad-btn-meta" id="profilo-squad-meta">0 giocatori · 500 crediti</div>
+                </div>
+            </div>
+            <span class="material-icons-round">chevron_right</span>
+        </button>
     </div>
 
     <!-- impostazioni squadra -->
@@ -66,9 +55,7 @@
     <!-- competizione -->
     <div class="profilo-section">
         <div class="profilo-section-title">Competizione</div>
-        <p class="profilo-section-desc">
-            Iscriviti per apparire nella classifica e competere contro gli altri allenatori.
-        </p>
+        <p class="profilo-section-desc">Iscriviti per apparire nella classifica e competere contro gli altri allenatori.</p>
         <button id="btn-join-comp" class="btn-join">
             Iscriviti alla competizione
         </button>
@@ -91,5 +78,26 @@
             Esci dall'account
         </button>
     </div>
-
 </section>
+
+<!-- bottom sheet rosa -->
+<div id="squad-sheet-overlay" class="hidden">
+    <div id="squad-sheet">
+        <div class="modal-handle" style="margin:10px auto 0"></div>
+        <div class="squad-sheet-header">
+            <div class="squad-sheet-title">La mia Rosa</div>
+            <button id="btn-close-squad-sheet" class="fpicker-close">
+                <span class="material-icons-round">close</span>
+            </button>
+        </div>
+        <div class="squad-sheet-stats">
+            <div class="stat-box"><div class="stat-val" id="sheet-stat-count">0</div><div class="stat-lbl">Giocatori</div></div>
+            <div class="stat-box"><div class="stat-val" id="sheet-stat-spent">0</div><div class="stat-lbl">Spesi</div></div>
+            <div class="stat-box" style="background:var(--blue-soft);border-color:rgba(0,102,204,.12)">
+                <div class="stat-val" style="color:var(--blue)" id="sheet-stat-credits">500</div>
+                <div class="stat-lbl">Crediti</div>
+            </div>
+        </div>
+        <div id="squad-sheet-list" class="squad-sheet-list"></div>
+    </div>
+</div>

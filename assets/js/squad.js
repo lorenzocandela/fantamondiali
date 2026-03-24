@@ -18,6 +18,8 @@ export async function loadSquadra() {
     const spent   = 500 - credits;
 
     bumpCredits(credits);
+    const meta = document.getElementById('profilo-squad-meta');
+    if (meta) meta.textContent = `${(window.__myTeam??[]).length} giocatori · ${credits} crediti`;
     document.getElementById('stat-count').textContent      = window.__myTeam.length;
     document.getElementById('stat-spent').textContent      = spent;
     document.getElementById('squad-team-name') && (document.getElementById('squad-team-name').textContent = data.team_name ?? '');

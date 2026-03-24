@@ -159,8 +159,9 @@ export async function loadProfilo() {
 
     window.__user = { ...window.__user, ...data };
     renderProfiloHero();
-    renderProfiloStats(data);
-    renderProfiloSquad(data.players ?? []);
+    // aggiorna meta bottone rosa
+    const meta = document.getElementById('profilo-squad-meta');
+    if (meta) meta.textContent = `${(data.players??[]).length} giocatori · ${data.credits??500} crediti`;
 }
 
 function renderProfiloStats(data) {

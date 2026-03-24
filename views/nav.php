@@ -11,9 +11,6 @@
     <button class="tab-item" id="nav-competizioni">
         <span class="material-icons-round">emoji_events</span>
     </button>
-    <button class="tab-item" id="nav-profilo">
-        <span class="material-icons-round">person</span>
-    </button>
     <button class="tab-item hidden" id="nav-admin">
         <span class="material-icons-round">admin_panel_settings</span>
     </button>
