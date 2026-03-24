@@ -76,9 +76,12 @@ async function sendPushNotification(title, message) {
     try {
         await fetch('send_onesignal.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ title, message }),
         });
+        console.log("Richiesta inviata a send_onesignal.php");
     } catch (err) {
         console.warn('Errore invio OneSignal:', err);
     }
