@@ -91,6 +91,7 @@ async function handleSubmit() {
                 email:      cred.user.email,
                 team_name:  teamName,
                 credits:    500,
+                players:    [],
                 created_at: serverTimestamp()
             });
         } else {
@@ -103,21 +104,64 @@ async function handleSubmit() {
     }
 }
 
+function resetAppState() {
+    window.__user              = null;
+    window.__myTeam            = [];
+    window.__settings          = {};
+    window.__competitionActive = false;
+
+    document.getElementById('nav-admin')?.classList.add('hidden');
+
+    const img      = document.getElementById('topbar-avatar-img');
+    const initials = document.getElementById('topbar-avatar-initials');
+    if (img)      { img.src = ''; img.classList.add('hidden'); }
+    if (initials) { initials.textContent = '?'; initials.classList.remove('hidden'); }
+
+    const creditsEl = document.getElementById('credits-val');
+    if (creditsEl) creditsEl.textContent = '500';
+
+    document.getElementById('profilo-hero-card')?.remove();
+    const oldSection = document.querySelector('.profilo-avatar-section');
+    if (oldSection) oldSection.style.display = '';
+}
+
+function applyAvatarToTopbar(data) {
+    const img      = document.getElementById('topbar-avatar-img');
+    const initials = document.getElementById('topbar-avatar-initials');
+    if (!img || !initials) return;
+
+    if (data.avatar) {
+        img.src = data.avatar;
+        img.classList.remove('hidden');
+        initials.classList.add('hidden');
+    } else {
+        img.classList.add('hidden');
+        initials.classList.remove('hidden');
+        const raw = data.team_name ?? data.email ?? '?';
+        initials.textContent = raw.split(/[\s@]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+}
+
 onAuthStateChanged(auth, async user => {
     if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        const data = snap.exists() ? snap.data() : { team_name: user.email, credits: 500 };
+        resetAppState();
 
-        window.__user = { uid: user.uid, ...data };
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        const data = snap.exists() ? snap.data() : { team_name: user.email, credits: 500, players: [] };
+
+        window.__user   = { uid: user.uid, email: user.email, ...data };
+        window.__myTeam = data.players ?? [];
 
         document.getElementById('credits-val').textContent = data.credits ?? 500;
+
+        applyAvatarToTopbar(data);
 
         authScreen.classList.add('hidden');
         mainApp.classList.remove('hidden');
 
         document.dispatchEvent(new CustomEvent('app:ready', { detail: window.__user }));
     } else {
-        window.__user = null;
+        resetAppState();
         mainApp.classList.add('hidden');
         authScreen.classList.remove('hidden');
     }
@@ -126,12 +170,7 @@ onAuthStateChanged(auth, async user => {
 document.getElementById('btn-logout')?.addEventListener('click', () => signOut(auth));
 
 document.getElementById('btn-profile-avatar')?.addEventListener('click', () => {
-    if (typeof showPage === 'function') showPage('profilo');
-    else document.dispatchEvent(new CustomEvent('goto:profilo'));
-});
-
-document.addEventListener('goto:profilo', () => {
-    if (typeof showPage === 'function') showPage('profilo');
+    document.dispatchEvent(new CustomEvent('goto:profilo'));
 });
 
 function mapAuthError(code) {
@@ -140,6 +179,9 @@ function mapAuthError(code) {
         'auth/email-already-in-use': 'Email gia registrata.',
         'auth/weak-password':        'Password minimo 6 caratteri.',
         'auth/invalid-email':        'Formato email non valido.',
+        'auth/user-not-found':       'Nessun account con questa email.',
+        'auth/wrong-password':       'Password non corretta.',
+        'auth/too-many-requests':    'Troppi tentativi, riprova tra qualche minuto.',
     };
     return map[code] ?? 'Errore imprevisto. Riprova.';
 }
