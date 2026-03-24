@@ -417,3 +417,109 @@
     .modal-overlay { align-items: center; padding: 24px; }
     .modal-sheet { border-radius: var(--r-2xl); box-shadow: var(--sh-xl); }
 }
+
+/* price wheel picker */
+
+.price-picker {
+    margin: 0 20px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.price-picker-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-2);
+}
+
+.price-picker-wheel-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 120px;
+    height: 200px;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.price-picker-wheel-wrap:active { cursor: grabbing; }
+
+.price-picker-wheel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    will-change: transform;
+}
+
+.price-wheel-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    will-change: transform, opacity;
+    transition: none;
+}
+
+.price-picker-highlight {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 40px;
+    transform: translateY(-50%);
+    background: var(--surface);
+    border-top: 1.5px solid var(--border-md);
+    border-bottom: 1.5px solid var(--border-md);
+    border-radius: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.price-picker-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 70px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.price-picker-fade.top {
+    top: 0;
+    background: linear-gradient(to bottom, var(--surface-2) 10%, transparent 100%);
+}
+
+.price-picker-fade.bottom {
+    bottom: 0;
+    background: linear-gradient(to top, var(--surface-2) 10%, transparent 100%);
+}
+
+.price-picker-val {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--blue);
+    background: var(--blue-soft);
+    padding: 5px 14px;
+    border-radius: var(--r-pill);
+    letter-spacing: -0.3px;
+}
+
+.price-picker-val .material-icons-round { font-size: 14px; }

@@ -226,6 +226,162 @@ export async function loadListone() {
 
 const modalOverlay = document.getElementById('modal-overlay');
 
+// price wheel picker
+
+const ITEM_H = 40;
+const VISIBLE_ITEMS = 5;
+let _wheelItems = [];
+let _wheelY = 0;
+let _wheelTarget = 0;
+let _wheelDragging = false;
+let _wheelStartY = 0;
+let _wheelStartScroll = 0;
+let _wheelVelocity = 0;
+let _wheelLastY = 0;
+let _wheelLastTime = 0;
+let _wheelAnim = null;
+let _wheelSelectedPrice = 1;
+let _wheelMax = 500;
+
+function initWheel(defaultPrice, maxCredits) {
+    const wheel = document.getElementById('price-wheel');
+    const display = document.getElementById('price-picker-display');
+    _wheelMax = Math.max(1, maxCredits);
+    _wheelItems = [];
+    let html = '';
+    for (let i = 1; i <= _wheelMax; i++) {
+        _wheelItems.push(i);
+        html += `<div class="price-wheel-item" style="height:${ITEM_H}px">${i}</div>`;
+    }
+    wheel.innerHTML = html;
+
+    const startIdx = Math.max(0, Math.min(defaultPrice - 1, _wheelMax - 1));
+    _wheelY = -startIdx * ITEM_H;
+    _wheelTarget = _wheelY;
+    _wheelSelectedPrice = _wheelItems[startIdx];
+    display.textContent = _wheelSelectedPrice;
+    applyWheelTransform();
+    updateWheelItemStyles();
+}
+
+function applyWheelTransform() {
+    const wheel = document.getElementById('price-wheel');
+    const offset = (VISIBLE_ITEMS * ITEM_H) / 2 - ITEM_H / 2;
+    wheel.style.transform = `translateY(${_wheelY + offset}px)`;
+}
+
+function updateWheelItemStyles() {
+    const wheel = document.getElementById('price-wheel');
+    const items = wheel.children;
+    const offset = (VISIBLE_ITEMS * ITEM_H) / 2 - ITEM_H / 2;
+    const centerY = -_wheelY;
+    for (let i = 0; i < items.length; i++) {
+        const itemCenter = i * ITEM_H;
+        const dist = Math.abs(itemCenter - centerY);
+        const norm = Math.min(dist / (ITEM_H * 2.5), 1);
+        const scale = 1 - norm * 0.3;
+        const opacity = 1 - norm * 0.65;
+        items[i].style.transform = `scale(${scale})`;
+        items[i].style.opacity = opacity;
+    }
+}
+
+function snapWheel() {
+    const idx = Math.round(-_wheelTarget / ITEM_H);
+    const clamped = Math.max(0, Math.min(idx, _wheelItems.length - 1));
+    _wheelTarget = -clamped * ITEM_H;
+    _wheelSelectedPrice = _wheelItems[clamped];
+    document.getElementById('price-picker-display').textContent = _wheelSelectedPrice;
+    updateBtnLabel();
+    animateWheel();
+}
+
+function animateWheel() {
+    cancelAnimationFrame(_wheelAnim);
+    (function tick() {
+        const diff = _wheelTarget - _wheelY;
+        if (Math.abs(diff) < 0.3) {
+            _wheelY = _wheelTarget;
+            applyWheelTransform();
+            updateWheelItemStyles();
+            return;
+        }
+        _wheelY += diff * 0.18;
+        applyWheelTransform();
+        updateWheelItemStyles();
+        _wheelAnim = requestAnimationFrame(tick);
+    })();
+}
+
+function updateBtnLabel() {
+    const btnLbl = document.getElementById('modal-btn-label');
+    if (btnLbl && !document.getElementById('modal-btn-add').classList.contains('owned') &&
+        !document.getElementById('modal-btn-add').classList.contains('locked')) {
+        btnLbl.textContent = `Acquista · ${_wheelSelectedPrice} cr.`;
+    }
+}
+
+const priceWheelEl = document.getElementById('price-wheel');
+const pickerWrap = document.querySelector('.price-picker-wheel-wrap');
+
+if (pickerWrap) {
+    const getY = e => e.touches ? e.touches[0].clientY : e.clientY;
+
+    pickerWrap.addEventListener('touchstart', e => {
+        _wheelDragging = true;
+        _wheelStartY = getY(e);
+        _wheelStartScroll = _wheelY;
+        _wheelVelocity = 0;
+        _wheelLastY = _wheelStartY;
+        _wheelLastTime = Date.now();
+        cancelAnimationFrame(_wheelAnim);
+    }, { passive: true });
+
+    pickerWrap.addEventListener('mousedown', e => {
+        _wheelDragging = true;
+        _wheelStartY = getY(e);
+        _wheelStartScroll = _wheelY;
+        _wheelVelocity = 0;
+        _wheelLastY = _wheelStartY;
+        _wheelLastTime = Date.now();
+        cancelAnimationFrame(_wheelAnim);
+    });
+
+    const onMove = e => {
+        if (!_wheelDragging) return;
+        const y = getY(e);
+        const delta = y - _wheelStartY;
+        const now = Date.now();
+        const dt = now - _wheelLastTime;
+        if (dt > 0) _wheelVelocity = (y - _wheelLastY) / dt;
+        _wheelLastY = y;
+        _wheelLastTime = now;
+        _wheelY = _wheelStartScroll + delta;
+        const maxY = 0;
+        const minY = -(_wheelItems.length - 1) * ITEM_H;
+        _wheelY = Math.max(minY - ITEM_H, Math.min(maxY + ITEM_H, _wheelY));
+        applyWheelTransform();
+        updateWheelItemStyles();
+    };
+
+    pickerWrap.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('mousemove', onMove);
+
+    const onEnd = () => {
+        if (!_wheelDragging) return;
+        _wheelDragging = false;
+        const momentum = _wheelVelocity * 120;
+        _wheelTarget = _wheelY + momentum;
+        const maxY = 0;
+        const minY = -(_wheelItems.length - 1) * ITEM_H;
+        _wheelTarget = Math.max(minY, Math.min(maxY, _wheelTarget));
+        snapWheel();
+    };
+
+    pickerWrap.addEventListener('touchend', onEnd);
+    window.addEventListener('mouseup', onEnd);
+}
+
 export function openModal(player) {
     if (!player) return;
     const owned  = isOwned(player.id);
@@ -239,28 +395,34 @@ export function openModal(player) {
     document.getElementById('modal-assists').textContent = player.assists ?? 0;
     document.getElementById('modal-rating').textContent = player.rating ? Number(player.rating).toFixed(1) : '-';
 
+    const pricePicker = document.getElementById('modal-price-picker');
     const btnAdd = document.getElementById('modal-btn-add');
     const btnLbl = document.getElementById('modal-btn-label');
     const btnIco = btnAdd.querySelector('.material-icons-round');
 
     if (locked) {
+        pricePicker.classList.add('hidden');
         btnAdd.className   = 'modal-btn-add locked';
         btnLbl.textContent = 'Mercato non ancora aperto';
         btnIco.textContent = 'lock';
         btnAdd.onclick     = () => toast('La competizione non e ancora attiva', 'error');
     } else if (owned) {
+        pricePicker.classList.add('hidden');
         btnAdd.className   = 'modal-btn-add owned';
         btnLbl.textContent = 'Gia in rosa';
         btnIco.textContent = 'check';
         btnAdd.onclick     = null;
     } else {
+        const credits = window.__user?.credits ?? 500;
+        pricePicker.classList.remove('hidden');
+        initWheel(player.price, credits);
         btnAdd.className   = 'modal-btn-add';
-        btnLbl.textContent = `Aggiungi · ${player.price} cr.`;
+        btnLbl.textContent = `Acquista · ${_wheelSelectedPrice} cr.`;
         btnIco.textContent = 'add_circle';
         btnAdd.onclick     = () => {
             const rect = btnAdd.getBoundingClientRect();
             spawnConfetti(rect.left + rect.width / 2, rect.top, 22);
-            window.__addPlayer(player);
+            window.__addPlayer(player, _wheelSelectedPrice);
         };
     }
 

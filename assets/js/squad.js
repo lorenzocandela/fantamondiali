@@ -68,30 +68,31 @@ function renderSquad() {
     });
 }
 
-export async function addPlayer(player) {
+export async function addPlayer(player, customPrice) {
     if (!player || !window.__user?.uid) return;
     if (!window.__competitionActive) { toast('La competizione non e ancora attiva', 'error'); return; }
     if (isOwned(player.id))          { toast('Gia in rosa', 'error'); return; }
 
+    const price   = customPrice ?? player.price;
     const credits = window.__user.credits ?? 0;
-    if (credits < player.price)          { toast(`Crediti insufficienti (servono ${player.price})`, 'error'); return; }
-    if ((window.__myTeam ?? []).length >= 25) { toast('Rosa completa (max 29 giocatori)', 'error'); return; }
+    if (credits < price)                     { toast(`Crediti insufficienti (servono ${price})`, 'error'); return; }
+    if ((window.__myTeam ?? []).length >= 25) { toast('Rosa completa (max 25 giocatori)', 'error'); return; }
 
     const playerData = {
         id: player.id, name: player.name, photo: player.photo,
         role: player.role, team: player.team,
-        nationality: player.nationality, price: player.price
+        nationality: player.nationality, price: price
     };
 
     try {
         await updateDoc(doc(db, 'users', window.__user.uid), {
             players: arrayUnion(playerData),
-            credits: credits - player.price
+            credits: credits - price
         });
         await loadSquadra();
         renderPlayers(getFiltered(), displayCount);
         closeModal();
-        toast(`${player.name} aggiunto alla rosa`);
+        toast(`${player.name} aggiunto per ${price} cr.`);
     } catch { toast('Errore di rete', 'error'); }
 }
 

@@ -8,7 +8,7 @@ import { loadCalendario, renderMatchdayAdmin } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
 import { loadFormazione, loadAdminModules } from './formation.js';
 
-window.__addPlayer = addPlayer;
+window.__addPlayer = (player, customPrice) => addPlayer(player, customPrice);
 window.__myTeam    = [];
 
 // pwa
@@ -64,7 +64,7 @@ document.getElementById('nav-calendario')?.addEventListener('click', () => {
     showPage('calendario'); 
     loadCalendario();
 });
-document.getElementById('nav-competizione')?.addEventListener('click', () => { 
+document.getElementById('nav-competizioni')?.addEventListener('click', () => { 
     showPage('competizione');
     loadCompetizioni(); 
 });
