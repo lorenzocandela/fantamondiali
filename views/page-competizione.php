@@ -1,4 +1,4 @@
-<section id="page-competizioni" class="page">
+<section id="page-competizione" class="page">
     <div class="content-header">
         <div>
             <h2 class="page-title">Competizioni</h2>
