@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=JetBrains+Mono:wght@400;500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 :root {
     --bg:         #f7f7f8;
@@ -39,7 +39,7 @@
     --role-att: #e8392a;
 
     --mono: 'JetBrains Mono', monospace;
-    --sans: 'Epilogue', sans-serif;
+    --sans: "DM Sans", sans-serif;
 
     --r-xs:   6px;
     --r-sm:   10px;
