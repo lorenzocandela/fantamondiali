@@ -92,7 +92,9 @@ async function openRound(round) {
     const isLive   = now >= start && now <= end;
     const isFuture = now < start;
     const isPast   = now > end;
-    const isLocked = isLive || isPast;
+    const currentMd = getCurrentMatchday();
+    const isEditableRound = md.round === currentMd.round;
+    const isLocked = isPast || !isEditableRound;
 
     // aggiorna subtitle
     document.getElementById('form-subtitle').textContent = md.label;
@@ -142,17 +144,19 @@ function renderFormazione(md, isLocked, isFuture) {
             <span class="material-icons-round">arrow_back</span>
         </button>`;
 
+    const lockMsg = isPast
+        ? 'Giornata conclusa — solo visualizzazione'
+        : !isEditableRound && isFuture
+            ? `Disponibile dal ${formatDate(md.start)} — modifica solo la giornata corrente`
+            : 'Giornata in corso — formazione bloccata';
+
     const lockBanner = isLocked ? `
         <div class="form-lock-badge" style="margin:0 20px 14px">
-            <span class="material-icons-round">lock</span>
-            ${md.round < getCurrentMatchday().round ? 'Giornata conclusa' : 'Giornata in corso — formazione bloccata'}
+            <span class="material-icons-round">${isPast ? 'history' : 'lock'}</span>
+            ${lockMsg}
         </div>` : '';
 
-    const futureBanner = isFuture ? `
-        <div class="form-warning form-warning-info" style="margin:0 20px 14px">
-            <span class="material-icons-round">schedule</span>
-            Inizia il ${formatDate(md.start)} — puoi già impostare la formazione
-        </div>` : '';
+    const futureBanner = '';
 
     const warningsHtml = warns.length && !isLocked ? `
         <div class="form-warnings">

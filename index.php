@@ -398,6 +398,10 @@
                             <span class="material-icons-round">save</span>
                             Genera e salva
                         </button>
+                        <button class="admin-action-btn danger" id="btn-reset-calendar" style="flex:1">
+                            <span class="material-icons-round">delete_sweep</span>
+                            Reset calendario
+                        </button>
                     </div>
                 </div>
 

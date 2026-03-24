@@ -239,9 +239,32 @@ document.querySelectorAll('.cal-seg-btn').forEach(btn => {
     });
 });
 
+
 // admin — genera calendario
+// il round-robin produce n-1 giornate (con n squadre pari).
+// le mappiamo sulle 7 giornate fanta reali con ciclo se servono meno di 7.
+
+const ROUND_LABELS = ['GJ1','GJ2','GJ3','Ottavi','Quarti','Semifinali','Finale'];
 
 let previewSchedule = [];
+
+function buildFullSchedule(teams) {
+    // genera round-robin base
+    const base = generateRoundRobin(teams);  // produce n-1 rounds
+
+    // se il round-robin produce già 7 o più, usa solo i primi 7
+    if (base.length >= 7) return base.slice(0, 7).map((rd, i) => ({ ...rd, round: i + 1 }));
+
+    // se produce meno di 7, ripeti il ciclo finché non raggiungiamo 7 giornate
+    const full = [];
+    let r = 0;
+    while (full.length < 7) {
+        const src = base[r % base.length];
+        full.push({ round: full.length + 1, matches: src.matches });
+        r++;
+    }
+    return full;
+}
 
 document.getElementById('btn-preview-calendar')?.addEventListener('click', async () => {
     const snap  = await getDocs(collection(db, 'users'));
@@ -252,12 +275,12 @@ document.getElementById('btn-preview-calendar')?.addEventListener('click', async
     });
     if (teams.length < 2) { toast('Servono almeno 2 squadre iscritte', 'error'); return; }
 
-    previewSchedule = generateRoundRobin(teams);
+    previewSchedule = buildFullSchedule(teams);
     const preview   = document.getElementById('admin-cal-preview');
-    const roundNames = ['GJ1','GJ2','GJ3','Ottavi','Quarti','Semifinali','Finale'];
+
     preview.innerHTML = previewSchedule.map(rd => `
         <div class="admin-cal-round">
-            <div class="admin-cal-round-label">G${rd.round} — ${roundNames[rd.round - 1] ?? ''}</div>
+            <div class="admin-cal-round-label">G${rd.round} — ${ROUND_LABELS[rd.round - 1] ?? ''}</div>
             ${rd.matches.map(m => `
                 <div class="admin-cal-match">
                     <span>${m.home_name}</span>
@@ -265,19 +288,55 @@ document.getElementById('btn-preview-calendar')?.addEventListener('click', async
                     <span>${m.away_name}</span>
                 </div>`).join('')}
         </div>`).join('');
+
     preview.classList.remove('hidden');
-    const saveBtn = document.getElementById('btn-generate-calendar');
-    saveBtn.disabled = false;
+    document.getElementById('btn-generate-calendar').disabled = false;
     toast(`${teams.length} squadre · ${previewSchedule.length} giornate`);
 });
 
 document.getElementById('btn-generate-calendar')?.addEventListener('click', async () => {
     if (!previewSchedule.length) return;
+    const btn = document.getElementById('btn-generate-calendar');
+    btn.disabled = true;
     try {
         await setDoc(doc(db, 'settings', 'calendar'), {
-            schedule: previewSchedule, results: {}, generated_at: new Date().toISOString()
+            schedule:     previewSchedule,
+            results:      {},
+            generated_at: new Date().toISOString(),
         });
-        toast('Calendario salvato');
+        toast('Calendario salvato ✓');
+        document.getElementById('admin-cal-preview').classList.add('hidden');
+        previewSchedule = [];
+    } catch (err) {
+        toast('Errore salvataggio: ' + err.message, 'error');
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('btn-reset-calendar')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-reset-calendar');
+    if (btn.dataset.confirm !== 'yes') {
+        btn.dataset.confirm = 'yes';
+        btn.innerHTML = '<span class="material-icons-round">warning</span> Conferma reset';
+        btn.style.background = 'var(--red-soft)';
+        btn.style.color      = 'var(--red)';
+        setTimeout(() => {
+            btn.dataset.confirm  = '';
+            btn.innerHTML = '<span class="material-icons-round">delete_sweep</span> Reset calendario';
+            btn.style.background = '';
+            btn.style.color      = '';
+        }, 3000);
+        return;
+    }
+    btn.disabled = true;
+    try {
+        await setDoc(doc(db, 'settings', 'calendar'), {
+            schedule: [], results: {}, generated_at: null,
+        });
+        previewSchedule = [];
+        document.getElementById('admin-cal-preview')?.classList.add('hidden');
         document.getElementById('btn-generate-calendar').disabled = true;
-    } catch (err) { toast('Errore salvataggio: ' + err.message, 'error'); }
+        toast('Calendario resettato');
+    } catch (err) { toast('Errore reset: ' + err.message, 'error'); }
+    finally { btn.disabled = false; }
 });
