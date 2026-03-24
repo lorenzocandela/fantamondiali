@@ -58,7 +58,28 @@ function wireToggle(id, settingKey, onMsg, offMsg) {
         if (settingKey === 'market_open') window.__competitionActive = newState;
         await saveSetting(settingKey, newState);
         toast(newState ? onMsg : offMsg);
+        
+        if (newState) {
+            const messages = {
+                'market_open': { t: 'Mercato aperto!', m: 'Corri ad acquistare i tuoi giocatori' },
+                'competition_active': { t: 'Competizione attivata!', m: 'La sfida ufficiale è iniziata' },
+                'registrations_open': { t: 'Registrazioni aperte!', m: 'Invita i tuoi amici a iscriversi' }
+            };
+            if (messages[settingKey]) {
+                sendPushNotification(messages[settingKey].t, messages[settingKey].m);
+            }
+        }
     });
+}
+
+async function sendPushNotification(title, message) {
+    try {
+        await fetch('send_onesignal.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, message }),
+        });
+    } catch (err) { console.error('Errore OneSignal:', err); }
 }
 
 wireToggle('toggle-market',        'market_open',        'Mercato aperto',        'Mercato chiuso');

@@ -14,10 +14,6 @@ window.__myTeam    = [];
 
 // pwa
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-
 let _pwaPrompt = null;
 
 window.addEventListener('beforeinstallprompt', e => {

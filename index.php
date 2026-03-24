@@ -62,6 +62,14 @@
 
 <script type="module" src="assets/js/auth.js"></script>
 <script type="module" src="assets/js/app.js"></script>
-
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({
+            appId: "74d236f6-3c61-476d-a2ce-f71beed3c045",
+        });
+    });
+</script>
 </body>
 </html>
