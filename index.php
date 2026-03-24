@@ -11,12 +11,13 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" href="logo_fm26.png">
         <link rel="stylesheet" href="assets/css/base.css">
         <link rel="stylesheet" href="assets/css/layout.css">
         <link rel="stylesheet" href="assets/css/components.css">
         <link rel="stylesheet" href="assets/css/pages.css">
         <link rel="stylesheet" href="assets/css/animations.css">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+        <link rel="stylesheet" href="assets/css/formation.css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     </head>
     <body>
@@ -148,6 +149,16 @@
                     </div>
                 </div>
                 <div id="squad-list" class="squad-list"></div>
+            </section>
+
+            <section id="page-formazione" class="page">
+                <div class="content-header">
+                    <div>
+                        <h2 class="page-title">Formazione</h2>
+                        <p class="page-subtitle" id="form-subtitle">schiera i tuoi 11</p>
+                    </div>
+                </div>
+                <div id="formation-content"></div>
             </section>
 
             <!-- PAGE: COMPETIZIONI -->
@@ -416,6 +427,22 @@
                 </div>
 
                 <div class="admin-section">
+                    <div class="admin-section-title">Moduli di gioco</div>
+                    <div class="admin-control-info" style="margin-bottom:12px">
+                        <div class="admin-control-label">Moduli disponibili</div>
+                        <div class="admin-control-desc">I moduli custom si aggiungono a quelli predefiniti. Formato: DIF-CEN-ATT (es. 4-3-3) o DIF-MED-TRQ-ATT (es. 4-2-3-1).</div>
+                    </div>
+                    <div id="admin-modules-list" class="admin-modules-list"></div>
+                    <div class="admin-module-input-row" style="margin-top:10px">
+                        <input id="admin-module-input" class="field-in" type="text" placeholder="es. 4-3-3" style="font-family:var(--mono)">
+                        <button class="admin-action-btn" id="btn-add-module" style="flex-shrink:0;white-space:nowrap">
+                            <span class="material-icons-round">add</span>
+                            Aggiungi
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
                     <div class="admin-section-title">Cache API</div>
                     <div class="admin-control-info" style="margin-bottom:12px">
                         <div class="admin-control-label">Listone giocatori</div>
@@ -437,6 +464,9 @@
             <nav class="tab-bar">
                 <button class="tab-item active" id="nav-listone">
                     <span class="material-icons-round">format_list_bulleted</span>
+                </button>
+                <button class="tab-item" id="nav-formazione">
+                    <span class="material-icons-round">view_list</span>
                 </button>
                 <button class="tab-item" id="nav-squadra">
                     <span class="material-icons-round">shield</span>

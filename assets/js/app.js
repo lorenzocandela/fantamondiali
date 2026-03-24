@@ -6,8 +6,8 @@ import { loadListone, renderPlayers, getFiltered, displayCount } from './players
 import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
 import { loadCalendario, renderMatchdayAdmin } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
+import { loadFormazione, loadAdminModules } from './formation.js';
 
-// esponi addPlayer globalmente (usato da players.js)
 window.__addPlayer = addPlayer;
 window.__myTeam    = [];
 
@@ -57,6 +57,7 @@ initTabPill();
 
 document.getElementById('nav-listone')?.addEventListener('click',      () => showPage('listone'));
 document.getElementById('nav-squadra')?.addEventListener('click',      () => { showPage('squadra'); loadSquadra(); });
+document.getElementById('nav-formazione')?.addEventListener('click',   () => { showPage('formazione'); loadFormazione(); });
 document.getElementById('nav-calendario')?.addEventListener('click',   () => { showPage('calendario'); loadCalendario(); });
 document.getElementById('nav-competizioni')?.addEventListener('click', () => { showPage('competizioni'); loadCompetizioni(); });
 document.getElementById('nav-admin')?.addEventListener('click', () => {
@@ -64,15 +65,14 @@ document.getElementById('nav-admin')?.addEventListener('click', () => {
     loadAdminStats();
     syncAdminUI();
     renderMatchdayAdmin();
+    loadAdminModules();
 });
 
-// avatar → profilo (nav-profilo non esiste nel tab bar)
 document.getElementById('btn-profile-avatar')?.addEventListener('click', () => {
     showPage('profilo');
     loadProfilo();
 });
 
-// goto:profilo event da auth.js
 document.addEventListener('goto:profilo', () => {
     showPage('profilo');
     loadProfilo();
