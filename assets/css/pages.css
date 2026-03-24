@@ -407,7 +407,6 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 60% at 90% 50%, var(--blue-soft) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -1004,6 +1003,126 @@
 
 .admin-badge { background: var(--blue-mid); color: var(--blue); padding: 2px 8px; border-radius: var(--r-pill); font-size: 10.5px; font-weight: 700; font-family: var(--mono); }
 .joined-mini { background: var(--green-soft); color: var(--green); padding: 2px 8px; border-radius: var(--r-pill); font-size: 10.5px; font-weight: 700; font-family: var(--mono); }
+
+.admin-user-row {
+    position: relative;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-user-menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    width: 30px;
+    height: 30px;
+    border-radius: var(--r-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.13s, color 0.13s;
+    margin-left: auto;
+}
+
+.admin-user-menu-btn:hover { background: var(--surface-3); color: var(--text-2); }
+.admin-user-menu-btn .material-icons-round { font-size: 18px; }
+
+.admin-user-actions {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
+}
+
+.admin-user-actions.hidden { display: none; }
+
+.admin-user-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.13s var(--ease);
+}
+
+.admin-user-action-btn.reset {
+    background: var(--blue-mid);
+    color: var(--blue);
+}
+
+.admin-user-action-btn.reset:hover { background: var(--blue); color: #fff; }
+
+.admin-user-action-btn.delete {
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+.admin-user-action-btn.delete:hover { background: var(--red); color: #fff; }
+.admin-user-action-btn .material-icons-round { font-size: 14px; }
+
+.admin-user-confirm {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
+    flex-wrap: wrap;
+}
+
+.admin-user-confirm.hidden { display: none; }
+
+.admin-user-confirm-text {
+    font-size: 12px;
+    color: var(--text-2);
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
+}
+
+.admin-user-confirm-ok {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: filter 0.13s;
+    flex-shrink: 0;
+}
+
+.admin-user-confirm-ok:hover { filter: brightness(1.1); }
+.admin-user-confirm-ok:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.admin-user-confirm-cancel {
+    background: var(--surface-3);
+    color: var(--text-2);
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: background 0.13s;
+    flex-shrink: 0;
+}
+
+.admin-user-confirm-cancel:hover { background: var(--surface-4); color: var(--text); }
 
 .nation-select {
     background: var(--surface);

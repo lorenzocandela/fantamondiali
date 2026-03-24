@@ -1,5 +1,5 @@
 import { db } from './firebase-init.js';
-import { doc, getDoc, setDoc, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
+import { doc, getDoc, setDoc, getDocs, deleteDoc, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast } from './utils.js';
 import { buildSubtitle, renderPlayers, getFiltered, displayCount } from './players.js';
 import { renderMatchdayAdmin, generateRoundRobin } from './calendar.js';
@@ -107,26 +107,120 @@ export async function loadAdminStats() {
     } catch (err) { console.error('errore stats admin:', err); }
 }
 
+let _usersCache = [];
+
 function renderAdminUsers(snap) {
     const list = document.getElementById('admin-users-list');
     if (!list) return;
-    const rows = [];
-    snap.forEach(d => rows.push({ uid: d.id, ...d.data() }));
-    if (!rows.length) { list.innerHTML = `<div class="empty-state"><p>Nessun utente</p></div>`; return; }
-    list.innerHTML = rows.map(u => `
-        <div class="admin-user-row">
-            <div class="comp-team-logo-placeholder" style="width:34px;height:34px;font-size:13px;flex-shrink:0">
-                ${(u.team_name ?? u.email ?? '?')[0].toUpperCase()}
-            </div>
-            <div class="admin-user-info">
-                <div class="admin-user-name">${u.team_name ?? 'Senza nome'}</div>
-                <div class="admin-user-meta">${u.email ?? ''} · ${(u.players ?? []).length} gioc. · ${u.credits ?? 500} cr.</div>
-            </div>
-            <div class="admin-user-badges">
-                ${u.role === 'admin'   ? '<span class="admin-badge">admin</span>'    : ''}
-                ${u.competition_joined ? '<span class="joined-mini">iscritto</span>' : ''}
-            </div>
-        </div>`).join('');
+    _usersCache = [];
+    snap.forEach(d => _usersCache.push({ uid: d.id, ...d.data() }));
+    if (!_usersCache.length) { list.innerHTML = `<div class="empty-state"><p>Nessun utente</p></div>`; return; }
+    list.innerHTML = _usersCache.map(u => buildUserRow(u)).join('');
+    attachUserRowListeners(list);
+}
+
+function buildUserRow(u) {
+    return `
+    <div class="admin-user-row" data-uid="${u.uid}">
+        <div class="comp-team-logo-placeholder" style="width:34px;height:34px;font-size:13px;flex-shrink:0">
+            ${(u.team_name ?? u.email ?? '?')[0].toUpperCase()}
+        </div>
+        <div class="admin-user-info">
+            <div class="admin-user-name">${u.team_name ?? 'Senza nome'}</div>
+            <div class="admin-user-meta">${u.email ?? ''} · ${(u.players ?? []).length} gioc. · ${u.credits ?? 500} cr.</div>
+        </div>
+        <div class="admin-user-badges">
+            ${u.role === 'admin'   ? '<span class="admin-badge">admin</span>'    : ''}
+            ${u.competition_joined ? '<span class="joined-mini">iscritto</span>' : ''}
+        </div>
+        <button class="admin-user-menu-btn" data-uid="${u.uid}" aria-label="Azioni">
+            <span class="material-icons-round">more_vert</span>
+        </button>
+        <div class="admin-user-actions hidden" data-uid="${u.uid}">
+            <button class="admin-user-action-btn reset" data-uid="${u.uid}">
+                <span class="material-icons-round">restart_alt</span>
+                Reset rosa
+            </button>
+            <button class="admin-user-action-btn delete" data-uid="${u.uid}">
+                <span class="material-icons-round">delete_outline</span>
+                Elimina account
+            </button>
+        </div>
+        <div class="admin-user-confirm hidden" data-uid="${u.uid}">
+            <span class="admin-user-confirm-text"></span>
+            <button class="admin-user-confirm-ok" data-uid="${u.uid}">Conferma</button>
+            <button class="admin-user-confirm-cancel" data-uid="${u.uid}">Annulla</button>
+        </div>
+    </div>`;
+}
+
+function attachUserRowListeners(list) {
+    list.querySelectorAll('.admin-user-menu-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const uid     = btn.dataset.uid;
+            const actions = list.querySelector(`.admin-user-actions[data-uid="${uid}"]`);
+            const confirm = list.querySelector(`.admin-user-confirm[data-uid="${uid}"]`);
+            // chiudi tutti gli altri
+            list.querySelectorAll('.admin-user-actions').forEach(el => { if (el.dataset.uid !== uid) el.classList.add('hidden'); });
+            list.querySelectorAll('.admin-user-confirm').forEach(el => { if (el.dataset.uid !== uid) el.classList.add('hidden'); });
+            confirm.classList.add('hidden');
+            actions.classList.toggle('hidden');
+        });
+    });
+
+    list.querySelectorAll('.admin-user-action-btn.reset').forEach(btn => {
+        btn.addEventListener('click', () => showConfirm(list, btn.dataset.uid, 'reset'));
+    });
+
+    list.querySelectorAll('.admin-user-action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', () => showConfirm(list, btn.dataset.uid, 'delete'));
+    });
+
+    list.querySelectorAll('.admin-user-confirm-cancel').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const uid = btn.dataset.uid;
+            list.querySelector(`.admin-user-actions[data-uid="${uid}"]`).classList.add('hidden');
+            list.querySelector(`.admin-user-confirm[data-uid="${uid}"]`).classList.add('hidden');
+        });
+    });
+
+    list.querySelectorAll('.admin-user-confirm-ok').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const uid    = btn.dataset.uid;
+            const action = btn.closest('.admin-user-confirm').dataset.action;
+            btn.disabled = true;
+            if (action === 'reset')  await resetUser(uid);
+            if (action === 'delete') await deleteUser(uid);
+        });
+    });
+}
+
+function showConfirm(list, uid, action) {
+    const actions = list.querySelector(`.admin-user-actions[data-uid="${uid}"]`);
+    const confirm = list.querySelector(`.admin-user-confirm[data-uid="${uid}"]`);
+    const text    = confirm.querySelector('.admin-user-confirm-text');
+    actions.classList.add('hidden');
+    confirm.classList.remove('hidden');
+    confirm.dataset.action = action;
+    text.textContent = action === 'reset'
+        ? 'Azzera rosa e ripristina 500 crediti?'
+        : 'Eliminare il documento utente? (auth record rimane)';
+}
+
+async function resetUser(uid) {
+    try {
+        await setDoc(doc(db, 'users', uid), { players: [], credits: 500 }, { merge: true });
+        toast('Rosa e crediti azzerati');
+        loadAdminStats();
+    } catch { toast('Errore reset', 'error'); }
+}
+
+async function deleteUser(uid) {
+    try {
+        await deleteDoc(doc(db, 'users', uid));
+        toast('Account eliminato da Firestore');
+        loadAdminStats();
+    } catch { toast('Errore eliminazione', 'error'); }
 }
 
 document.getElementById('btn-clear-cache')?.addEventListener('click', async () => {
