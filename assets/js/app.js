@@ -1369,3 +1369,203 @@ document.getElementById('btn-install-pwa')?.addEventListener('click', async () =
     if (outcome === 'accepted') _pwaPrompt = null;
     updatePwaBtnVisibility();
 });
+
+
+function initTabPill() {
+    const bar      = document.querySelector('.tab-bar');
+    if (!bar) return;
+
+    const pill = document.createElement('div');
+    pill.className = 'tab-pill';
+    bar.appendChild(pill);
+
+    function movePill(btn) {
+        const barRect = bar.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        pill.style.left   = (btnRect.left - barRect.left) + 'px';
+        pill.style.width  = btnRect.width + 'px';
+        pill.style.height = btnRect.height + 'px';
+    }
+
+    const active = bar.querySelector('.tab-item.active');
+    if (active) {
+        pill.style.transition = 'none';
+        movePill(active);
+        requestAnimationFrame(() => { pill.style.transition = ''; });
+    }
+
+    bar.addEventListener('click', e => {
+        const btn = e.target.closest('.tab-item');
+        if (!btn || btn.classList.contains('hidden')) return;
+        movePill(btn);
+    });
+
+    window.addEventListener('resize', () => {
+        const a = bar.querySelector('.tab-item.active');
+        if (a) { pill.style.transition = 'none'; movePill(a); requestAnimationFrame(() => { pill.style.transition = ''; }); }
+    }, { passive: true });
+}
+
+initTabPill();
+
+const _origShowPage = typeof showPage === 'function' ? showPage : null;
+
+function showPageAnimated(name) {
+    const incoming = document.getElementById(`page-${name}`);
+    if (!incoming) return;
+
+    document.querySelectorAll('.page.active').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+
+    incoming.classList.add('active', 'page-enter');
+    incoming.addEventListener('animationend', () => incoming.classList.remove('page-enter'), { once: true });
+
+    const tab = document.getElementById(`nav-${name}`);
+    if (tab) tab.classList.add('active');
+
+    const bar  = document.querySelector('.tab-bar');
+    const pill = bar?.querySelector('.tab-pill');
+    if (pill && tab && !tab.classList.contains('hidden')) {
+        const barRect = bar.getBoundingClientRect();
+        const btnRect = tab.getBoundingClientRect();
+        pill.style.left   = (btnRect.left - barRect.left) + 'px';
+        pill.style.width  = btnRect.width + 'px';
+        pill.style.height = btnRect.height + 'px';
+    }
+
+    if (name === 'squadra')      loadSquadra();
+    if (name === 'competizioni') loadCompetizioni();
+    if (name === 'profilo')      { loadProfilo(); renderProfiloHero(); }
+}
+
+['listone','squadra','calendario','competizioni','profilo','admin'].forEach(name => {
+    const btn = document.getElementById(`nav-${name}`);
+    if (!btn) return;
+    btn.addEventListener('click', () => showPageAnimated(name));
+});
+
+document.getElementById('btn-profile-avatar')?.addEventListener('click', () => showPageAnimated('profilo'));
+
+function spawnConfetti(x, y, count = 18) {
+    const colors = ['#0066cc','#28b463','#e8392a','#d97706','#a855f7','#fff'];
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti-particle';
+        const angle  = (Math.random() * 360) * (Math.PI / 180);
+        const dist   = 50 + Math.random() * 70;
+        el.style.cssText = `
+            left: ${x}px;
+            top:  ${y}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            --tx: ${Math.cos(angle) * dist}px;
+            --ty: ${Math.sin(angle) * dist + 40}px;
+            --rot: ${Math.random() > 0.5 ? '' : '-'}${180 + Math.random() * 180}deg;
+            --dur: ${0.5 + Math.random() * 0.45}s;
+            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        `;
+        document.body.appendChild(el);
+        el.addEventListener('animationend', () => el.remove());
+    }
+}
+
+const _origAddPlayer = typeof addPlayer === 'function' ? addPlayer : null;
+
+const _toastObs = new MutationObserver(mutations => {
+    mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+            if (node.classList?.contains('toast') && node.classList.contains('success')) {
+                const modal = document.querySelector('.modal-overlay.open');
+                if (modal) {
+                    const rect = modal.getBoundingClientRect();
+                    spawnConfetti(rect.width / 2, rect.height * 0.4, 22);
+                } else {
+                    spawnConfetti(window.innerWidth / 2, window.innerHeight * 0.45, 16);
+                }
+            }
+        });
+    });
+});
+_toastObs.observe(document.getElementById('toast-wrap'), { childList: true });
+
+const _origUpdateCredits = updateCreditsDisplay;
+window.__patchedCredits = function(credits) {
+    const pill = document.querySelector('.credits-pill');
+    if (pill) {
+        pill.classList.remove('bump');
+        void pill.offsetWidth;
+        pill.classList.add('bump');
+        pill.addEventListener('animationend', () => pill.classList.remove('bump'), { once: true });
+    }
+    document.getElementById('credits-val').textContent = credits;
+    document.getElementById('stat-credits').textContent = credits;
+    if (window.__user) window.__user.credits = credits;
+};
+
+function renderProfiloHero() {
+    const user = window.__user ?? {};
+
+    const oldSection = document.querySelector('.profilo-avatar-section');
+    if (oldSection) oldSection.style.display = 'none';
+
+    let hero = document.getElementById('profilo-hero-card');
+    if (!hero) {
+        hero = document.createElement('div');
+        hero.id = 'profilo-hero-card';
+        hero.className = 'profilo-hero';
+        const firstSection = document.querySelector('#page-profilo .profilo-section');
+        if (firstSection) firstSection.before(hero);
+    }
+
+    const teamName = user.team_name || 'La mia squadra';
+    const initials = teamName.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const avatarHtml = user.avatar
+        ? `<img class="profilo-hero-avatar" src="${user.avatar}" alt="Avatar">`
+        : `<div class="profilo-hero-initials">${initials}</div>`;
+
+    const logoHtml = user.team_logo
+        ? `<img class="profilo-hero-logo-img" src="${user.team_logo}" alt="Logo squadra">`
+        : `<div class="profilo-hero-logo-placeholder">${initials}</div>`;
+
+    const isJoined = user.competition_joined ?? false;
+
+    hero.innerHTML = `
+        <div class="profilo-hero-left">
+            <div class="profilo-hero-avatar-wrap" id="trigger-avatar-upload-hero">
+                ${avatarHtml}
+                <div class="profilo-avatar-overlay">
+                    <span class="material-icons-round">photo_camera</span>
+                </div>
+            </div>
+        </div>
+        <div class="profilo-hero-info">
+            <div class="profilo-hero-team">${teamName}</div>
+            <div class="profilo-hero-email">${user.email ?? ''}</div>
+            <div class="profilo-hero-badge ${isJoined ? 'active' : ''}">
+                <span class="material-icons-round">${isJoined ? 'emoji_events' : 'sports_soccer'}</span>
+                ${isJoined ? 'Iscritto' : 'Non iscritto'}
+            </div>
+        </div>
+        <div class="profilo-hero-logo">
+            ${logoHtml}
+        </div>
+    `;
+
+    document.getElementById('trigger-avatar-upload-hero')?.addEventListener('click', () => {
+        document.getElementById('avatar-upload').click();
+    });
+}
+
+const _origHandleAvatar = handleAvatarUpload;
+const _origHandleLogo   = handleLogoUpload;
+
+document.getElementById('avatar-upload')?.addEventListener('change', () => {
+    setTimeout(renderProfiloHero, 200);
+});
+
+document.getElementById('logo-upload')?.addEventListener('change', () => {
+    setTimeout(renderProfiloHero, 200);
+});
+
+if (document.getElementById('page-profilo')?.classList.contains('active')) {
+    renderProfiloHero();
+}
