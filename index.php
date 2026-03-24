@@ -519,5 +519,9 @@
 
         <script type="module" src="assets/js/auth.js"></script>
         <script type="module" src="assets/js/app.js"></script>
+
+        <div id="formation-picker-overlay" class="hidden">
+            <div id="formation-picker-sheet"></div>
+        </div>
     </body>
 </html>
