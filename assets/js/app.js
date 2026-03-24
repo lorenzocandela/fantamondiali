@@ -65,7 +65,7 @@ document.getElementById('nav-calendario')?.addEventListener('click', () => {
     showPage('calendario'); 
     loadCalendario();
 });
-document.getElementById('nav-competizioni')?.addEventListener('click', () => { 
+document.getElementById('nav-competizione')?.addEventListener('click', () => { 
     showPage('competizione');
     loadCompetizioni(); 
 });

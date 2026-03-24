@@ -1,5 +1,6 @@
 {
     "name": "FM2026",
+    "gcm_sender_id": "103953800507",
     "short_name": "FM26",
     "description": "Il fantacalcio dei Mondiali 2026",
     "start_url": "/",
