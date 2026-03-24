@@ -128,12 +128,12 @@ async function openRound(round) {
         if (!lineup.find(l => String(l.id) === String(p.id))) lineup.push(p);
     });
 
-    renderFormazione(md, isLocked, isFuture);
+    renderFormazione(md, isLocked, isFuture, isPast, isEditableRound);
 }
 
 // ─── render formazione ────────────────────────────────────────────────────────
 
-function renderFormazione(md, isLocked, isFuture) {
+function renderFormazione(md, isLocked, isFuture, isPast, isEditableRound) {
     const s     = lineup.slice(0, 11);
     const b     = lineup.slice(11);
     const warns = validateLineup();
@@ -301,7 +301,7 @@ function attachFormationEvents(isLocked) {
             activeModule = chip.dataset.module;
             lineup = autoFill(roster, activeModule);
             const md = MATCHDAY_SCHEDULE.find(m => m.round === activeRound);
-            renderFormazione(md, isLocked, false);
+            renderFormazione(md, isLocked, false, false, !isLocked);
         });
     });
 
@@ -418,7 +418,7 @@ function applyPick(targetId) {
         lineup.splice(10, 0, p);
     }
     const md = MATCHDAY_SCHEDULE.find(m => m.round === activeRound);
-    renderFormazione(md, false, new Date() < new Date(md?.start ?? '2099-01-01'));
+    renderFormazione(md, false, new Date() < new Date(md?.start ?? '2099-01-01'), false, true);
 }
 
 function moveToBench(playerId) {
@@ -427,7 +427,7 @@ function moveToBench(playerId) {
     const [p] = lineup.splice(idx, 1);
     lineup.push(p);
     const md = MATCHDAY_SCHEDULE.find(m => m.round === activeRound);
-    renderFormazione(md, false, new Date() < new Date(md?.start ?? '2099-01-01'));
+    renderFormazione(md, false, new Date() < new Date(md?.start ?? '2099-01-01'), false, true);
 }
 
 // ─── save ─────────────────────────────────────────────────────────────────────
