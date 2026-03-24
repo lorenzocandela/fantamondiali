@@ -4,31 +4,6 @@ import { toast } from './utils.js';
 import { buildSubtitle, renderPlayers, getFiltered, displayCount } from './players.js';
 import { renderMatchdayAdmin, generateRoundRobin } from './calendar.js';
 
-const SCORE_TABLE = {
-    goal:        { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
-    assist:      3,
-    yellow_card: -0.5,
-    red_card:    -1,
-    clean_sheet: { POR: 1, DIF: 1 },
-};
-
-function calcPlayerScore(player, stats) {
-    if (!stats || !stats.played) return 0;
-    let score = stats.rating ?? 6;
-    score += (stats.goals        ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
-    score += (stats.assists      ?? 0) * SCORE_TABLE.assist;
-    score += (stats.yellow_cards ?? 0) * SCORE_TABLE.yellow_card;
-    score += (stats.red_cards    ?? 0) * SCORE_TABLE.red_card;
-    const cs = SCORE_TABLE.clean_sheet[player.role];
-    if (cs && stats.clean_sheet) score += cs;
-    return Math.round(score * 100) / 100;
-}
-
-function simulateTeamScore(players) {
-    if (!players.length) return 0;
-    const base = players.reduce((s, p) => s + (p.price ?? 10), 0) / players.length;
-    return base + (Math.random() * 6 - 3);
-}
 
 export async function loadSystemSettings() {
     try {
@@ -231,51 +206,179 @@ document.getElementById('btn-clear-cache')?.addEventListener('click', async () =
     } catch { toast('clear_cache.php non trovato', 'error'); }
 });
 
+// ─── calcolo punteggi reale ───────────────────────────────────────────────────
+
+const SCORE_TABLE_REAL = {
+    goal:        { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
+    assist:      3,
+    yellow:     -0.5,
+    red:        -2,
+    clean_sheet: { POR: 2, DIF: 1 },
+};
+
+function calcPlayerScoreReal(player, stats) {
+    if (!stats) return 0;
+    if (!stats.played) return 0;
+
+    let score = stats.rating ?? 6;
+    score += (stats.goals   ?? 0) * (SCORE_TABLE_REAL.goal[player.role] ?? 6);
+    score += (stats.assists ?? 0) * SCORE_TABLE_REAL.assist;
+    score += (stats.yellow  ?? 0) * SCORE_TABLE_REAL.yellow;
+    score += (stats.red     ?? 0) * SCORE_TABLE_REAL.red;
+    if (stats.cs && SCORE_TABLE_REAL.clean_sheet[player.role]) {
+        score += SCORE_TABLE_REAL.clean_sheet[player.role];
+    }
+    return Math.round(score * 100) / 100;
+}
+
+function calcTeamScoreFromLineup(lineup, playerStats) {
+    // lineup = array di player objects (solo i titolari, max 11)
+    // playerStats = { player_id: { rating, goals, ... } }
+    const starters = lineup.slice(0, 11).filter(Boolean);
+    if (!starters.length) return 0;
+
+    let total = 0;
+    let count = 0;
+
+    starters.forEach(p => {
+        const stats = playerStats[String(p.id)];
+        if (!stats) return;
+        total += calcPlayerScoreReal(p, stats);
+        count++;
+    });
+
+    // se meno di 11 giocatori con stats, penalità per slot vuoti
+    const missing = 11 - count;
+    total -= missing * 2;
+
+    return Math.max(0, Math.round(total * 10) / 10);
+}
+
+// sovrascrive il vecchio listener aggiungendo il nuovo flusso
+document.getElementById('btn-calc-scores')?.removeEventListener('click', () => {});
+
 document.getElementById('btn-calc-scores')?.addEventListener('click', async () => {
     const roundNum = parseInt(document.getElementById('admin-score-round').value);
     if (!roundNum) { toast('Seleziona una giornata', 'error'); return; }
+
     const btn = document.getElementById('btn-calc-scores');
     btn.disabled = true;
-    btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Calcolo...';
+    btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Chiamata API...';
+
     try {
+        // 1. recupera rating giocatori dalla API (o fallback simulato)
+        const scoresRes = await fetch(`get_scores.php?round=${roundNum}`);
+        const scoresData = await scoresRes.json();
+        if (scoresData.status !== 'success') throw new Error(scoresData.message ?? 'Errore API scores');
+
+        const playerStats = scoresData.players ?? {};
+        const source      = scoresData.source;
+
+        btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Calcolo formazioni...';
+
+        // 2. carica calendario e utenti
         const [calSnap, usersSnap] = await Promise.all([
             getDoc(doc(db, 'settings', 'calendar')),
             getDocs(collection(db, 'users')),
         ]);
+
         if (!calSnap.exists()) { toast('Nessun calendario trovato', 'error'); return; }
+
         const schedule = calSnap.data().schedule ?? [];
         const results  = calSnap.data().results  ?? {};
         const rd       = schedule.find(r => r.round === roundNum);
         if (!rd) { toast('Giornata non trovata nel calendario', 'error'); return; }
+
         const usersMap = {};
         usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
+
+        // 3. calcola punteggio per ogni match dalla formazione schierata
         const roundResults = {};
+
         rd.matches.forEach(m => {
             const homeUser = usersMap[m.home];
             const awayUser = usersMap[m.away];
             if (!homeUser || !awayUser) return;
+
+            // recupera lineup salvata → array di player objects
+            const homeLineupIds = homeUser.lineup ?? [];
+            const awayLineupIds = awayUser.lineup ?? [];
+
+            const homeRoster = homeUser.players ?? [];
+            const awayRoster = awayUser.players ?? [];
+
+            // ricostruisci oggetti player dai loro id
+            const homeLineup = homeLineupIds
+                .map(id => homeRoster.find(p => String(p.id) === String(id)))
+                .filter(Boolean)
+                .slice(0, 11);
+
+            const awayLineup = awayLineupIds
+                .map(id => awayRoster.find(p => String(p.id) === String(id)))
+                .filter(Boolean)
+                .slice(0, 11);
+
+            // se nessuna formazione → usa i migliori 11 per prezzo
+            const homeFinal = homeLineup.length >= 1 ? homeLineup
+                : [...homeRoster].sort((a, b) => b.price - a.price).slice(0, 11);
+            const awayFinal = awayLineup.length >= 1 ? awayLineup
+                : [...awayRoster].sort((a, b) => b.price - a.price).slice(0, 11);
+
+            const homeScore = calcTeamScoreFromLineup(homeFinal, playerStats);
+            const awayScore = calcTeamScoreFromLineup(awayFinal, playerStats);
+
+            // salva anche il dettaglio per giocatore (utile per visualizzazioni future)
+            const homeDetail = homeFinal.map(p => ({
+                id:    p.id,
+                name:  p.name,
+                role:  p.role,
+                score: calcPlayerScoreReal(p, playerStats[String(p.id)] ?? null),
+                stats: playerStats[String(p.id)] ?? null,
+            }));
+
+            const awayDetail = awayFinal.map(p => ({
+                id:    p.id,
+                name:  p.name,
+                role:  p.role,
+                score: calcPlayerScoreReal(p, playerStats[String(p.id)] ?? null),
+                stats: playerStats[String(p.id)] ?? null,
+            }));
+
             roundResults[`${m.home}_${m.away}`] = {
-                home_score: Math.round(simulateTeamScore(homeUser.players ?? []) * 10) / 10,
-                away_score: Math.round(simulateTeamScore(awayUser.players ?? []) * 10) / 10,
+                home_score:  homeScore,
+                away_score:  awayScore,
+                home_detail: homeDetail,
+                away_detail: awayDetail,
+                source,
             };
         });
+
         results[String(roundNum)] = roundResults;
         await setDoc(doc(db, 'settings', 'calendar'), { results }, { merge: true });
+
+        // 4. render risultati
         const resultEl = document.getElementById('admin-score-result');
         resultEl.classList.remove('hidden');
-        resultEl.innerHTML = rd.matches.map(m => {
-            const r = roundResults[`${m.home}_${m.away}`];
-            if (!r) return '';
-            const winner = r.home_score > r.away_score ? m.home_name : r.away_score > r.home_score ? m.away_name : 'Pareggio';
-            return `<div class="admin-score-row-item">
-                <span>${m.home_name} <strong>${r.home_score}</strong></span>
-                <span>–</span>
-                <span><strong>${r.away_score}</strong> ${m.away_name}</span>
-            </div>`;
-        }).join('');
-        toast(`Giornata ${roundNum} calcolata`);
-    } catch (err) { toast('Errore: ' + err.message, 'error'); }
-    finally {
+        resultEl.innerHTML = `
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;color:var(--text-2);font-family:var(--mono)">
+                <span class="material-icons-round" style="font-size:13px">${source === 'real' ? 'sports_soccer' : 'casino'}</span>
+                dati ${source === 'real' ? 'reali API' : 'simulati (torneo non iniziato)'}
+            </div>
+            ${rd.matches.map(m => {
+                const r = roundResults[`${m.home}_${m.away}`];
+                if (!r) return '';
+                return `<div class="admin-score-row-item">
+                    <span>${m.home_name} <strong>${r.home_score}</strong></span>
+                    <span>–</span>
+                    <span><strong>${r.away_score}</strong> ${m.away_name}</span>
+                </div>`;
+            }).join('')}`;
+
+        toast(`Giornata ${roundNum} calcolata · ${source === 'real' ? 'dati reali' : 'simulazione'}`);
+
+    } catch (err) {
+        toast('Errore: ' + err.message, 'error');
+    } finally {
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons-round">calculate</span> Calcola punteggi giornata';
     }
