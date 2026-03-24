@@ -139,11 +139,6 @@ function renderFormazione(md, isLocked, isFuture, isPast, isEditableRound) {
     const warns = validateLineup();
     const { dif, cen, att } = parseModule(activeModule);
 
-    const backBtn = `
-        <button class="fround-back-btn" id="fround-back">
-            <span class="material-icons-round">arrow_back</span>
-        </button>`;
-
     const lockMsg = isPast
         ? 'Giornata conclusa — solo visualizzazione'
         : !isEditableRound && isFuture
@@ -222,7 +217,7 @@ function renderFormazione(md, isLocked, isFuture, isPast, isEditableRound) {
         </div>` : '';
 
     document.getElementById('formation-content').innerHTML =
-        backBtn + lockBanner + futureBanner + warningsHtml + modulesHtml + fieldHtml + benchHtml + saveBar;
+        lockBanner + futureBanner + warningsHtml + modulesHtml + fieldHtml + benchHtml + saveBar;
 
     document.getElementById('fround-back')?.addEventListener('click', () => {
         document.getElementById('form-subtitle').textContent = 'schiera i tuoi 11';
