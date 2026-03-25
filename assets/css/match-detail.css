@@ -1,0 +1,298 @@
+/* ─── MATCH DETAIL ────────────────────────────────────────────────────────── */
+
+.cal-match-card.clickable { cursor: pointer; position: relative; }
+.cal-match-card.clickable:active { transform: scale(0.98); }
+.cal-match-tap-hint {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-3);
+    opacity: 0.5;
+}
+.cal-match-tap-hint .material-symbols-outlined { font-size: 16px; }
+
+.md-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+}
+
+.md-back-btn {
+    background: var(--surface-3);
+    border: none;
+    border-radius: var(--r-sm);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.md-back-btn:hover { background: var(--surface-4); }
+.md-back-btn .material-symbols-outlined { font-size: 18px; }
+
+.md-header-info { flex: 1; min-width: 0; }
+.md-header-round { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+.md-header-dates { font-size: 11px; color: var(--text-2); font-family: var(--mono); margin-top: 2px; }
+
+.md-live-pill {
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    font-family: var(--mono);
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    letter-spacing: 0.5px;
+    animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.md-score-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px 20px 20px;
+}
+
+.md-score-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.md-score-logo .cal-team-logo,
+.md-score-logo .cal-team-logo-placeholder {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+}
+
+.md-score-name {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.md-score-center {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.md-score-val {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+.md-score-sep {
+    font-size: 20px;
+    color: var(--text-3);
+    font-weight: 300;
+}
+
+.md-score-vs {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--mono);
+    color: var(--text-3);
+    letter-spacing: 1px;
+}
+
+/* ─── SWITCH BAR ──────────────────────────────────────────────────────────── */
+
+.md-switch-bar {
+    display: flex;
+    gap: 4px;
+    margin: 0 20px 16px;
+    background: var(--surface-3);
+    border-radius: var(--r-md);
+    padding: 3px;
+}
+
+.md-switch-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 8px;
+    border: none;
+    border-radius: var(--r-sm);
+    background: transparent;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+}
+
+.md-switch-btn .material-symbols-outlined { font-size: 16px; }
+.md-switch-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--sh-xs);
+}
+
+/* ─── CONFRONTO VIEW ──────────────────────────────────────────────────────── */
+
+.confronto-wrap {
+    margin: 0 20px;
+}
+
+.confronto-modules {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    margin-bottom: 12px;
+}
+
+.confronto-mod {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--mono);
+    letter-spacing: -0.3px;
+}
+
+.confronto-mod-label {
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.confronto-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 6px 8px;
+}
+
+.confronto-team-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: var(--mono);
+}
+
+.confronto-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.confronto-row {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    min-height: 38px;
+}
+
+.confronto-player {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 8px;
+    min-width: 0;
+}
+
+.confronto-player.home { justify-content: flex-start; }
+.confronto-player.away { justify-content: flex-end; }
+.confronto-player.empty { opacity: 0.35; }
+
+.confronto-pname {
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+}
+
+.confronto-score {
+    font-size: 12px;
+    font-weight: 800;
+    font-family: var(--mono);
+    min-width: 28px;
+    text-align: center;
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.confronto-score.pending { color: var(--text-3); }
+.confronto-score.score-high { background: var(--green-soft); color: var(--green); }
+.confronto-score.score-mid  { background: var(--amber-soft); color: var(--amber); }
+.confronto-score.score-low  { background: var(--red-soft);   color: var(--red); }
+
+.confronto-empty-slot { color: var(--text-3); font-size: 11px; }
+
+.confronto-divider {
+    width: 28px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-3);
+    font-family: var(--mono);
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 2px 0;
+}
+
+.confronto-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    margin-top: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+}
+
+.confronto-total-val {
+    font-size: 20px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -0.5px;
+}
+
+.confronto-total-label {
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}

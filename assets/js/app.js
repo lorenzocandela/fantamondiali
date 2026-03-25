@@ -4,9 +4,8 @@ import { toast } from './utils.js';
 import { showPage, initTabPill, updateTopbarAvatar, loadProfilo, saveProfilo, toggleJoinCompetition, handleAvatarUpload, handleLogoUpload } from './ui.js';
 import { loadListone } from './players.js';
 import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
-import { loadCalendario, renderMatchdayAdmin } from './calendar.js';
+import { loadCalendario, renderMatchdayAdmin, loadAdminModules } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
-import { loadFormazione, loadAdminModules } from './formation.js';
 import { initNotifications, requestNotificationPermission } from './notifications.js';
 
 window.__addPlayer = (player, customPrice) => addPlayer(player, customPrice);
@@ -53,10 +52,6 @@ document.getElementById('btn-install-pwa-auth')?.addEventListener('click', handl
 initTabPill();
 
 document.getElementById('nav-listone')?.addEventListener('click', () => showPage('listone'));
-document.getElementById('nav-formazione')?.addEventListener('click', () => { 
-    showPage('formazione'); 
-    loadFormazione(); 
-});
 document.getElementById('nav-calendario')?.addEventListener('click', () => { 
     showPage('calendario'); 
     loadCalendario();

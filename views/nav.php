@@ -2,9 +2,6 @@
     <button class="tab-item active" id="nav-listone">
         <span class="material-symbols-outlined">format_list_bulleted</span>
     </button>
-    <button class="tab-item" id="nav-formazione">
-        <span class="material-symbols-outlined">sports_soccer</span>
-    </button>
     <button class="tab-item" id="nav-calendario">
         <span class="material-symbols-outlined">calendar_month</span>
     </button>
