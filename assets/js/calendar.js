@@ -724,11 +724,15 @@ async function saveFormazione() {
         }, { merge: true });
 
         // aggiorna subito la cache locale così il Confronto è aggiornato
-        if (calUsersMap[window.__user.uid]) {
-            calUsersMap[window.__user.uid][`lineup_r${mdRound}`] = lineupIds;
-            calUsersMap[window.__user.uid][`module_r${mdRound}`] = activeModule;
-            calUsersMap[window.__user.uid].lineup = lineupIds;
-            calUsersMap[window.__user.uid].module = activeModule;
+        const uid = window.__user.uid;
+        if (!calUsersMap[uid]) calUsersMap[uid] = {};
+        calUsersMap[uid][`lineup_r${mdRound}`] = lineupIds;
+        calUsersMap[uid][`module_r${mdRound}`] = activeModule;
+        calUsersMap[uid].lineup = lineupIds;
+        calUsersMap[uid].module = activeModule;
+        // assicurati che i players siano nella cache
+        if (roster.length && (!calUsersMap[uid].players || !calUsersMap[uid].players.length)) {
+            calUsersMap[uid].players = roster;
         }
 
         toast(`Formazione G${mdRound} salvata ✓`);
@@ -877,16 +881,61 @@ function renderConfrontoFromResults(res) {
         </div>`;
 }
 
+// ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
+
+const SCORE_TABLE = {
+    goal:        { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
+    assist:      3,
+    yellow:     -0.5,
+    red:        -2,
+    clean_sheet: { POR: 2, DIF: 1 },
+};
+
+function calcLiveScore(player, stats) {
+    if (!stats || !stats.played) return null;
+    let score = stats.rating ?? 6;
+    score += (stats.goals   ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
+    score += (stats.assists ?? 0) * SCORE_TABLE.assist;
+    score += (stats.yellow  ?? 0) * SCORE_TABLE.yellow;
+    score += (stats.red     ?? 0) * SCORE_TABLE.red;
+    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
+        score += SCORE_TABLE.clean_sheet[player.role];
+    }
+    return Math.round(score * 100) / 100;
+}
+
+function statBadges(stats) {
+    if (!stats || !stats.played) return '';
+    let badges = '';
+    const g = stats.goals ?? 0;
+    const a = stats.assists ?? 0;
+    const y = stats.yellow ?? 0;
+    const r = stats.red ?? 0;
+    if (g > 0) badges += `<span class="confronto-badge badge-goal"><span class="material-symbols-outlined">sports_soccer</span>${g > 1 ? '×' + g : ''}</span>`;
+    if (a > 0) badges += `<span class="confronto-badge badge-assist"><span class="material-symbols-outlined">handshake</span>${a > 1 ? '×' + a : ''}</span>`;
+    if (r > 0) badges += `<span class="confronto-badge badge-red"><span class="material-symbols-outlined">square</span></span>`;
+    else if (y > 0) badges += `<span class="confronto-badge badge-yellow"><span class="material-symbols-outlined">square</span></span>`;
+    if (stats.cs) badges += `<span class="confronto-badge badge-cs"><span class="material-symbols-outlined">security</span></span>`;
+    return badges;
+}
+
 function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
     const maxLen = Math.max(homeLineup.length, awayLineup.length, 11);
     let rows = '';
+    let homeTotal = 0, awayTotal = 0;
+    let homeCount = 0, awayCount = 0;
 
     for (let i = 0; i < maxLen; i++) {
         const h = homeLineup[i];
         const a = awayLineup[i];
-        const hScore = h && liveStats ? liveStats[String(h.id)]?.rating : null;
-        const aScore = a && liveStats ? liveStats[String(a.id)]?.rating : null;
+        const hStats = h && liveStats ? liveStats[String(h.id)] : null;
+        const aStats = a && liveStats ? liveStats[String(a.id)] : null;
+        const hScore = h && hStats ? calcLiveScore(h, hStats) : null;
+        const aScore = a && aStats ? calcLiveScore(a, aStats) : null;
         const pending = status === 'future' || (!liveStats && status !== 'past');
+
+        if (hScore != null) { homeTotal += hScore; homeCount++; }
+        if (aScore != null) { awayTotal += aScore; awayCount++; }
 
         rows += `
         <div class="confronto-row">
@@ -894,6 +943,8 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
                 ${h ? `
                     <span class="confronto-score ${pending ? 'pending' : scoreClass(hScore)}">${pending ? '–' : (hScore?.toFixed(1) ?? '–')}</span>
                     <span class="confronto-pname">${h.name?.split(' ').pop() ?? ''}</span>
+                    ${!pending ? statBadges(hStats) : ''}
+                    <span class="confronto-nat">${h.nationality || h.team || ''}</span>
                     <span class="role-badge badge-${h.role}" style="margin:0;font-size:9px">${h.role}</span>
                 ` : `<span class="confronto-empty-slot">—</span>`}
             </div>
@@ -901,12 +952,27 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
             <div class="confronto-player away ${a ? '' : 'empty'}">
                 ${a ? `
                     <span class="role-badge badge-${a.role}" style="margin:0;font-size:9px">${a.role}</span>
+                    <span class="confronto-nat">${a.nationality || a.team || ''}</span>
+                    ${!pending ? statBadges(aStats) : ''}
                     <span class="confronto-pname">${a.name?.split(' ').pop() ?? ''}</span>
                     <span class="confronto-score ${pending ? 'pending' : scoreClass(aScore)}">${pending ? '–' : (aScore?.toFixed(1) ?? '–')}</span>
                 ` : `<span class="confronto-empty-slot">—</span>`}
             </div>
         </div>`;
     }
+
+    // Aggiungi riga totale live se abbiamo dati
+    if (!rows) return rows;
+    const hasTotals = homeCount > 0 || awayCount > 0;
+    if (hasTotals) {
+        rows += `
+        <div class="confronto-total">
+            <span class="confronto-total-val ${scoreClass(homeTotal)}">${homeTotal.toFixed(1)}</span>
+            <span class="confronto-total-label">Totale</span>
+            <span class="confronto-total-val ${scoreClass(awayTotal)}">${awayTotal.toFixed(1)}</span>
+        </div>`;
+    }
+
     return rows;
 }
 
