@@ -52,8 +52,9 @@ $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
-    // Partite di oggi — playoff UEFA + intercontinental + amichevoli
+    // Partite di oggi — FIFA Series + playoff UEFA + intercontinental + amichevoli
     $candidates = [
+        "fixtures?date={$today}&league=1222&season=2026", // FIFA Series 2026
         "fixtures?date={$today}&league=960&season=2026",  // UEFA playoff WC 2026
         "fixtures?date={$today}&league=37&season=2026",   // Intercontinental playoff
         "fixtures?date={$today}&league=5&season=2026",    // amichevoli internazionali 2026
