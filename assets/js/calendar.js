@@ -1,3 +1,5 @@
+
+
 import { db } from './firebase-init.js';
 import { doc, getDoc, getDocs, setDoc, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, formatDate } from './utils.js';
@@ -5,8 +7,8 @@ import { toast, formatDate } from './utils.js';
 // ─── SCHEDULE ────────────────────────────────────────────────────────────────
 
 const MATCHDAY_SCHEDULE = [
-    //{ round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
     { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-03-25', end: '2026-03-25' }, // TEST
+//    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
     { round: 2, label: 'Fase a gironi – Giornata 2', short: 'GJ2', start: '2026-06-15', end: '2026-06-19' },
     { round: 3, label: 'Fase a gironi – Giornata 3', short: 'GJ3', start: '2026-06-20', end: '2026-06-25' },
     { round: 4, label: 'Ottavi di finale',            short: 'R16', start: '2026-06-27', end: '2026-07-03' },
@@ -467,6 +469,12 @@ function renderMatchDetail() {
     if (mdView === 'formazione' && canEdit) {
         attachFormationEvents();
     }
+
+    // Toggle compatto/dettaglio
+    document.getElementById('confronto-toggle')?.addEventListener('click', () => {
+        confrontoDetail = !confrontoDetail;
+        renderMatchDetail();
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -835,37 +843,26 @@ function renderConfrontoView(res, status) {
 
     // Panchina
     const benchMaxLen = Math.max(homeBench.length, awayBench.length);
-    let benchHtml = '';
+    // Toggle compatto/dettaglio
+    const toggleHtml = status !== 'future' ? `
+        <div class="confronto-toggle-wrap">
+            <button class="confronto-toggle-btn" id="confronto-toggle">
+                <span class="material-symbols-outlined">${confrontoDetail ? 'visibility_off' : 'visibility'}</span>
+                ${confrontoDetail ? 'Compatto' : 'Dettaglio'}
+            </button>
+        </div>` : '';
+
+    // Panchina con renderConfrontoRows
+    let benchSection = '';
     if (benchMaxLen > 0) {
-        let benchRows = '';
-        for (let i = 0; i < benchMaxLen; i++) {
-            const h = homeBench[i];
-            const a = awayBench[i];
-            benchRows += `
-            <div class="confronto-row bench">
-                <div class="confronto-player home ${h ? '' : 'empty'}">
-                    ${h ? `
-                        ${flagImg(h.nationality || h.team)}
-                        <span class="confronto-pname">${h.name?.split(' ').pop() ?? ''}</span>
-                        <span class="role-badge badge-${h.role}" style="margin:0;font-size:9px">${h.role}</span>
-                    ` : ''}
-                </div>
-                <div class="confronto-divider bench-num">${i + 1}</div>
-                <div class="confronto-player away ${a ? '' : 'empty'}">
-                    ${a ? `
-                        <span class="role-badge badge-${a.role}" style="margin:0;font-size:9px">${a.role}</span>
-                        <span class="confronto-pname">${a.name?.split(' ').pop() ?? ''}</span>
-                        ${flagImg(a.nationality || a.team)}
-                    ` : ''}
-                </div>
-            </div>`;
-        }
-        benchHtml = `
+        benchSection = `
             <div class="confronto-bench-title">
                 <span class="material-symbols-outlined">airline_seat_recline_normal</span>
                 Panchina
             </div>
-            <div class="confronto-list bench-list">${benchRows}</div>`;
+            <div class="confronto-list bench-list">
+                ${renderConfrontoRows(homeBench, awayBench, liveStats, status, true)}
+            </div>`;
     }
 
     return `
@@ -875,14 +872,15 @@ function renderConfrontoView(res, status) {
                 <span class="confronto-mod-label">Moduli</span>
                 <span class="confronto-mod">${awayModule}</span>
             </div>
+            ${toggleHtml}
             <div class="confronto-header">
                 <div class="confronto-team-name">${homeName}</div>
                 <div class="confronto-team-name">${awayName}</div>
             </div>
             <div class="confronto-list">
-                ${renderConfrontoRows(homeLineup, awayLineup, liveStats, status)}
+                ${renderConfrontoRows(homeLineup, awayLineup, liveStats, status, false)}
             </div>
-            ${benchHtml}
+            ${benchSection}
             ${!homeLineup.length && !awayLineup.length ? `
                 <div class="empty-state" style="padding:30px 20px">
                     <span class="material-symbols-outlined">sports_soccer</span>
@@ -941,79 +939,142 @@ const SCORE_TABLE = {
     clean_sheet: { POR: 2, DIF: 1 },
 };
 
+let confrontoDetail = false; // false = compatto, true = dettaglio
+
 function calcLiveScore(player, stats) {
-    if (!stats || !stats.played) return null;
-    let score = stats.rating ?? 6;
-    score += (stats.goals   ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
-    score += (stats.assists ?? 0) * SCORE_TABLE.assist;
-    score += (stats.yellow  ?? 0) * SCORE_TABLE.yellow;
-    score += (stats.red     ?? 0) * SCORE_TABLE.red;
-    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
-        score += SCORE_TABLE.clean_sheet[player.role];
+    // Se live e nessuna stat → voto base 6 (in campo senza eventi)
+    const base = stats?.rating ?? 6;
+    let score = base;
+    if (stats) {
+        score += (stats.goals   ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
+        score += (stats.assists ?? 0) * SCORE_TABLE.assist;
+        score += (stats.yellow  ?? 0) * SCORE_TABLE.yellow;
+        score += (stats.red     ?? 0) * SCORE_TABLE.red;
+        if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
+            score += SCORE_TABLE.clean_sheet[player.role];
+        }
     }
     return Math.round(score * 100) / 100;
 }
 
-function statBadges(stats) {
-    if (!stats || !stats.played) return '';
-    let badges = '';
+function bonusBreakdown(player, stats) {
+    if (!stats) return '';
+    const parts = [];
     const g = stats.goals ?? 0;
     const a = stats.assists ?? 0;
     const y = stats.yellow ?? 0;
     const r = stats.red ?? 0;
-    if (g > 0) badges += `<span class="confronto-badge badge-goal"><span class="material-symbols-outlined">sports_soccer</span>${g > 1 ? '×' + g : ''}</span>`;
-    if (a > 0) badges += `<span class="confronto-badge badge-assist"><span class="material-symbols-outlined">handshake</span>${a > 1 ? '×' + a : ''}</span>`;
-    if (r > 0) badges += `<span class="confronto-badge badge-red"><span class="material-symbols-outlined">square</span></span>`;
-    else if (y > 0) badges += `<span class="confronto-badge badge-yellow"><span class="material-symbols-outlined">square</span></span>`;
-    if (stats.cs) badges += `<span class="confronto-badge badge-cs"><span class="material-symbols-outlined">security</span></span>`;
-    return badges;
+    if (g > 0) {
+        const bonus = g * (SCORE_TABLE.goal[player.role] ?? 6);
+        parts.push(`<span class="bd-item bd-goal"><span class="material-symbols-outlined">sports_soccer</span>+${bonus.toFixed(1)}</span>`);
+    }
+    if (a > 0) {
+        const bonus = a * SCORE_TABLE.assist;
+        parts.push(`<span class="bd-item bd-assist"><span class="material-symbols-outlined">handshake</span>+${bonus.toFixed(1)}</span>`);
+    }
+    if (r > 0) {
+        parts.push(`<span class="bd-item bd-red"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.red.toFixed(1)}</span>`);
+    } else if (y > 0) {
+        parts.push(`<span class="bd-item bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
+    }
+    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
+        parts.push(`<span class="bd-item bd-cs"><span class="material-symbols-outlined">security</span>+${SCORE_TABLE.clean_sheet[player.role].toFixed(1)}</span>`);
+    }
+    return parts.length ? `<div class="bd-row">${parts.join('')}</div>` : '';
 }
 
-function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
-    const maxLen = Math.max(homeLineup.length, awayLineup.length, 11);
+function statBadgesCompact(stats) {
+    if (!stats) return '';
+    let b = '';
+    if ((stats.goals ?? 0) > 0)  b += `<span class="confronto-badge badge-goal"><span class="material-symbols-outlined">sports_soccer</span>${stats.goals > 1 ? '×' + stats.goals : ''}</span>`;
+    if ((stats.assists ?? 0) > 0) b += `<span class="confronto-badge badge-assist"><span class="material-symbols-outlined">handshake</span>${stats.assists > 1 ? '×' + stats.assists : ''}</span>`;
+    if ((stats.red ?? 0) > 0) b += `<span class="confronto-badge badge-red"><span class="material-symbols-outlined">square</span></span>`;
+    else if ((stats.yellow ?? 0) > 0) b += `<span class="confronto-badge badge-yellow"><span class="material-symbols-outlined">square</span></span>`;
+    return b;
+}
+
+function renderPlayerCell(p, stats, score, side, pending, isDetail) {
+    if (!p) return `<span class="confronto-empty-slot">—</span>`;
+    
+    const flag = flagImg(p.nationality || p.team);
+    const name = p.name?.split(' ').pop() ?? '';
+    const role = `<span class="role-badge badge-${p.role}" style="margin:0;font-size:9px">${p.role}</span>`;
+    const scoreHtml = `<span class="confronto-score ${pending ? 'pending' : scoreClass(score)}">${pending ? '–' : score.toFixed(1)}</span>`;
+    
+    if (isDetail) {
+        // Vista dettaglio: 2 righe — nome + breakdown sotto
+        const bd = !pending ? bonusBreakdown(p, stats) : '';
+        if (side === 'home') {
+            return `
+                <div class="cd-main">
+                    ${scoreHtml} ${flag}
+                    <span class="confronto-pname">${name}</span>
+                    ${role}
+                </div>
+                ${bd}`;
+        } else {
+            return `
+                <div class="cd-main">
+                    ${role}
+                    <span class="confronto-pname">${name}</span>
+                    ${flag} ${scoreHtml}
+                </div>
+                ${bd}`;
+        }
+    } else {
+        // Vista compatta: 1 riga con mini badge
+        const badges = !pending ? statBadgesCompact(stats) : '';
+        if (side === 'home') {
+            return `${scoreHtml} ${flag} <span class="confronto-pname">${name}</span> ${badges} ${role}`;
+        } else {
+            return `${role} ${badges} <span class="confronto-pname">${name}</span> ${flag} ${scoreHtml}`;
+        }
+    }
+}
+
+function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench) {
+    const maxLen = isBench 
+        ? Math.max(homeLineup.length, awayLineup.length) 
+        : Math.max(homeLineup.length, awayLineup.length, 11);
     let rows = '';
     let homeTotal = 0, awayTotal = 0;
     let homeCount = 0, awayCount = 0;
+    const isLive = status === 'live';
+    const pending = status === 'future' || (!liveStats && status !== 'past');
+    const isDetail = confrontoDetail;
 
     for (let i = 0; i < maxLen; i++) {
         const h = homeLineup[i];
         const a = awayLineup[i];
-        const hStats = h && liveStats ? liveStats[String(h.id)] : null;
-        const aStats = a && liveStats ? liveStats[String(a.id)] : null;
-        const hScore = h && hStats ? calcLiveScore(h, hStats) : null;
-        const aScore = a && aStats ? calcLiveScore(a, aStats) : null;
-        const pending = status === 'future' || (!liveStats && status !== 'past');
+        
+        // Stats dall'API o null
+        const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
+        const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
+        
+        // Se live: tutti i giocatori schierati hanno voto base 6 + eventuali bonus
+        const hScore = (h && isLive) ? calcLiveScore(h, hStats) : (h && hStats ? calcLiveScore(h, hStats) : null);
+        const aScore = (a && isLive) ? calcLiveScore(a, aStats) : (a && aStats ? calcLiveScore(a, aStats) : null);
 
         if (hScore != null) { homeTotal += hScore; homeCount++; }
         if (aScore != null) { awayTotal += aScore; awayCount++; }
 
         rows += `
-        <div class="confronto-row">
+        <div class="confronto-row ${isDetail ? 'detail' : ''} ${isBench ? 'bench' : ''}">
             <div class="confronto-player home ${h ? '' : 'empty'}">
-                ${h ? `
-                    <span class="confronto-score ${pending ? 'pending' : scoreClass(hScore)}">${pending ? '–' : (hScore?.toFixed(1) ?? '–')}</span>
-                    ${flagImg(h.nationality || h.team)}
-                    <span class="confronto-pname">${h.name?.split(' ').pop() ?? ''}</span>
-                    ${!pending ? statBadges(hStats) : ''}
-                    <span class="role-badge badge-${h.role}" style="margin:0;font-size:9px">${h.role}</span>
-                ` : `<span class="confronto-empty-slot">—</span>`}
+                ${renderPlayerCell(h, hStats, hScore ?? 0, 'home', pending, isDetail)}
             </div>
-            <div class="confronto-divider">${i + 1}</div>
+            <div class="confronto-divider ${isBench ? 'bench-num' : ''}">${isBench ? i + 1 : i + 1}</div>
             <div class="confronto-player away ${a ? '' : 'empty'}">
-                ${a ? `
-                    <span class="role-badge badge-${a.role}" style="margin:0;font-size:9px">${a.role}</span>
-                    ${!pending ? statBadges(aStats) : ''}
-                    <span class="confronto-pname">${a.name?.split(' ').pop() ?? ''}</span>
-                    ${flagImg(a.nationality || a.team)}
-                    <span class="confronto-score ${pending ? 'pending' : scoreClass(aScore)}">${pending ? '–' : (aScore?.toFixed(1) ?? '–')}</span>
-                ` : `<span class="confronto-empty-slot">—</span>`}
+                ${renderPlayerCell(a, aStats, aScore ?? 0, 'away', pending, isDetail)}
             </div>
         </div>`;
     }
 
-    // Salva i totali per la score bar in alto
-    liveTotals.home = homeCount > 0 ? homeTotal : null;
-    liveTotals.away = awayCount > 0 ? awayTotal : null;
+    // Salva i totali per la score bar (solo titolari, non panchina)
+    if (!isBench) {
+        liveTotals.home = homeCount > 0 ? homeTotal : null;
+        liveTotals.away = awayCount > 0 ? awayTotal : null;
+    }
 
     return rows;
 }
