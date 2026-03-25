@@ -3,7 +3,55 @@ import { getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/f
 import { toast, spawnConfetti } from './utils.js';
 import { showPage } from './ui.js';
 
-export const PAGE_SIZE = 29;
+export const PAGE_SIZE = 25;
+
+// ─── FLAG HELPER ────────────────────────────────────────────────────────────
+
+const COUNTRY_CODES = {
+    'Afghanistan':'af','Albania':'al','Algeria':'dz','Andorra':'ad','Angola':'ao',
+    'Argentina':'ar','Armenia':'am','Australia':'au','Austria':'at','Azerbaijan':'az',
+    'Bahrain':'bh','Bangladesh':'bd','Belarus':'by','Belgium':'be','Benin':'bj',
+    'Bolivia':'bo','Bosnia and Herzegovina':'ba','Botswana':'bw','Brazil':'br',
+    'Bulgaria':'bg','Burkina Faso':'bf','Burundi':'bi','Cameroon':'cm','Canada':'ca',
+    'Cape Verde':'cv','Central African Republic':'cf','Chad':'td','Chile':'cl',
+    'China':'cn','Colombia':'co','Comoros':'km','Congo':'cg','Costa Rica':'cr',
+    'Croatia':'hr','Cuba':'cu','Curaçao':'cw','Cyprus':'cy','Czech Republic':'cz',
+    'Czechia':'cz','DR Congo':'cd','Denmark':'dk','Ecuador':'ec','Egypt':'eg',
+    'El Salvador':'sv','England':'gb-eng','Equatorial Guinea':'gq','Eritrea':'er',
+    'Estonia':'ee','Ethiopia':'et','Fiji':'fj','Finland':'fi','France':'fr',
+    'Gabon':'ga','Gambia':'gm','Georgia':'ge','Germany':'de','Ghana':'gh',
+    'Greece':'gr','Grenada':'gd','Guatemala':'gt','Guinea':'gn','Haiti':'ht',
+    'Honduras':'hn','Hungary':'hu','Iceland':'is','India':'in','Indonesia':'id',
+    'Iran':'ir','Iraq':'iq','Ireland':'ie','Israel':'il','Italy':'it',
+    'Ivory Coast':'ci','Cote D\'Ivoire':'ci','Jamaica':'jm','Japan':'jp','Jordan':'jo',
+    'Kazakhstan':'kz','Kenya':'ke','Korea Republic':'kr','South Korea':'kr',
+    'Kosovo':'xk','Kuwait':'kw','Kyrgyzstan':'kg','Latvia':'lv','Lebanon':'lb',
+    'Libya':'ly','Liechtenstein':'li','Lithuania':'lt','Luxembourg':'lu',
+    'Madagascar':'mg','Malawi':'mw','Malaysia':'my','Mali':'ml','Malta':'mt',
+    'Mauritania':'mr','Mauritius':'mu','Mexico':'mx','Moldova':'md','Monaco':'mc',
+    'Montenegro':'me','Morocco':'ma','Mozambique':'mz','Myanmar':'mm',
+    'Namibia':'na','Nepal':'np','Netherlands':'nl','New Zealand':'nz',
+    'Nicaragua':'ni','Niger':'ne','Nigeria':'ng','North Macedonia':'mk',
+    'Northern Ireland':'gb-nir','Norway':'no','Oman':'om','Pakistan':'pk',
+    'Palestine':'ps','Panama':'pa','Paraguay':'py','Peru':'pe','Philippines':'ph',
+    'Poland':'pl','Portugal':'pt','Puerto Rico':'pr','Qatar':'qa','Romania':'ro',
+    'Russia':'ru','Rwanda':'rw','Saudi Arabia':'sa','Scotland':'gb-sct',
+    'Senegal':'sn','Serbia':'rs','Sierra Leone':'sl','Singapore':'sg',
+    'Slovakia':'sk','Slovenia':'si','Somalia':'so','South Africa':'za',
+    'Spain':'es','Sri Lanka':'lk','Sudan':'sd','Suriname':'sr','Sweden':'se',
+    'Switzerland':'ch','Syria':'sy','Tanzania':'tz','Thailand':'th','Togo':'tg',
+    'Trinidad and Tobago':'tt','Tunisia':'tn','Turkey':'tr','Turkmenistan':'tm',
+    'Uganda':'ug','Ukraine':'ua','United Arab Emirates':'ae','United States':'us',
+    'USA':'us','Uruguay':'uy','Uzbekistan':'uz','Venezuela':'ve','Vietnam':'vn',
+    'Wales':'gb-wls','Yemen':'ye','Zambia':'zm','Zimbabwe':'zw',
+};
+
+function natFlag(nationality) {
+    if (!nationality) return '';
+    const code = COUNTRY_CODES[nationality];
+    if (!code) return `<span class="player-nat-text">${nationality}</span>`;
+    return `<img class="player-nat-flag" src="assets/flags/${code}.svg" alt="${nationality}" title="${nationality}"><span class="player-nat-text">${nationality}</span>`;
+}
 
 export let allPlayers   = [];
 export let activeRole   = 'ALL';
@@ -156,7 +204,7 @@ export function renderPlayers(players, slice) {
                 </div>
                 <div class="role-badge badge-${p.role}">${p.role}</div>
                 <div class="player-name">${p.name}</div>
-                <div class="player-nat">${p.nationality}</div>
+                <div class="player-nat">${natFlag(p.nationality)}</div>
                 <div class="price-row"><span class="material-symbols-outlined">toll</span>${p.price}</div>
                 <button class="btn-add ${locked ? 'locked' : owned ? 'owned' : taken ? 'taken' : ''}" data-id="${p.id}">
                     <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : taken ? 'block' : 'add'}</span>
@@ -179,7 +227,7 @@ export function renderPlayers(players, slice) {
                     <div class="player-row-name">${p.name}</div>
                     <div class="player-row-meta">
                         <span class="role-badge badge-${p.role}" style="margin-bottom:0">${p.role}</span>
-                        <span class="player-row-nat">${p.nationality}</span>
+                        ${natFlag(p.nationality)}
                         ${p.team ? `<span class="player-row-team">${p.team}</span>` : ''}
                     </div>
                 </div>
@@ -236,8 +284,7 @@ export async function loadListone() {
     showSkeletons();
     document.getElementById('listone-subtitle').textContent = 'caricamento...';
     try {
-        const res = await fetch('get_api_test.php'); // TEST
-        // const res  = await fetch('get_api.php'); PRODUZIONE
+        const res  = await fetch('get_api.php');
         const data = await res.json();
         if (data.status !== 'success') throw new Error(data.message);
         allPlayers   = data.data;
