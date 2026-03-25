@@ -15,7 +15,7 @@ export function initTabPill() {
         const br = bar.getBoundingClientRect();
         const tr = btn.getBoundingClientRect();
         pill.style.left   = (tr.left - br.left) + 'px';
-        pill.style.width  = tr.width + 'px';
+        pill.style.width  = '61px';
         pill.style.height = tr.height + 'px';
     }
 

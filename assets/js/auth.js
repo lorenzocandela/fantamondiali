@@ -169,7 +169,7 @@ onAuthStateChanged(auth, async user => {
                     const tr = active.getBoundingClientRect();
                     pill.style.transition = 'none';
                     pill.style.left   = (tr.left - br.left) + 'px';
-                    pill.style.width  = tr.width + 'px';
+                    pill.style.width  = '61px';
                     pill.style.height = tr.height + 'px';
                     requestAnimationFrame(() => { pill.style.transition = ''; });
                 }
