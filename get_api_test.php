@@ -47,22 +47,29 @@ function apiGet(string $endpoint): ?array {
 $fixtures = [];
 $leagueUsed = '';
 
-// Prova in ordine: amichevoli internazionali, qualificazioni, qualsiasi partita di oggi
+// Prova in ordine: playoff UEFA, intercontinental playoffs, amichevoli, fallback
 $attempts = [
-    ['endpoint' => "fixtures?date={$today}&league=5&season=2025", 'label' => 'Amichevoli 2025'],
-    ['endpoint' => "fixtures?date={$today}&league=5&season=2026", 'label' => 'Amichevoli 2026'],
-    ['endpoint' => "fixtures?date={$today}", 'label' => 'Tutte le partite'],
+    ['endpoint' => "fixtures?date={$today}&league=960&season=2026", 'label' => 'UEFA Playoff WC'],
+    ['endpoint' => "fixtures?date={$today}&league=37&season=2026",  'label' => 'Intercontinental Playoff'],
+    ['endpoint' => "fixtures?date={$today}&league=5&season=2026",   'label' => 'Amichevoli 2026'],
+    ['endpoint' => "fixtures?date={$today}&league=5&season=2025",   'label' => 'Amichevoli 2025'],
+    ['endpoint' => "fixtures?date={$today}",                         'label' => 'Tutte le partite'],
 ];
 
+// Accumula fixture da più leghe (playoff UEFA + intercontinental)
+$fixtures = [];
+$leagueLabels = [];
 foreach ($attempts as $a) {
     $result = apiGet($a['endpoint']);
     if (!empty($result)) {
-        $fixtures = $result;
-        $leagueUsed = $a['label'];
-        break;
+        $fixtures = array_merge($fixtures, $result);
+        $leagueLabels[] = $a['label'];
     }
     usleep(200000);
+    // Se abbiamo già fixture dai playoff, non cercare le amichevoli
+    if (count($fixtures) >= 4 && count($leagueLabels) >= 2) break;
 }
+$leagueUsed = implode(' + ', array_unique($leagueLabels));
 
 if (empty($fixtures)) {
     echo json_encode(['status' => 'error', 'message' => "Nessuna partita trovata per oggi ({$today})"]);
@@ -70,7 +77,6 @@ if (empty($fixtures)) {
 }
 
 // Filtra: se c'è un parametro ?teams=, prendi solo quelle squadre
-// Altrimenti prendi max 3 fixture
 $filterTeams = isset($_GET['teams']) ? array_map('strtolower', explode(',', $_GET['teams'])) : [];
 if (!empty($filterTeams)) {
     $fixtures = array_filter($fixtures, function($f) use ($filterTeams) {
@@ -83,7 +89,8 @@ if (!empty($filterTeams)) {
         return false;
     });
 }
-$fixtures = array_values(array_slice($fixtures, 0, 3));
+// Massimo 10 fixture
+$fixtures = array_values(array_slice($fixtures, 0, 10));
 
 // ─── 2. INFO FIXTURE PER DEBUG ──────────────────────────────────────────────
 

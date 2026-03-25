@@ -52,22 +52,22 @@ $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
-    // Partite di oggi — tutte le leghe (amichevoli internazionali = league 5)
-    // Cerchiamo prima amichevoli, poi qualificazioni mondiali, poi qualsiasi
+    // Partite di oggi — playoff UEFA + intercontinental + amichevoli
     $candidates = [
-        "fixtures?date={$today}&league=5&season=2025",   // amichevoli internazionali 2025
-        "fixtures?date={$today}&league=5&season=2026",   // amichevoli internazionali 2026
-        "fixtures?date={$today}&league=32&season=2025",  // qualificazioni mondiali
-        "fixtures?date={$today}",                         // fallback: tutte le partite di oggi
+        "fixtures?date={$today}&league=960&season=2026",  // UEFA playoff WC 2026
+        "fixtures?date={$today}&league=37&season=2026",   // Intercontinental playoff
+        "fixtures?date={$today}&league=5&season=2026",    // amichevoli internazionali 2026
+        "fixtures?date={$today}&league=5&season=2025",    // amichevoli internazionali 2025
     ];
 
+    // Accumula da più leghe
     foreach ($candidates as $endpoint) {
         $result = apiGet($endpoint);
         if (!empty($result)) {
-            $fixtures = $result;
-            break;
+            $fixtures = array_merge($fixtures, $result);
         }
         usleep(200000);
+        if (count($fixtures) >= 6) break;
     }
 } else {
     // Produzione: Mondiali 2026
