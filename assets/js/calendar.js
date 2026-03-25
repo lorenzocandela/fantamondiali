@@ -735,7 +735,7 @@ async function saveFormazione() {
             calUsersMap[uid].players = roster;
         }
 
-        toast(`Formazione G${mdRound} salvata ✓`);
+        toast(`Formazione G${mdRound} salvata`);
     } catch { toast('Errore salvataggio', 'error'); }
     finally {
         if (btn) { btn.disabled = false; btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span>Salva formazione G${mdRound}`; }
@@ -1119,7 +1119,7 @@ document.getElementById('btn-generate-calendar')?.addEventListener('click', asyn
             results:      {},
             generated_at: new Date().toISOString(),
         });
-        toast('Calendario salvato ✓');
+        toast('Calendario salvato');
         document.getElementById('admin-cal-preview').classList.add('hidden');
         previewSchedule = [];
     } catch (err) {

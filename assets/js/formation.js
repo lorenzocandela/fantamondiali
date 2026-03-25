@@ -400,7 +400,7 @@ async function saveFormazione() {
             lineup: lineup.map(p => String(p.id)), // fallback generico aggiornato
             module: activeModule,
         }, { merge: true });
-        toast(`Formazione GJ${activeRound} salvata ✓`);
+        toast(`Formazione GJ${activeRound} salvata`);
     } catch { toast('Errore salvataggio', 'error'); }
     finally {
         if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Salva formazione GJ' + activeRound; }
