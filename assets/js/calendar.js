@@ -844,9 +844,9 @@ function renderConfrontoView(res, status) {
     // Toggle compatto/dettaglio
     const toggleHtml = status !== 'future' ? `
         <div class="confronto-toggle-wrap">
-            <button class="confronto-toggle-btn" id="confronto-toggle">
-                <span class="material-symbols-outlined">${confrontoDetail ? 'visibility_off' : 'visibility'}</span>
-                ${confrontoDetail ? 'Compatto' : 'Dettaglio'}
+            <button class="confronto-toggle-btn ${confrontoDetail ? 'active' : ''}" id="confronto-toggle">
+                <span class="material-symbols-outlined">${confrontoDetail ? 'unfold_less' : 'unfold_more'}</span>
+                ${confrontoDetail ? 'Compatto' : 'Espandi bonus'}
             </button>
         </div>` : '';
 
