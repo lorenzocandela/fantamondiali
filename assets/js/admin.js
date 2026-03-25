@@ -132,16 +132,15 @@ function buildUserRow(u) {
             ${u.competition_joined ? '<span class="joined-mini">iscritto</span>' : ''}
         </div>
         <button class="admin-user-menu-btn" data-uid="${u.uid}" aria-label="Azioni">
-            <span class="material-icons-round">more_vert</span>
+            <span class="material-symbols-outlined">more_vert</span>
         </button>
         <div class="admin-user-actions hidden" data-uid="${u.uid}">
             <button class="admin-user-action-btn reset" data-uid="${u.uid}">
-                <span class="material-icons-round">restart_alt</span>
+                <span class="material-symbols-outlined">restart_alt</span>
                 Reset rosa
             </button>
             <button class="admin-user-action-btn delete" data-uid="${u.uid}">
-                <span class="material-icons-round">delete_outline</span>
-                Elimina account
+                Elimina
             </button>
         </div>
         <div class="admin-user-confirm hidden" data-uid="${u.uid}">
@@ -286,7 +285,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
 
     const btn = document.getElementById('btn-calc-scores');
     btn.disabled = true;
-    btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Chiamata API...';
+    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Chiamata API...';
 
     try {
         // 1. recupera rating giocatori dalla API (o fallback simulato)
@@ -297,7 +296,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         const playerStats = scoresData.players ?? {};
         const source      = scoresData.source;
 
-        btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Calcolo formazioni...';
+        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Calcolo formazioni...';
 
         // 2. carica calendario e utenti
         const [calSnap, usersSnap] = await Promise.all([
@@ -384,7 +383,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         resultEl.classList.remove('hidden');
         resultEl.innerHTML = `
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;color:var(--text-2);font-family:var(--mono)">
-                <span class="material-icons-round" style="font-size:13px">${source === 'real' ? 'sports_soccer' : 'casino'}</span>
+                <span class="material-symbols-outlined" style="font-size:13px">${source === 'real' ? 'sports_soccer' : 'casino'}</span>
                 dati ${source === 'real' ? 'reali API' : 'simulati (torneo non iniziato)'}
             </div>
             ${rd.matches.map(m => {
@@ -403,6 +402,6 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         toast('Errore: ' + err.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span class="material-icons-round">calculate</span> Calcola punteggi giornata';
+        btn.innerHTML = '<span class="material-symbols-outlined">calculate</span> Calcola punteggi giornata';
     }
 });
