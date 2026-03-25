@@ -284,7 +284,8 @@ export async function loadListone() {
     showSkeletons();
     document.getElementById('listone-subtitle').textContent = 'caricamento...';
     try {
-        const res  = await fetch('get_api.php');
+        const res  = await fetch('get_api_test.php');
+        //const res  = await fetch('get_api.php'); PRODUZIONE
         const data = await res.json();
         if (data.status !== 'success') throw new Error(data.message);
         allPlayers   = data.data;

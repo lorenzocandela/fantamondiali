@@ -9,7 +9,7 @@ define('MAX_PRICE', 60);
 $today = date('Y-m-d');
 
 // ─── CACHE (breve per test: 10 minuti) ──────────────────────────────────────
-$cacheFile = sys_get_temp_dir() . "/fm_listone_test_{$today}_test.json";
+$cacheFile = sys_get_temp_dir() . "/fm_listone_test_{$today}.json";
 $cacheTtl  = 600;
 
 if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
@@ -51,7 +51,6 @@ $leagueUsed = '';
 $attempts = [
     ['endpoint' => "fixtures?date={$today}&league=5&season=2025", 'label' => 'Amichevoli 2025'],
     ['endpoint' => "fixtures?date={$today}&league=5&season=2026", 'label' => 'Amichevoli 2026'],
-    ['endpoint' => "fixtures?date={$today}&league=32&season=2025", 'label' => 'Qual. Mondiali'],
     ['endpoint' => "fixtures?date={$today}", 'label' => 'Tutte le partite'],
 ];
 
@@ -70,8 +69,21 @@ if (empty($fixtures)) {
     exit;
 }
 
-// Prendi max 5 fixture per non usare troppe chiamate API
-$fixtures = array_slice($fixtures, 0, 5);
+// Filtra: se c'è un parametro ?teams=, prendi solo quelle squadre
+// Altrimenti prendi max 3 fixture
+$filterTeams = isset($_GET['teams']) ? array_map('strtolower', explode(',', $_GET['teams'])) : [];
+if (!empty($filterTeams)) {
+    $fixtures = array_filter($fixtures, function($f) use ($filterTeams) {
+        $home = strtolower($f['teams']['home']['name'] ?? '');
+        $away = strtolower($f['teams']['away']['name'] ?? '');
+        foreach ($filterTeams as $t) {
+            $t = trim($t);
+            if (stripos($home, $t) !== false || stripos($away, $t) !== false) return true;
+        }
+        return false;
+    });
+}
+$fixtures = array_values(array_slice($fixtures, 0, 3));
 
 // ─── 2. INFO FIXTURE PER DEBUG ──────────────────────────────────────────────
 
