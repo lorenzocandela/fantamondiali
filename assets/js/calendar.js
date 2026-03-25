@@ -468,12 +468,20 @@ function renderMatchDetail() {
         attachFormationEvents();
     }
 
-    // Toggle compatto/dettaglio
-    document.getElementById('confronto-toggle')?.addEventListener('click', () => {
-        confrontoDetail = !confrontoDetail;
-        renderMatchDetail();
-    });
 }
+
+// Toggle compatto/dettaglio — event delegation sul container stabile
+document.getElementById('cal-match-detail')?.addEventListener('click', (e) => {
+    if (e.target.closest('#confronto-toggle')) {
+        confrontoDetail = !confrontoDetail;
+        const bodyEl = document.getElementById('md-body');
+        if (bodyEl && mdView === 'confronto') {
+            const status = getRoundStatus(mdRound);
+            const result = calResults[String(mdRound)]?.[`${mdHomeUid}_${mdAwayUid}`];
+            bodyEl.innerHTML = renderConfrontoView(result, status);
+        }
+    }
+});
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FORMAZIONE EDITOR (integrato nel match detail)
@@ -1065,11 +1073,11 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         rows += `
         <div class="confronto-row ${isDetail ? 'detail' : ''} ${isBench ? 'bench' : ''}">
             <div class="confronto-player home ${h ? '' : 'empty'}">
-                ${renderPlayerCell(h, hStats, hScore ?? 0, 'home', pending, isDetail)}
+                ${renderPlayerCell(h, hStats, hScore, 'home', pending, isDetail)}
             </div>
-            <div class="confronto-divider ${isBench ? 'bench-num' : ''}">${isBench ? i + 1 : i + 1}</div>
+            <div class="confronto-divider ${isBench ? 'bench-num' : ''}">${i + 1}</div>
             <div class="confronto-player away ${a ? '' : 'empty'}">
-                ${renderPlayerCell(a, aStats, aScore ?? 0, 'away', pending, isDetail)}
+                ${renderPlayerCell(a, aStats, aScore, 'away', pending, isDetail)}
             </div>
         </div>`;
     }
