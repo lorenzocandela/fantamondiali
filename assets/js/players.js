@@ -1,3 +1,5 @@
+import { db } from './firebase-init.js';
+import { getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, spawnConfetti } from './utils.js';
 import { showPage } from './ui.js';
 
@@ -18,6 +20,34 @@ const searchIn    = document.getElementById('search-in');
 export function setAllPlayers(p)    { allPlayers    = p; }
 export function setApiSource(s)     { apiSource     = s; }
 export function setDisplayCount(n)  { displayCount  = n; }
+
+// --- ownership globale ---
+
+let globalOwnership = {}; // { playerId → team_name }
+
+export async function loadGlobalOwnership() {
+    globalOwnership = {};
+    try {
+        const snap = await getDocs(collection(db, 'users'));
+        snap.forEach(d => {
+            const data = d.data();
+            const uid  = d.id;
+            (data.players ?? []).forEach(p => {
+                if (uid !== window.__user?.uid) {
+                    globalOwnership[p.id] = data.team_name ?? 'Altro giocatore';
+                    globalOwnership[String(p.id)] = data.team_name ?? 'Altro giocatore';
+                }
+            });
+        });
+    } catch (err) { console.error('Errore caricamento ownership:', err); }
+}
+
+export function getOwner(playerId) {
+    if (isOwned(playerId)) return null;
+    return globalOwnership[playerId] ?? globalOwnership[String(playerId)] ?? null;
+}
+
+// --- fine ownership globale ---
 
 export function isOwned(playerId) {
     return (window.__myTeam ?? []).some(p => p.id === playerId || p.id === String(playerId));
@@ -116,6 +146,7 @@ export function renderPlayers(players, slice) {
         playersGrid.className = 'players-grid';
         playersGrid.innerHTML = visible.map(p => {
             const owned  = isOwned(p.id);
+            const taken  = !owned ? getOwner(p.id) : null;
             const locked = !window.__competitionActive;
             return `
             <div class="player-card" data-role="${p.role}" data-id="${p.id}" tabindex="0">
@@ -127,9 +158,9 @@ export function renderPlayers(players, slice) {
                 <div class="player-name">${p.name}</div>
                 <div class="player-nat">${p.nationality}</div>
                 <div class="price-row"><span class="material-symbols-outlined">toll</span>${p.price}</div>
-                <button class="btn-add ${locked ? 'locked' : owned ? 'owned' : ''}" data-id="${p.id}">
-                    <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : 'add'}</span>
-                    ${locked ? 'Non attivo' : owned ? 'In rosa' : 'Aggiungi'}
+                <button class="btn-add ${locked ? 'locked' : owned ? 'owned' : taken ? 'taken' : ''}" data-id="${p.id}">
+                    <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : taken ? 'block' : 'add'}</span>
+                    ${locked ? 'Non attivo' : owned ? 'In rosa' : taken ? taken : 'Aggiungi'}
                 </button>
             </div>`;
         }).join('');
@@ -137,6 +168,7 @@ export function renderPlayers(players, slice) {
         playersGrid.className = 'players-list';
         playersGrid.innerHTML = visible.map(p => {
             const owned  = isOwned(p.id);
+            const taken  = !owned ? getOwner(p.id) : null;
             const locked = !window.__competitionActive;
             return `
             <div class="player-row" data-role="${p.role}" data-id="${p.id}" tabindex="0">
@@ -153,8 +185,8 @@ export function renderPlayers(players, slice) {
                 </div>
                 <div class="player-row-right">
                     <div class="player-row-price"><span class="material-symbols-outlined">toll</span>${p.price}</div>
-                    <button class="btn-add-row ${locked ? 'locked' : owned ? 'owned' : ''}" data-id="${p.id}">
-                        <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : 'add'}</span>
+                    <button class="btn-add-row ${locked ? 'locked' : owned ? 'owned' : taken ? 'taken' : ''}" data-id="${p.id}">
+                        <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : taken ? 'block' : 'add'}</span>
                     </button>
                 </div>
             </div>`;
@@ -173,7 +205,8 @@ export function renderPlayers(players, slice) {
         btn.addEventListener('click', e => {
             e.stopPropagation();
             if (btn.classList.contains('locked')) { toast('La competizione non e ancora attiva', 'error'); return; }
-            if (btn.classList.contains('owned')) return;
+            if (btn.classList.contains('owned'))  return;
+            if (btn.classList.contains('taken'))  { toast('Giocatore gia acquistato da un altro utente', 'error'); return; }
             const p = allPlayers.find(p => p.id === parseInt(btn.dataset.id));
             if (p) window.__addPlayer(p);
         });
@@ -209,6 +242,7 @@ export async function loadListone() {
         allPlayers   = data.data;
         apiSource    = data.source ? `dati ${data.source}` : '';
         displayCount = PAGE_SIZE;
+        await loadGlobalOwnership();
         buildSubtitle();
         populateNationFilter(allPlayers);
         renderPlayers(getFiltered(), displayCount);
@@ -316,7 +350,8 @@ function animateWheel() {
 function updateBtnLabel() {
     const btnLbl = document.getElementById('modal-btn-label');
     if (btnLbl && !document.getElementById('modal-btn-add').classList.contains('owned') &&
-        !document.getElementById('modal-btn-add').classList.contains('locked')) {
+        !document.getElementById('modal-btn-add').classList.contains('locked') &&
+        !document.getElementById('modal-btn-add').classList.contains('taken')) {
         btnLbl.textContent = `Acquista · ${_wheelSelectedPrice} cr.`;
     }
 }
@@ -385,6 +420,7 @@ if (pickerWrap) {
 export function openModal(player) {
     if (!player) return;
     const owned  = isOwned(player.id);
+    const taken  = !owned ? getOwner(player.id) : null;
     const locked = !window.__competitionActive;
 
     document.getElementById('modal-photo').src          = player.photo;
@@ -411,6 +447,12 @@ export function openModal(player) {
         btnAdd.className   = 'modal-btn-add owned';
         btnLbl.textContent = 'Gia in rosa';
         btnIco.textContent = 'check';
+        btnAdd.onclick     = null;
+    } else if (taken) {
+        pricePicker.classList.add('hidden');
+        btnAdd.className   = 'modal-btn-add taken';
+        btnLbl.textContent = `Preso da ${taken}`;
+        btnIco.textContent = 'block';
         btnAdd.onclick     = null;
     } else {
         const credits = window.__user?.credits ?? 500;

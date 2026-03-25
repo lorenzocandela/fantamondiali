@@ -4,7 +4,7 @@ import {
     arrayUnion, arrayRemove
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, bumpCredits } from './utils.js';
-import { renderPlayers, getFiltered, displayCount, isOwned, closeModal } from './players.js';
+import { renderPlayers, getFiltered, displayCount, isOwned, closeModal, loadGlobalOwnership } from './players.js';
 
 const squadList = document.getElementById('squad-list');
 
@@ -90,6 +90,7 @@ export async function addPlayer(player, customPrice) {
             credits: credits - price
         });
         await loadSquadra();
+        await loadGlobalOwnership();
         renderPlayers(getFiltered(), displayCount);
         closeModal();
         toast(`${player.name} aggiunto per ${price} cr.`);
@@ -108,6 +109,7 @@ export async function removePlayer(playerId) {
             credits
         });
         await loadSquadra();
+        await loadGlobalOwnership();
         renderPlayers(getFiltered(), displayCount);
         toast('Giocatore rimosso (rimborso 70%)');
     } catch { toast('Errore di rete', 'error'); }
