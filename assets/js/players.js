@@ -3,7 +3,7 @@ import { getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/f
 import { toast, spawnConfetti } from './utils.js';
 import { showPage } from './ui.js';
 
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 29;
 
 export let allPlayers   = [];
 export let activeRole   = 'ALL';

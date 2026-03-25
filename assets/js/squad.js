@@ -76,7 +76,7 @@ export async function addPlayer(player, customPrice) {
     const price   = customPrice ?? player.price;
     const credits = window.__user.credits ?? 0;
     if (credits < price)                     { toast(`Crediti insufficienti (servono ${price})`, 'error'); return; }
-    if ((window.__myTeam ?? []).length >= 25) { toast('Rosa completa (max 25 giocatori)', 'error'); return; }
+    if ((window.__myTeam ?? []).length >= 29) { toast('Rosa completa (max 29 giocatori)', 'error'); return; }
 
     const playerData = {
         id: player.id, name: player.name, photo: player.photo,
