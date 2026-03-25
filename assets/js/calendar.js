@@ -1022,7 +1022,7 @@ function flagImg(nationality) {
     if (!nationality) return '';
     const code = COUNTRY_CODES[nationality];
     if (!code) return `<span class="confronto-nat-text">${nationality.slice(0,3).toUpperCase()}</span>`;
-    return `<img class="confronto-flag" src="https://flagcdn.com/w40/${code}.png" alt="${nationality}" title="${nationality}">`;
+    return `<img class="confronto-flag" src="assets/flags/${code}.svg" alt="${nationality}" title="${nationality}">`;
 }
 
 function scoreClass(score) {
