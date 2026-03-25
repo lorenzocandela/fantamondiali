@@ -963,32 +963,6 @@ function calcLiveScore(player, stats) {
     return Math.round(score * 100) / 100;
 }
 
-function bonusBreakdown(player, stats) {
-    if (!stats) return '';
-    const parts = [];
-    const g = stats.goals ?? 0;
-    const a = stats.assists ?? 0;
-    const y = stats.yellow ?? 0;
-    const r = stats.red ?? 0;
-    if (g > 0) {
-        const bonus = g * (SCORE_TABLE.goal[player.role] ?? 6);
-        parts.push(`<span class="bd-item bd-goal"><span class="material-symbols-outlined">sports_soccer</span>+${bonus.toFixed(1)}</span>`);
-    }
-    if (a > 0) {
-        const bonus = a * SCORE_TABLE.assist;
-        parts.push(`<span class="bd-item bd-assist"><span class="material-symbols-outlined">handshake</span>+${bonus.toFixed(1)}</span>`);
-    }
-    if (r > 0) {
-        parts.push(`<span class="bd-item bd-red"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.red.toFixed(1)}</span>`);
-    } else if (y > 0) {
-        parts.push(`<span class="bd-item bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
-    }
-    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
-        parts.push(`<span class="bd-item bd-cs"><span class="material-symbols-outlined">security</span>+${SCORE_TABLE.clean_sheet[player.role].toFixed(1)}</span>`);
-    }
-    return parts.length ? `<div class="bd-row">${parts.join('')}</div>` : '';
-}
-
 function statBadgesCompact(stats) {
     if (!stats) return '';
     let b = '';
@@ -1006,41 +980,69 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     const name = p.name?.split(' ').pop() ?? '';
     const role = `<span class="role-badge badge-${p.role}" style="margin:0;font-size:9px">${p.role}</span>`;
     
-    // Se pending (pre-partita) mostra –, se no stats mostra SV, altrimenti voto
-    let scoreLabel;
-    let scoreClass2;
+    let scoreLabel, scoreClass2;
     if (pending) {
-        scoreLabel = '–';
-        scoreClass2 = 'pending';
+        scoreLabel = '–'; scoreClass2 = 'pending';
     } else if (score === null) {
-        scoreLabel = 'SV';
-        scoreClass2 = 'pending';
+        scoreLabel = 'SV'; scoreClass2 = 'sv';
     } else {
-        scoreLabel = score.toFixed(1);
-        scoreClass2 = scoreClass(score);
+        scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
     }
     
     const scoreHtml = `<span class="confronto-score ${scoreClass2}">${scoreLabel}</span>`;
-    const badges = (!pending && score !== null && isDetail) ? statBadgesCompact(stats) : '';
-    const bd = (!pending && isDetail && score !== null) ? bonusBreakdown(p, stats) : '';
 
-    // Home: voto a SX, poi flag nome badge ruolo → (allineato a dx)
-    // Away: ← ruolo badge nome flag, poi voto a DX
-    if (side === 'home') {
-        return `
-            <div class="cp-row">
-                ${scoreHtml}
-                <span class="cp-info home">${role}${flag}<span class="confronto-pname">${name}</span>${badges}</span>
-            </div>
-            ${bd}`;
+    if (!isDetail) {
+        // ── COMPATTO: voto | flag nome ruolo ──
+        if (side === 'home') {
+            return `<div class="cp-row">${scoreHtml}<span class="cp-info home">${role}${flag}<span class="confronto-pname">${name}</span></span></div>`;
+        } else {
+            return `<div class="cp-row"><span class="cp-info away"><span class="confronto-pname">${name}</span>${flag}${role}</span>${scoreHtml}</div>`;
+        }
     } else {
-        return `
-            <div class="cp-row">
-                <span class="cp-info away">${badges}<span class="confronto-pname">${name}</span>${flag}${role}</span>
-                ${scoreHtml}
-            </div>
-            ${bd}`;
+        // ── ESPANSO: riga nome + riga bonus sotto ──
+        const bd = (!pending && score !== null) ? bonusBreakdownLine(p, stats, score) : '';
+        if (side === 'home') {
+            return `
+                <div class="cp-row">${scoreHtml}<span class="cp-info home">${role}${flag}<span class="confronto-pname">${name}</span></span></div>
+                ${bd}`;
+        } else {
+            return `
+                <div class="cp-row"><span class="cp-info away"><span class="confronto-pname">${name}</span>${flag}${role}</span>${scoreHtml}</div>
+                ${bd}`;
+        }
     }
+}
+
+// Breakdown bonus come riga separata, leggibile
+function bonusBreakdownLine(player, stats, totalScore) {
+    if (!stats) return '';
+    const base = stats.rating ?? 6;
+    const parts = [`<span class="bd-chip bd-base">base ${base.toFixed(1)}</span>`];
+    const g = stats.goals ?? 0;
+    const a = stats.assists ?? 0;
+    const y = stats.yellow ?? 0;
+    const r = stats.red ?? 0;
+    
+    if (g > 0) {
+        const val = g * (SCORE_TABLE.goal[player.role] ?? 6);
+        parts.push(`<span class="bd-chip bd-goal"><span class="material-symbols-outlined">sports_soccer</span>${g > 1 ? g + '×' : ''}+${val.toFixed(1)}</span>`);
+    }
+    if (a > 0) {
+        const val = a * SCORE_TABLE.assist;
+        parts.push(`<span class="bd-chip bd-assist"><span class="material-symbols-outlined">handshake</span>${a > 1 ? a + '×' : ''}+${val.toFixed(1)}</span>`);
+    }
+    if (r > 0) {
+        parts.push(`<span class="bd-chip bd-red"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.red.toFixed(1)}</span>`);
+    } else if (y > 0) {
+        parts.push(`<span class="bd-chip bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
+    }
+    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
+        parts.push(`<span class="bd-chip bd-cs"><span class="material-symbols-outlined">security</span>+${SCORE_TABLE.clean_sheet[player.role].toFixed(1)}</span>`);
+    }
+    
+    // Mostra breakdown solo se c'è almeno un bonus/malus oltre il base
+    if (parts.length <= 1) return '';
+    return `<div class="bd-line">${parts.join('')}</div>`;
 }
 
 function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench) {
