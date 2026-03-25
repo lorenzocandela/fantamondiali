@@ -2,64 +2,68 @@
 header('Content-Type: application/json');
 define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
 
-// Cerca la league giusta per i playoff UEFA WC 2026
-// Prova vari ID candidati
-$candidates = [960, 882, 32, 34, 30, 531, 848, 904, 906, 16];
 $tomorrow = '2026-03-26';
-$results = [];
 
-foreach ($candidates as $lid) {
+function apiGet($url) {
     $ch = curl_init();
     curl_setopt_array($ch, [
-        CURLOPT_URL            => "https://v3.football.api-sports.io/fixtures?date={$tomorrow}&league={$lid}&season=2026",
+        CURLOPT_URL            => $url,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_TIMEOUT        => 12,
         CURLOPT_HTTPHEADER     => ['x-apisports-key: ' . API_KEY, 'Accept: application/json'],
     ]);
-    $resp = json_decode(curl_exec($ch), true);
+    $resp = curl_exec($ch);
     curl_close($ch);
-    $count = count($resp['response'] ?? []);
-    $matches = array_map(fn($f) => ($f['teams']['home']['name'] ?? '?') . ' vs ' . ($f['teams']['away']['name'] ?? '?'), array_slice($resp['response'] ?? [], 0, 4));
-    $results["league_{$lid}"] = ['count' => $count, 'matches' => $matches, 'errors' => $resp['errors'] ?? null];
-    usleep(200000);
+    return json_decode($resp, true);
 }
 
-// Prova anche a cercare per nome
-$ch2 = curl_init();
-curl_setopt_array($ch2, [
-    CURLOPT_URL            => "https://v3.football.api-sports.io/leagues?search=world%20cup&season=2026",
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 10,
-    CURLOPT_HTTPHEADER     => ['x-apisports-key: ' . API_KEY, 'Accept: application/json'],
-]);
-$leagueSearch = json_decode(curl_exec($ch2), true);
-curl_close($ch2);
+// 1. Cerca tutte le fixture di domani per l'Italia (team ID = 768)
+$italy = apiGet("https://v3.football.api-sports.io/fixtures?date={$tomorrow}&team=768");
 
-$leagueList = array_map(fn($l) => [
-    'id'   => $l['league']['id'] ?? null,
-    'name' => $l['league']['name'] ?? '',
-    'type' => $l['league']['type'] ?? '',
-], $leagueSearch['response'] ?? []);
+// 2. Cerca tutte le fixture di domani per la Polonia (team ID = 24)
+$poland = apiGet("https://v3.football.api-sports.io/fixtures?date={$tomorrow}&team=24");
 
-// Cerca anche "qualification" e "playoff"
-$ch3 = curl_init();
-curl_setopt_array($ch3, [
-    CURLOPT_URL            => "https://v3.football.api-sports.io/leagues?search=qualification&season=2026",
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 10,
-    CURLOPT_HTTPHEADER     => ['x-apisports-key: ' . API_KEY, 'Accept: application/json'],
-]);
-$qualSearch = json_decode(curl_exec($ch3), true);
-curl_close($ch3);
+// 3. Cerca TUTTE le fixture di domani (senza filtro league) — prime 20
+$all = apiGet("https://v3.football.api-sports.io/fixtures?date={$tomorrow}");
+$allFixtures = array_slice($all['response'] ?? [], 0, 30);
+$allSummary = array_map(fn($f) => [
+    'league_id'   => $f['league']['id'] ?? null,
+    'league_name' => $f['league']['name'] ?? '',
+    'home'        => $f['teams']['home']['name'] ?? '?',
+    'away'        => $f['teams']['away']['name'] ?? '?',
+    'date'        => $f['fixture']['date'] ?? '',
+], $allFixtures);
 
-$qualList = array_map(fn($l) => [
-    'id'   => $l['league']['id'] ?? null,
-    'name' => $l['league']['name'] ?? '',
-    'type' => $l['league']['type'] ?? '',
-], $qualSearch['response'] ?? []);
+// Filtra solo le nazionali/qualificazioni dalla lista completa
+$nationals = array_filter($allSummary, fn($f) => 
+    stripos($f['league_name'], 'world') !== false ||
+    stripos($f['league_name'], 'qualif') !== false ||
+    stripos($f['league_name'], 'playoff') !== false ||
+    stripos($f['league_name'], 'play-off') !== false ||
+    stripos($f['league_name'], 'friendly') !== false ||
+    stripos($f['league_name'], 'UEFA') !== false ||
+    stripos($f['league_name'], 'FIFA') !== false
+);
 
 echo json_encode([
-    'fixture_checks'    => $results,
-    'leagues_worldcup'  => $leagueList,
-    'leagues_qualification' => $qualList,
+    'italy_tomorrow' => [
+        'count'   => count($italy['response'] ?? []),
+        'matches' => array_map(fn($f) => [
+            'league_id'   => $f['league']['id'] ?? null,
+            'league_name' => $f['league']['name'] ?? '',
+            'home'        => $f['teams']['home']['name'] ?? '?',
+            'away'        => $f['teams']['away']['name'] ?? '?',
+        ], $italy['response'] ?? []),
+    ],
+    'poland_tomorrow' => [
+        'count'   => count($poland['response'] ?? []),
+        'matches' => array_map(fn($f) => [
+            'league_id'   => $f['league']['id'] ?? null,
+            'league_name' => $f['league']['name'] ?? '',
+            'home'        => $f['teams']['home']['name'] ?? '?',
+            'away'        => $f['teams']['away']['name'] ?? '?',
+        ], $poland['response'] ?? []),
+    ],
+    'all_nationals' => array_values($nationals),
+    'total_fixtures_tomorrow' => count($all['response'] ?? []),
 ], JSON_PRETTY_PRINT);
