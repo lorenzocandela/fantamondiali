@@ -9,7 +9,7 @@ define('MAX_PRICE', 60);
 $today = date('Y-m-d');
 
 // ─── CACHE (breve per test: 10 minuti) ──────────────────────────────────────
-$cacheFile = sys_get_temp_dir() . "/fm_listone_test_{$today}.json";
+$cacheFile = sys_get_temp_dir() . "/fm_listone_test_playoff_{$today}.json";
 $cacheTtl  = 600;
 
 if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
