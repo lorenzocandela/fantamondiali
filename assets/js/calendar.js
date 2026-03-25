@@ -942,9 +942,9 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
             <div class="confronto-player home ${h ? '' : 'empty'}">
                 ${h ? `
                     <span class="confronto-score ${pending ? 'pending' : scoreClass(hScore)}">${pending ? '–' : (hScore?.toFixed(1) ?? '–')}</span>
+                    ${flagImg(h.nationality || h.team)}
                     <span class="confronto-pname">${h.name?.split(' ').pop() ?? ''}</span>
                     ${!pending ? statBadges(hStats) : ''}
-                    <span class="confronto-nat">${h.nationality || h.team || ''}</span>
                     <span class="role-badge badge-${h.role}" style="margin:0;font-size:9px">${h.role}</span>
                 ` : `<span class="confronto-empty-slot">—</span>`}
             </div>
@@ -952,9 +952,9 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
             <div class="confronto-player away ${a ? '' : 'empty'}">
                 ${a ? `
                     <span class="role-badge badge-${a.role}" style="margin:0;font-size:9px">${a.role}</span>
-                    <span class="confronto-nat">${a.nationality || a.team || ''}</span>
                     ${!pending ? statBadges(aStats) : ''}
                     <span class="confronto-pname">${a.name?.split(' ').pop() ?? ''}</span>
+                    ${flagImg(a.nationality || a.team)}
                     <span class="confronto-score ${pending ? 'pending' : scoreClass(aScore)}">${pending ? '–' : (aScore?.toFixed(1) ?? '–')}</span>
                 ` : `<span class="confronto-empty-slot">—</span>`}
             </div>
@@ -974,6 +974,55 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
     }
 
     return rows;
+}
+
+// ─── FLAG HELPER ────────────────────────────────────────────────────────────
+
+const COUNTRY_CODES = {
+    'Afghanistan':'af','Albania':'al','Algeria':'dz','Andorra':'ad','Angola':'ao',
+    'Argentina':'ar','Armenia':'am','Australia':'au','Austria':'at','Azerbaijan':'az',
+    'Bahrain':'bh','Bangladesh':'bd','Belarus':'by','Belgium':'be','Benin':'bj',
+    'Bolivia':'bo','Bosnia and Herzegovina':'ba','Botswana':'bw','Brazil':'br',
+    'Bulgaria':'bg','Burkina Faso':'bf','Burundi':'bi','Cameroon':'cm','Canada':'ca',
+    'Cape Verde':'cv','Central African Republic':'cf','Chad':'td','Chile':'cl',
+    'China':'cn','Colombia':'co','Comoros':'km','Congo':'cg','Costa Rica':'cr',
+    'Croatia':'hr','Cuba':'cu','Curaçao':'cw','Cyprus':'cy','Czech Republic':'cz',
+    'Czechia':'cz','DR Congo':'cd','Denmark':'dk','Ecuador':'ec','Egypt':'eg',
+    'El Salvador':'sv','England':'gb-eng','Equatorial Guinea':'gq','Eritrea':'er',
+    'Estonia':'ee','Ethiopia':'et','Fiji':'fj','Finland':'fi','France':'fr',
+    'Gabon':'ga','Gambia':'gm','Georgia':'ge','Germany':'de','Ghana':'gh',
+    'Greece':'gr','Grenada':'gd','Guatemala':'gt','Guinea':'gn','Haiti':'ht',
+    'Honduras':'hn','Hungary':'hu','Iceland':'is','India':'in','Indonesia':'id',
+    'Iran':'ir','Iraq':'iq','Ireland':'ie','Israel':'il','Italy':'it',
+    'Ivory Coast':'ci','Cote D\'Ivoire':'ci','Jamaica':'jm','Japan':'jp','Jordan':'jo',
+    'Kazakhstan':'kz','Kenya':'ke','Korea Republic':'kr','South Korea':'kr',
+    'Kosovo':'xk','Kuwait':'kw','Kyrgyzstan':'kg','Latvia':'lv','Lebanon':'lb',
+    'Libya':'ly','Liechtenstein':'li','Lithuania':'lt','Luxembourg':'lu',
+    'Madagascar':'mg','Malawi':'mw','Malaysia':'my','Mali':'ml','Malta':'mt',
+    'Mauritania':'mr','Mauritius':'mu','Mexico':'mx','Moldova':'md','Monaco':'mc',
+    'Montenegro':'me','Morocco':'ma','Mozambique':'mz','Myanmar':'mm',
+    'Namibia':'na','Nepal':'np','Netherlands':'nl','New Zealand':'nz',
+    'Nicaragua':'ni','Niger':'ne','Nigeria':'ng','North Macedonia':'mk',
+    'Northern Ireland':'gb-nir','Norway':'no','Oman':'om','Pakistan':'pk',
+    'Palestine':'ps','Panama':'pa','Paraguay':'py','Peru':'pe','Philippines':'ph',
+    'Poland':'pl','Portugal':'pt','Puerto Rico':'pr','Qatar':'qa','Romania':'ro',
+    'Russia':'ru','Rwanda':'rw','Saudi Arabia':'sa','Scotland':'gb-sct',
+    'Senegal':'sn','Serbia':'rs','Sierra Leone':'sl','Singapore':'sg',
+    'Slovakia':'sk','Slovenia':'si','Somalia':'so','South Africa':'za',
+    'Spain':'es','Sri Lanka':'lk','Sudan':'sd','Suriname':'sr','Sweden':'se',
+    'Switzerland':'ch','Syria':'sy','Tanzania':'tz','Thailand':'th','Togo':'tg',
+    'Trinidad and Tobago':'tt','Tunisia':'tn','Turkey':'tr','Turkmenistan':'tm',
+    'Uganda':'ug','Ukraine':'ua','United Arab Emirates':'ae','United States':'us',
+    'USA':'us','Uruguay':'uy','Uzbekistan':'uz','Venezuela':'ve','Vietnam':'vn',
+    'Wales':'gb-wls','Yemen':'ye','Zambia':'zm','Zimbabwe':'zw',
+    'American Samoa':'as','Bermuda':'bm','Guam':'gu','US Virgin Islands':'vi',
+};
+
+function flagImg(nationality) {
+    if (!nationality) return '';
+    const code = COUNTRY_CODES[nationality];
+    if (!code) return `<span class="confronto-nat-text">${nationality.slice(0,3).toUpperCase()}</span>`;
+    return `<img class="confronto-flag" src="https://flagcdn.com/w40/${code}.png" alt="${nationality}" title="${nationality}">`;
 }
 
 function scoreClass(score) {
