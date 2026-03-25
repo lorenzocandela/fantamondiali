@@ -1,5 +1,3 @@
-
-
 import { db } from './firebase-init.js';
 import { doc, getDoc, getDocs, setDoc, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, formatDate } from './utils.js';
@@ -1000,35 +998,21 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     const name = p.name?.split(' ').pop() ?? '';
     const role = `<span class="role-badge badge-${p.role}" style="margin:0;font-size:9px">${p.role}</span>`;
     const scoreHtml = `<span class="confronto-score ${pending ? 'pending' : scoreClass(score)}">${pending ? '–' : score.toFixed(1)}</span>`;
-    
-    if (isDetail) {
-        // Vista dettaglio: 2 righe — nome + breakdown sotto
-        const bd = !pending ? bonusBreakdown(p, stats) : '';
-        if (side === 'home') {
-            return `
-                <div class="cd-main">
-                    ${scoreHtml} ${flag}
-                    <span class="confronto-pname">${name}</span>
-                    ${role}
-                </div>
-                ${bd}`;
-        } else {
-            return `
-                <div class="cd-main">
-                    ${role}
-                    <span class="confronto-pname">${name}</span>
-                    ${flag} ${scoreHtml}
-                </div>
-                ${bd}`;
-        }
+    const badges = !pending ? statBadgesCompact(stats) : '';
+    const bd = (!pending && isDetail) ? bonusBreakdown(p, stats) : '';
+
+    if (side === 'home') {
+        return `
+            <div class="cp-row">
+                ${scoreHtml}${flag}<span class="confronto-pname">${name}</span>${badges}${role}
+            </div>
+            ${bd}`;
     } else {
-        // Vista compatta: 1 riga con mini badge
-        const badges = !pending ? statBadgesCompact(stats) : '';
-        if (side === 'home') {
-            return `${scoreHtml} ${flag} <span class="confronto-pname">${name}</span> ${badges} ${role}`;
-        } else {
-            return `${role} ${badges} <span class="confronto-pname">${name}</span> ${flag} ${scoreHtml}`;
-        }
+        return `
+            <div class="cp-row">
+                ${role}${badges}<span class="confronto-pname">${name}</span>${flag}${scoreHtml}
+            </div>
+            ${bd}`;
     }
 }
 

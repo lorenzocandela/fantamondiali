@@ -221,15 +221,26 @@
 .confronto-player {
     flex: 1;
     display: flex;
-    align-items: center;
-    gap: 5px;
+    flex-direction: column;
+    gap: 2px;
     padding: 6px 8px;
     min-width: 0;
+    overflow: hidden;
 }
 
-.confronto-player.home { justify-content: flex-start; }
-.confronto-player.away { justify-content: flex-end; }
-.confronto-player.empty { opacity: 0.35; }
+.confronto-player.home { align-items: flex-end; }
+.confronto-player.away { align-items: flex-start; }
+.confronto-player.empty { opacity: 0.35; justify-content: center; }
+
+.cp-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.confronto-player.home .cp-row { justify-content: flex-end; }
+.confronto-player.away .cp-row { justify-content: flex-start; }
 
 .confronto-pname {
     font-size: 11.5px;
@@ -429,30 +440,7 @@
 
 /* ─── VISTA DETTAGLIO ─────────────────────────────────────────────────────── */
 
-.confronto-row.detail {
-    flex-wrap: wrap;
-    min-height: auto;
-    padding: 2px 0;
-}
-
-.confronto-row.detail .confronto-player {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
-}
-
-.confronto-row.detail .confronto-player.away {
-    align-items: flex-end;
-}
-
-.cd-main {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    width: 100%;
-}
-
-.confronto-player.away .cd-main { justify-content: flex-end; }
+.confronto-row.detail { min-height: auto; }
 
 /* ─── BONUS BREAKDOWN ─────────────────────────────────────────────────────── */
 
@@ -460,10 +448,10 @@
     display: flex;
     gap: 3px;
     flex-wrap: wrap;
-    padding-left: 2px;
 }
 
-.confronto-player.away .bd-row { justify-content: flex-end; }
+.confronto-player.home .bd-row { justify-content: flex-end; }
+.confronto-player.away .bd-row { justify-content: flex-start; }
 
 .bd-item {
     display: inline-flex;
