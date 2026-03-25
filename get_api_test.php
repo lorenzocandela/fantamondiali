@@ -89,11 +89,12 @@ foreach ($fixtures as $f) {
 // ─── 3. PRENDI I ROSTER DELLE SQUADRE ───────────────────────────────────────
 
 $teamIds = [];
+$teamCountry = []; // team_id → country name (per nazionali = nome squadra)
 foreach ($fixtures as $f) {
     $homeId = $f['teams']['home']['id'] ?? null;
     $awayId = $f['teams']['away']['id'] ?? null;
-    if ($homeId) $teamIds[$homeId] = $f['teams']['home']['name'] ?? '';
-    if ($awayId) $teamIds[$awayId] = $f['teams']['away']['name'] ?? '';
+    if ($homeId) { $teamIds[$homeId] = $f['teams']['home']['name'] ?? ''; $teamCountry[$homeId] = $f['teams']['home']['name'] ?? ''; }
+    if ($awayId) { $teamIds[$awayId] = $f['teams']['away']['name'] ?? ''; $teamCountry[$awayId] = $f['teams']['away']['name'] ?? ''; }
 }
 
 // Per ogni squadra, prendi i giocatori dal roster
@@ -101,6 +102,8 @@ $allPlayers = [];
 $season = (int) date('Y'); // stagione corrente
 
 foreach ($teamIds as $teamId => $teamName) {
+    $countryName = $teamCountry[$teamId] ?? $teamName;
+    
     // Prova prima con la stagione corrente, poi con l'anno precedente
     $squad = apiGet("players/squads?team={$teamId}");
     
@@ -122,10 +125,10 @@ foreach ($teamIds as $teamId => $teamName) {
                 'firstname'   => '',
                 'lastname'    => '',
                 'photo'       => $p['photo'] ?? '',
-                'nationality' => '', // non disponibile da squads
+                'nationality' => $countryName, // per nazionali = nome paese
                 'age'         => $p['age'] ?? null,
                 'role'        => $role,
-                'team'        => $teamName,
+                'team'        => $countryName,
                 'team_logo'   => '',
                 'rating'      => 6.5,
                 'price'       => $price,
