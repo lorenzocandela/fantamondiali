@@ -997,10 +997,27 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     const flag = flagImg(p.nationality || p.team);
     const name = p.name?.split(' ').pop() ?? '';
     const role = `<span class="role-badge badge-${p.role}" style="margin:0;font-size:9px">${p.role}</span>`;
-    const scoreHtml = `<span class="confronto-score ${pending ? 'pending' : scoreClass(score)}">${pending ? '–' : score.toFixed(1)}</span>`;
-    const badges = !pending ? statBadgesCompact(stats) : '';
-    const bd = (!pending && isDetail) ? bonusBreakdown(p, stats) : '';
+    
+    // Se pending (pre-partita) mostra –, se no stats mostra SV, altrimenti voto
+    let scoreLabel;
+    let scoreClass2;
+    if (pending) {
+        scoreLabel = '–';
+        scoreClass2 = 'pending';
+    } else if (score === null) {
+        scoreLabel = 'SV';
+        scoreClass2 = 'pending';
+    } else {
+        scoreLabel = score.toFixed(1);
+        scoreClass2 = scoreClass(score);
+    }
+    
+    const scoreHtml = `<span class="confronto-score ${scoreClass2}">${scoreLabel}</span>`;
+    const badges = !pending && score !== null ? statBadgesCompact(stats) : '';
+    const bd = (!pending && isDetail && score !== null) ? bonusBreakdown(p, stats) : '';
 
+    // Home: voto a SX, poi flag nome badge ruolo → (allineato a dx)
+    // Away: ← ruolo badge nome flag, poi voto a DX
     if (side === 'home') {
         return `
             <div class="cp-row">
@@ -1035,9 +1052,10 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
         const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
         
-        // Se live: tutti i giocatori schierati hanno voto base 6 + eventuali bonus
-        const hScore = (h && isLive) ? calcLiveScore(h, hStats) : (h && hStats ? calcLiveScore(h, hStats) : null);
-        const aScore = (a && isLive) ? calcLiveScore(a, aStats) : (a && aStats ? calcLiveScore(a, aStats) : null);
+        // Voto solo se abbiamo stats reali dall'API (lineups o events)
+        // Se non abbiamo stats → null → mostra "SV"
+        const hScore = (h && hStats) ? calcLiveScore(h, hStats) : null;
+        const aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
 
         if (hScore != null) { homeTotal += hScore; homeCount++; }
         if (aScore != null) { awayTotal += aScore; awayCount++; }
