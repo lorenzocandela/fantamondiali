@@ -118,9 +118,11 @@ function renderAdminUsers(snap) {
 function buildUserRow(u) {
     return `
     <div class="admin-user-row" data-uid="${u.uid}">
-        <div class="comp-team-logo-placeholder" style="width:34px;height:34px;font-size:13px;flex-shrink:0">
-            ${(u.team_name ?? u.email ?? '?')[0].toUpperCase()}
-        </div>
+        ${u.avatar
+            ? `<img src="${u.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${u.team_name ?? ''}">`
+            : `<div class="comp-team-logo-placeholder" style="width:34px;height:34px;font-size:13px;flex-shrink:0">
+                ${(u.team_name ?? u.email ?? '?')[0].toUpperCase()}
+            </div>`}
         <div class="admin-user-info">
             <div class="admin-user-name">${u.team_name ?? 'Senza nome'}</div>
             <div class="admin-user-meta">${u.email ?? ''} · ${(u.players ?? []).length} gioc. · ${u.credits ?? 500} cr.</div>
