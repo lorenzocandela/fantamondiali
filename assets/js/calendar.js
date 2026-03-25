@@ -5,8 +5,7 @@ import { toast, formatDate } from './utils.js';
 // ─── SCHEDULE ────────────────────────────────────────────────────────────────
 
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-03-25', end: '2026-03-25' }, // TEST
-    // { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' }, PRODUZIONE
+    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
     { round: 2, label: 'Fase a gironi – Giornata 2', short: 'GJ2', start: '2026-06-15', end: '2026-06-19' },
     { round: 3, label: 'Fase a gironi – Giornata 3', short: 'GJ3', start: '2026-06-20', end: '2026-06-25' },
     { round: 4, label: 'Ottavi di finale',            short: 'R16', start: '2026-06-27', end: '2026-07-03' },
@@ -716,12 +715,22 @@ async function saveFormazione() {
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Salvataggio...'; }
 
     try {
+        const lineupIds = lineup.map(p => String(p.id));
         await setDoc(doc(db, 'users', window.__user.uid), {
-            [`lineup_r${mdRound}`]: lineup.map(p => String(p.id)),
+            [`lineup_r${mdRound}`]: lineupIds,
             [`module_r${mdRound}`]: activeModule,
-            lineup: lineup.map(p => String(p.id)),
+            lineup: lineupIds,
             module: activeModule,
         }, { merge: true });
+
+        // aggiorna subito la cache locale così il Confronto è aggiornato
+        if (calUsersMap[window.__user.uid]) {
+            calUsersMap[window.__user.uid][`lineup_r${mdRound}`] = lineupIds;
+            calUsersMap[window.__user.uid][`module_r${mdRound}`] = activeModule;
+            calUsersMap[window.__user.uid].lineup = lineupIds;
+            calUsersMap[window.__user.uid].module = activeModule;
+        }
+
         toast(`Formazione G${mdRound} salvata ✓`);
     } catch { toast('Errore salvataggio', 'error'); }
     finally {
