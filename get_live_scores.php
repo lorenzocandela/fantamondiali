@@ -123,47 +123,123 @@ foreach ($fixtures as $f) {
 
 $playerStats = [];
 $liveStatuses = ['1H','HT','2H','ET','P','BT','LIVE','FT','AET','PEN'];
+$source = 'events'; // track data source
 
 foreach ($fixturesMeta as $fm) {
     // Prendi stats solo per partite in corso o concluse
     if (!in_array($fm['status'], $liveStatuses)) continue;
 
+    // Prova prima fixtures/players (stats complete con rating)
     $players = apiGet("fixtures/players?fixture={$fm['id']}");
-    if (empty($players)) continue;
+    
+    if (!empty($players)) {
+        $source = 'players_stats';
+        foreach ($players as $teamData) {
+            foreach ($teamData['players'] ?? [] as $entry) {
+                $pid   = $entry['player']['id']   ?? null;
+                $pname = $entry['player']['name']  ?? '';
+                $photo = $entry['player']['photo'] ?? '';
+                $stats = $entry['statistics'][0]   ?? [];
+                if (!$pid) continue;
 
-    foreach ($players as $teamData) {
-        foreach ($teamData['players'] ?? [] as $entry) {
-            $pid   = $entry['player']['id']   ?? null;
-            $pname = $entry['player']['name']  ?? '';
-            $photo = $entry['player']['photo'] ?? '';
-            $stats = $entry['statistics'][0]   ?? [];
+                $rating  = (float) ($stats['games']['rating']      ?? 0);
+                $goals   = (int)   ($stats['goals']['total']       ?? 0);
+                $assists = (int)   ($stats['goals']['assists']     ?? 0);
+                $yellow  = (int)   ($stats['cards']['yellow']      ?? 0);
+                $red     = (int)   ($stats['cards']['red']         ?? 0);
+                $cs      = ($stats['goals']['conceded'] ?? 1) === 0;
+                $played  = (bool)  ($stats['games']['minutes']     ?? 0);
+                $minutes = (int)   ($stats['games']['minutes']     ?? 0);
+                $position= $stats['games']['position']             ?? '';
+
+                $playerStats[(string)$pid] = [
+                    'name'       => $pname,
+                    'photo'      => $photo,
+                    'rating'     => $rating,
+                    'goals'      => $goals,
+                    'assists'    => $assists,
+                    'yellow'     => $yellow,
+                    'red'        => $red,
+                    'cs'         => $cs,
+                    'played'     => $played,
+                    'minutes'    => $minutes,
+                    'position'   => $position,
+                    'fixture_id' => $fm['id'],
+                ];
+            }
+        }
+    } else {
+        // FALLBACK: usa fixtures/events per ricostruire gol/assist/cartellini
+        $events = apiGet("fixtures/events?fixture={$fm['id']}");
+        if (empty($events)) continue;
+        
+        // Costruisci stats dai singoli eventi
+        $eventsMap = []; // pid → {goals, assists, yellow, red}
+        
+        foreach ($events as $ev) {
+            $pid  = $ev['player']['id'] ?? null;
+            $type = $ev['type'] ?? '';
+            $detail = $ev['detail'] ?? '';
             if (!$pid) continue;
-
-            $rating  = (float) ($stats['games']['rating']      ?? 0);
-            $goals   = (int)   ($stats['goals']['total']       ?? 0);
-            $assists = (int)   ($stats['goals']['assists']     ?? 0);
-            $yellow  = (int)   ($stats['cards']['yellow']      ?? 0);
-            $red     = (int)   ($stats['cards']['red']         ?? 0);
-            $cs      = ($stats['goals']['conceded'] ?? 1) === 0;
-            $played  = (bool)  ($stats['games']['minutes']     ?? 0);
-            $minutes = (int)   ($stats['games']['minutes']     ?? 0);
-            $position= $stats['games']['position']             ?? '';
-
+            
+            if (!isset($eventsMap[$pid])) {
+                $eventsMap[$pid] = [
+                    'name'    => $ev['player']['name'] ?? '',
+                    'goals'   => 0,
+                    'assists' => 0,
+                    'yellow'  => 0,
+                    'red'     => 0,
+                ];
+            }
+            
+            if ($type === 'Goal' && $detail !== 'Missed Penalty') {
+                $eventsMap[$pid]['goals']++;
+                // Registra anche l'assist se presente
+                $assistId = $ev['assist']['id'] ?? null;
+                if ($assistId) {
+                    if (!isset($eventsMap[$assistId])) {
+                        $eventsMap[$assistId] = [
+                            'name'    => $ev['assist']['name'] ?? '',
+                            'goals'   => 0,
+                            'assists' => 0,
+                            'yellow'  => 0,
+                            'red'     => 0,
+                        ];
+                    }
+                    $eventsMap[$assistId]['assists']++;
+                }
+            } elseif ($type === 'Card') {
+                if ($detail === 'Yellow Card') $eventsMap[$pid]['yellow']++;
+                if ($detail === 'Red Card')    $eventsMap[$pid]['red']++;
+            }
+        }
+        
+        // Determina clean sheet: se la squadra non ha subito gol
+        $homeCs = ($fm['away_goals'] ?? 0) == 0;
+        $awayCs = ($fm['home_goals'] ?? 0) == 0;
+        
+        // Converti in playerStats con rating base 6.0
+        foreach ($eventsMap as $pid => $ev) {
             $playerStats[(string)$pid] = [
-                'name'       => $pname,
-                'photo'      => $photo,
-                'rating'     => $rating,
-                'goals'      => $goals,
-                'assists'    => $assists,
-                'yellow'     => $yellow,
-                'red'        => $red,
-                'cs'         => $cs,
-                'played'     => $played,
-                'minutes'    => $minutes,
-                'position'   => $position,
+                'name'       => $ev['name'],
+                'photo'      => '',
+                'rating'     => 6.0,  // rating base, non disponibile
+                'goals'      => $ev['goals'],
+                'assists'    => $ev['assists'],
+                'yellow'     => $ev['yellow'],
+                'red'        => $ev['red'],
+                'cs'         => false, // non possiamo determinare per singolo giocatore
+                'played'     => true,
+                'minutes'    => 0,
+                'position'   => '',
                 'fixture_id' => $fm['id'],
+                'source'     => 'events',
             ];
         }
+        
+        // Per i giocatori NON coinvolti in eventi ma che stanno giocando,
+        // non possiamo sapere chi è in campo senza lineups.
+        // Segniamo solo quelli con eventi — gli altri avranno voto "–" nella UI.
     }
     usleep(150000);
 }
