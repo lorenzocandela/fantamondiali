@@ -35,7 +35,7 @@ function apiGet(string $endpoint): ?array {
 
 // ─── CACHE ───────────────────────────────────────────────────────────────────
 $today     = date('Y-m-d');
-$cacheFile = sys_get_temp_dir() . "/fm_live_{$mode}_{$today}.json";
+$cacheFile = sys_get_temp_dir() . "/fm_live_2{$mode}_{$today}.json";
 $cacheTtl  = ($mode === 'test') ? 120 : 300; // test: 2min, prod: 5min
 
 if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
