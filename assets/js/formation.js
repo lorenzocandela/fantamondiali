@@ -305,13 +305,13 @@ function openPicker({ role, slotIdx, currentId, context }) {
         <div class="fpicker-header">
             <div class="fpicker-title">${title}</div>
             <button class="fpicker-close" id="fpicker-close">
-                <span class="material-icons-round">close</span>
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         ${currentId ? `
         <div class="fpicker-actions">
             <button class="fpicker-remove-btn" id="fpicker-remove">
-                <span class="material-icons-round">arrow_downward</span>Sposta in panchina
+                <span class="material-symbols-outlined">arrow_downward</span>Sposta in panchina
             </button>
         </div>` : ''}
         <div class="fpicker-list">
@@ -328,7 +328,7 @@ function openPicker({ role, slotIdx, currentId, context }) {
                         <div class="fpicker-name">${p.name}</div>
                         <div class="fpicker-meta">
                             <span class="role-badge badge-${p.role}" style="margin:0">${p.role}</span>
-                            <span class="fpicker-price"><span class="material-icons-round" style="font-size:10px">toll</span>${p.price}</span>
+                            <span class="fpicker-price"><span class="material-symbols-outlined" style="font-size:10px">toll</span>${p.price}</span>
                             ${!roleMatch ? `<span class="fpicker-warn">ruolo diverso</span>` : ''}
                         </div>
                     </div>
@@ -391,7 +391,7 @@ async function saveFormazione() {
     if (errors.length) { toast(errors[0].text, 'error'); return; }
 
     const btn = document.getElementById('btn-save-formazione');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Salvataggio...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Salvataggio...'; }
 
     try {
         await setDoc(doc(db, 'users', window.__user.uid), {
@@ -403,7 +403,7 @@ async function saveFormazione() {
         toast(`Formazione GJ${activeRound} salvata ✓`);
     } catch { toast('Errore salvataggio', 'error'); }
     finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons-round">check_circle</span> Salva formazione GJ' + activeRound; }
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Salva formazione GJ' + activeRound; }
     }
 }
 
@@ -465,7 +465,7 @@ function renderAdminModules(list) {
             <div class="admin-module-row">
                 <span class="admin-module-name">${m}</span>
                 <button class="admin-module-del" data-module="${m}">
-                    <span class="material-icons-round">close</span>
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>`).join('')
         : `<div style="font-size:12px;color:var(--text-3)">Nessun modulo custom aggiunto</div>`;
