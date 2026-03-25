@@ -471,3 +471,13 @@
 .bd-red { background: var(--red-soft); color: var(--red); }
 .bd-red .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
 .bd-cs { background: var(--blue-mid); color: var(--blue); }
+
+.cp-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+.cp-info.home { justify-content: flex-end; }
+.cp-info.away { justify-content: flex-start; }

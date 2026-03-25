@@ -940,8 +940,8 @@ const SCORE_TABLE = {
 let confrontoDetail = false; // false = compatto, true = dettaglio
 
 function calcLiveScore(player, stats) {
-    // Se live e nessuna stat → voto base 6 (in campo senza eventi)
-    const base = stats?.rating ?? 6;
+    if (!stats) return null;
+    const base = stats.rating ?? 6;
     let score = base;
     if (stats) {
         score += (stats.goals   ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
@@ -1021,13 +1021,15 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     if (side === 'home') {
         return `
             <div class="cp-row">
-                ${scoreHtml}${flag}<span class="confronto-pname">${name}</span>${badges}${role}
+                ${scoreHtml}
+                <span class="cp-info home">${role}${flag}<span class="confronto-pname">${name}</span>${badges}</span>
             </div>
             ${bd}`;
     } else {
         return `
             <div class="cp-row">
-                ${role}${badges}<span class="confronto-pname">${name}</span>${flag}${scoreHtml}
+                <span class="cp-info away">${badges}<span class="confronto-pname">${name}</span>${flag}${role}</span>
+                ${scoreHtml}
             </div>
             ${bd}`;
     }
