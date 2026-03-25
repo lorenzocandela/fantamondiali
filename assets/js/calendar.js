@@ -7,7 +7,6 @@ import { toast, formatDate } from './utils.js';
 const MATCHDAY_SCHEDULE = [
     //{ round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
     { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-03-25', end: '2026-03-25' }, // TEST
-
     { round: 2, label: 'Fase a gironi – Giornata 2', short: 'GJ2', start: '2026-06-15', end: '2026-06-19' },
     { round: 3, label: 'Fase a gironi – Giornata 3', short: 'GJ3', start: '2026-06-20', end: '2026-06-25' },
     { round: 4, label: 'Ottavi di finale',            short: 'R16', start: '2026-06-27', end: '2026-07-03' },
@@ -300,6 +299,7 @@ let availableModules = [...DEFAULT_MODULES];
 let pickerState      = null;
 let liveScoresCache  = null;
 let liveRefreshTimer = null;
+let liveTotals       = { home: null, away: null }; // aggiornati dal confronto
 
 function getMatchdayMeta(round) {
     return MATCHDAY_SCHEDULE.find(m => m.round === round);
@@ -405,7 +405,11 @@ function renderMatchDetail() {
             ${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
         </div>`;
 
-    // Score bar
+    // Score bar — usa liveTotals se disponibili durante il live
+    const liveHome = liveTotals.home != null ? liveTotals.home.toFixed(1) : null;
+    const liveAway = liveTotals.away != null ? liveTotals.away.toFixed(1) : null;
+    const hasLive  = status === 'live' && liveHome != null;
+    
     const scoreHtml = `
         <div class="md-score-bar">
             <div class="md-score-team">
@@ -413,10 +417,14 @@ function renderMatchDetail() {
                 <div class="md-score-name">${home?.team_name ?? '?'}</div>
             </div>
             <div class="md-score-center">
-                ${played || status === 'live'
-                    ? `<span class="md-score-val">${res?.home_score ?? '–'}</span>
+                ${played
+                    ? `<span class="md-score-val">${res?.home_score?.toFixed?.(1) ?? res?.home_score ?? '–'}</span>
                        <span class="md-score-sep">:</span>
-                       <span class="md-score-val">${res?.away_score ?? '–'}</span>`
+                       <span class="md-score-val">${res?.away_score?.toFixed?.(1) ?? res?.away_score ?? '–'}</span>`
+                    : hasLive
+                    ? `<span class="md-score-val ${scoreClass(liveTotals.home)}">${liveHome}</span>
+                       <span class="md-score-sep">:</span>
+                       <span class="md-score-val ${scoreClass(liveTotals.away)}">${liveAway}</span>`
                     : `<span class="md-score-vs">VS</span>`}
             </div>
             <div class="md-score-team">
@@ -804,12 +812,17 @@ function renderConfrontoView(res, status) {
     const homeRoster    = homeData.players ?? [];
     const awayRoster    = awayData.players ?? [];
 
-    const homeLineup = homeLineupIds
+    const homeAll = homeLineupIds
         .map(id => homeRoster.find(p => String(p.id) === String(id)))
-        .filter(Boolean).slice(0, 11);
-    const awayLineup = awayLineupIds
+        .filter(Boolean);
+    const awayAll = awayLineupIds
         .map(id => awayRoster.find(p => String(p.id) === String(id)))
-        .filter(Boolean).slice(0, 11);
+        .filter(Boolean);
+
+    const homeLineup = homeAll.slice(0, 11);
+    const awayLineup = awayAll.slice(0, 11);
+    const homeBench  = homeAll.slice(11);
+    const awayBench  = awayAll.slice(11);
 
     const homeModule = homeData[`module_r${mdRound}`] ?? homeData.module ?? '4-3-3';
     const awayModule = awayData[`module_r${mdRound}`] ?? awayData.module ?? '4-3-3';
@@ -819,6 +832,41 @@ function renderConfrontoView(res, status) {
 
     const homeName = calTeams.find(t => t.uid === mdHomeUid)?.team_name ?? '?';
     const awayName = calTeams.find(t => t.uid === mdAwayUid)?.team_name ?? '?';
+
+    // Panchina
+    const benchMaxLen = Math.max(homeBench.length, awayBench.length);
+    let benchHtml = '';
+    if (benchMaxLen > 0) {
+        let benchRows = '';
+        for (let i = 0; i < benchMaxLen; i++) {
+            const h = homeBench[i];
+            const a = awayBench[i];
+            benchRows += `
+            <div class="confronto-row bench">
+                <div class="confronto-player home ${h ? '' : 'empty'}">
+                    ${h ? `
+                        ${flagImg(h.nationality || h.team)}
+                        <span class="confronto-pname">${h.name?.split(' ').pop() ?? ''}</span>
+                        <span class="role-badge badge-${h.role}" style="margin:0;font-size:9px">${h.role}</span>
+                    ` : ''}
+                </div>
+                <div class="confronto-divider bench-num">${i + 1}</div>
+                <div class="confronto-player away ${a ? '' : 'empty'}">
+                    ${a ? `
+                        <span class="role-badge badge-${a.role}" style="margin:0;font-size:9px">${a.role}</span>
+                        <span class="confronto-pname">${a.name?.split(' ').pop() ?? ''}</span>
+                        ${flagImg(a.nationality || a.team)}
+                    ` : ''}
+                </div>
+            </div>`;
+        }
+        benchHtml = `
+            <div class="confronto-bench-title">
+                <span class="material-symbols-outlined">airline_seat_recline_normal</span>
+                Panchina
+            </div>
+            <div class="confronto-list bench-list">${benchRows}</div>`;
+    }
 
     return `
         <div class="confronto-wrap">
@@ -834,6 +882,7 @@ function renderConfrontoView(res, status) {
             <div class="confronto-list">
                 ${renderConfrontoRows(homeLineup, awayLineup, liveStats, status)}
             </div>
+            ${benchHtml}
             ${!homeLineup.length && !awayLineup.length ? `
                 <div class="empty-state" style="padding:30px 20px">
                     <span class="material-symbols-outlined">sports_soccer</span>
@@ -962,17 +1011,9 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status) {
         </div>`;
     }
 
-    // Aggiungi riga totale live se abbiamo dati
-    if (!rows) return rows;
-    const hasTotals = homeCount > 0 || awayCount > 0;
-    if (hasTotals) {
-        rows += `
-        <div class="confronto-total">
-            <span class="confronto-total-val ${scoreClass(homeTotal)}">${homeTotal.toFixed(1)}</span>
-            <span class="confronto-total-label">Totale</span>
-            <span class="confronto-total-val ${scoreClass(awayTotal)}">${awayTotal.toFixed(1)}</span>
-        </div>`;
-    }
+    // Salva i totali per la score bar in alto
+    liveTotals.home = homeCount > 0 ? homeTotal : null;
+    liveTotals.away = awayCount > 0 ? awayTotal : null;
 
     return rows;
 }

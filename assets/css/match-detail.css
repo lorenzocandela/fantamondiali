@@ -321,9 +321,12 @@
 .confronto-badge.badge-cs { background: var(--blue-mid); color: var(--blue); }
 
 .confronto-flag {
-    width: 14px;
+    width: 16px;
+    height: 12px;
+    border-radius: 2px;
     object-fit: cover;
     flex-shrink: 0;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.1);
 }
 
 .confronto-nat-text {
@@ -375,3 +378,24 @@
     font-family: var(--mono);
     vertical-align: middle;
 }
+
+/* ─── BENCH IN CONFRONTO ──────────────────────────────────────────────────── */
+
+.confronto-bench-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--mono);
+}
+.confronto-bench-title .material-symbols-outlined { font-size: 14px; }
+
+.confronto-list.bench-list .confronto-row { opacity: 0.7; }
+.confronto-row.bench { min-height: 32px; }
+.confronto-divider.bench-num { font-size: 8px; color: var(--text-3); }
