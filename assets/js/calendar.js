@@ -1021,7 +1021,7 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     }
     
     const scoreHtml = `<span class="confronto-score ${scoreClass2}">${scoreLabel}</span>`;
-    const badges = !pending && score !== null ? statBadgesCompact(stats) : '';
+    const badges = (!pending && score !== null && isDetail) ? statBadgesCompact(stats) : '';
     const bd = (!pending && isDetail && score !== null) ? bonusBreakdown(p, stats) : '';
 
     // Home: voto a SX, poi flag nome badge ruolo → (allineato a dx)
