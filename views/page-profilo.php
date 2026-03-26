@@ -15,7 +15,7 @@
     </div>
 
     <!-- pulsante rosa -->
-    <div style="padding: 0 20px 16px;">
+    <div style="padding: 20px 16px;">
         <button class="profilo-squad-btn" id="btn-open-squad">
             <div class="profilo-squad-btn-left">
                 <span class="material-symbols-outlined">shield</span>

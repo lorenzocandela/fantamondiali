@@ -491,7 +491,7 @@
 .profilo-hero-logo-img {
     width: 56px;
     height: 56px;
-    border-radius: var(--r-md);
+    border-radius: var(--r-lg);
     object-fit: cover;
     border: 1.5px solid var(--border-md);
     box-shadow: var(--sh-sm);

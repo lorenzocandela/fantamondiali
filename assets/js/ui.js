@@ -104,7 +104,7 @@ export function updateTopbarTeamLogo() {
 // profilo hero card
 
 export function renderProfiloHero() {
-    const user     = window.__user ?? {};
+    const user = window.__user ?? {};
     const teamName = user.team_name || 'La mia squadra';
     const initials = teamName.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const isJoined = user.competition_joined ?? false;
@@ -115,7 +115,7 @@ export function renderProfiloHero() {
     let hero = document.getElementById('profilo-hero-card');
     if (!hero) {
         hero = document.createElement('div');
-        hero.id        = 'profilo-hero-card';
+        hero.id = 'profilo-hero-card';
         hero.className = 'profilo-hero';
         const first = document.querySelector('#page-profilo .profilo-section');
         if (first) first.before(hero);
