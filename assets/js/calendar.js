@@ -763,7 +763,7 @@ async function saveFormazione() {
             calUsersMap[uid].players = roster;
         }
 
-        toast(`Formazione G${mdRound} salvata ✓`);
+        toast(`Formazione G${mdRound} salvata`);
     } catch { toast('Errore salvataggio', 'error'); }
     finally {
         if (btn) { btn.disabled = false; btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span>Salva formazione G${mdRound}`; }
@@ -982,7 +982,7 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     if (!p) return `<span class="confronto-empty-slot">—</span>`;
     
     const flag = flagImg(p.nationality || p.team);
-    const name = p.name?.split(' ').pop() ?? '';
+    const name = p.name?.split(' ').pop() ?? ''; 
     const role = `<span class="role-badge badge-${p.role}" style="margin:0;font-size:9px">${p.role}</span>`;
     
     let scoreLabel, scoreClass2;
@@ -994,27 +994,31 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
         scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
     }
     
-    const scoreHtml = `<span class="confronto-score ${scoreClass2}">${scoreLabel}</span>`;
+    const scoreHtml = `<div class="confronto-score-wrap"><span class="confronto-score ${scoreClass2}">${scoreLabel}</span></div>`;
+
+    const metaHtml = side === 'home' 
+        ? `<div class="cp-meta">${role}${flag}</div>`
+        : `<div class="cp-meta away">${flag}${role}</div>`;
+        
+    const infoHtml = `<div class="cp-info ${side}">
+                        <div class="confronto-pname">${name}</div>
+                        ${metaHtml}
+                    </div>`;
+
+    // Costruzione della riga principale (Voto a sinistra per home, a destra per away)
+    let mainRow = '';
+    if (side === 'home') {
+        mainRow = `<div class="cp-row home">${scoreHtml}${infoHtml}</div>`;
+    } else {
+        mainRow = `<div class="cp-row away">${infoHtml}${scoreHtml}</div>`;
+    }
 
     if (!isDetail) {
-        // ── COMPATTO: voto | flag nome ruolo ──
-        if (side === 'home') {
-            return `<div class="cp-row">${scoreHtml}<span class="cp-info home">${role}${flag}<span class="confronto-pname">${name}</span></span></div>`;
-        } else {
-            return `<div class="cp-row"><span class="cp-info away"><span class="confronto-pname">${name}</span>${flag}${role}</span>${scoreHtml}</div>`;
-        }
+        return mainRow;
     } else {
-        // ── ESPANSO: riga nome + riga bonus sotto ──
+        // Aggiunta dei bonus sotto
         const bd = (!pending && score !== null) ? bonusBreakdownLine(p, stats, score) : '';
-        if (side === 'home') {
-            return `
-                <div class="cp-row">${scoreHtml}<span class="cp-info home">${role}${flag}<span class="confronto-pname">${name}</span></span></div>
-                ${bd}`;
-        } else {
-            return `
-                <div class="cp-row"><span class="cp-info away"><span class="confronto-pname">${name}</span>${flag}${role}</span>${scoreHtml}</div>
-                ${bd}`;
-        }
+        return `<div class="cp-player-wrap">${mainRow}${bd}</div>`;
     }
 }
 
@@ -1241,7 +1245,7 @@ document.getElementById('btn-generate-calendar')?.addEventListener('click', asyn
             results:      {},
             generated_at: new Date().toISOString(),
         });
-        toast('Calendario salvato ✓');
+        toast('Calendario salvato');
         document.getElementById('admin-cal-preview').classList.add('hidden');
         previewSchedule = [];
     } catch (err) {

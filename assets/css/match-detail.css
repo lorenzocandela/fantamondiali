@@ -157,55 +157,10 @@
 
 /* ─── CONFRONTO VIEW ──────────────────────────────────────────────────────── */
 
-.confronto-wrap {
-    margin: 0 20px;
-}
-
-.confronto-modules {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--r-md);
-    margin-bottom: 12px;
-}
-
-.confronto-mod {
-    font-size: 13px;
-    font-weight: 700;
-    font-family: var(--mono);
-    letter-spacing: -0.3px;
-}
-
-.confronto-mod-label {
-    font-size: 10px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-.confronto-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 6px 8px;
-}
-
-.confronto-team-name {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-2);
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    font-family: var(--mono);
-}
-
 .confronto-list {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 6px; /* Più spazio tra i giocatori */
 }
 
 .confronto-row {
@@ -213,114 +168,127 @@
     align-items: center;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--r-sm);
-    overflow: hidden;
-    min-height: 38px;
+    border-radius: var(--r-md); /* Bordo un po' più arrotondato */
+    padding: 8px 6px;
+    min-height: 48px; /* Riga più alta per contenere le due linee di testo */
 }
 
 .confronto-player {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 6px 8px;
     min-width: 0;
-    overflow: hidden;
 }
 
-.confronto-player.home { align-items: flex-start; }
-.confronto-player.away { align-items: flex-end; }
-.confronto-player.empty { opacity: 0.35; justify-content: center; }
-
-.cp-row {
-    display: flex;
+.confronto-player.empty { 
+    opacity: 0.35; 
+    justify-content: center; 
     align-items: center;
+}
+
+.cp-player-wrap {
+    display: flex;
+    flex-direction: column;
     gap: 4px;
     width: 100%;
 }
 
-.confronto-player.home .cp-row { justify-content: flex-start; }
-.confronto-player.away .cp-row { justify-content: flex-end; }
-
-.cp-info {
+.cp-row {
     display: flex;
     align-items: center;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
+    gap: 10px;
+    width: 100%;
 }
-.cp-info.home { justify-content: flex-end; }
-.cp-info.away { justify-content: flex-start; }
 
-.confronto-pname {
-    font-size: 11.5px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: -0.2px;
-    flex: 1;
-    min-width: 0;
+.cp-row.home { justify-content: flex-start; }
+.cp-row.away { justify-content: flex-end; }
+
+.confronto-score-wrap {
+    flex-shrink: 0;
 }
 
 .confronto-score {
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px; /* Voto più grande */
     font-weight: 800;
     font-family: var(--mono);
-    min-width: 30px;
-    text-align: center;
-    padding: 3px 5px;
-    border-radius: 5px;
-    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px; /* Design a blocchetto per il voto */
     line-height: 1;
 }
 
 .confronto-score.pending { color: var(--text-3); background: transparent; }
-.confronto-score.sv { color: var(--text-3); background: var(--surface-3); font-size: 10px; }
+.confronto-score.sv { color: var(--text-3); background: var(--surface-3); font-size: 11px; }
 .confronto-score.score-high { background: var(--green-soft); color: var(--green); }
 .confronto-score.score-mid  { background: var(--amber-soft); color: var(--amber); }
 .confronto-score.score-low  { background: var(--red-soft);   color: var(--red); }
 
-.confronto-empty-slot { color: var(--text-3); font-size: 11px; }
+.cp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Spazio tra nome e badge */
+    flex: 1;
+    min-width: 0;
+}
+
+.cp-info.home { align-items: flex-start; text-align: left; }
+.cp-info.away { align-items: flex-end; text-align: right; }
+
+.confronto-pname {
+    font-size: 13.5px; /* NOMI BEN VISIBILI */
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    letter-spacing: -0.2px;
+}
+
+.cp-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cp-meta.away {
+    flex-direction: row;
+}
+
+.confronto-empty-slot { 
+    color: var(--text-3); 
+    font-size: 12px; 
+    width: 100%;
+    text-align: center;
+}
 
 .confronto-divider {
-    width: 28px;
+    width: 20px; /* Più stretto per dare spazio ai nomi */
     text-align: center;
-    font-size: 9px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
     color: var(--text-3);
     font-family: var(--mono);
     flex-shrink: 0;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    padding: 2px 0;
+    opacity: 0.6;
+    /* Rimosso il bordo destro/sinistro per renderlo più pulito */
 }
 
-.confronto-total {
+/* Adattamento riga Bonus (dettaglio) */
+.bd-line {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    margin-top: 10px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--r-md);
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 2px 0 0;
+    width: 100%;
 }
 
-.confronto-total-val {
-    font-size: 20px;
-    font-weight: 800;
-    font-family: var(--mono);
-    letter-spacing: -0.5px;
-}
+.confronto-player.home .bd-line { justify-content: flex-start; padding-left: 44px; /* Allineato sotto il nome */ }
+.confronto-player.away .bd-line { justify-content: flex-end; padding-right: 44px; }
 
-.confronto-total-label {
-    font-size: 10px;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
 
 /* ─── STAT BADGES ─────────────────────────────────────────────────────────── */
 
