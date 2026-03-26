@@ -946,7 +946,7 @@ const SCORE_TABLE = {
     clean_sheet: { POR: 2, DIF: 1 },
 };
 
-let confrontoDetail = false; // false = compatto, true = dettaglio
+let confrontoDetail = false;
 
 function calcLiveScore(player, stats) {
     if (!stats) return null;
@@ -978,8 +978,6 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     if (!p) return `<span class="confronto-empty-slot">—</span>`;
     
     const flag = flagImg(p.nationality || p.team);
-    // Usiamo .split(' ').pop() per prendere il cognome per compattezza,
-    // ma con il nuovo layout verticale avremo più spazio orizzontale.
     const name = p.name?.split(' ').pop() ?? ''; 
     const roleBadge = `<span class="role-badge badge-${p.role}">${p.role}</span>`;
     
@@ -992,11 +990,8 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
         scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
     }
     
-    // NUOVA STRUTTURA: Punteggio blocco grande (34x34)
     const scoreHtml = `<div class="confronto-score-wrap"><span class="confronto-score ${scoreClass2}">${scoreLabel}</span></div>`;
 
-    // NUOVA STRUTTURA VERTICALE: Nome (top), Meta (bottom)
-    // Allineamento simmetrico per Casa/Trasferta
     const metaHtml = side === 'home' 
         ? `<div class="cp-meta">${roleBadge}${flag}</div>`
         : `<div class="cp-meta away">${flag}${roleBadge}</div>`;
@@ -1006,7 +1001,6 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
                         ${metaHtml}
                       </div>`;
 
-    // Costruzione della riga di base (Voto a sx per casa, a dx per trasferta)
     let mainRow = '';
     if (side === 'home') {
         mainRow = `<div class="cp-row home">${scoreHtml}${infoHtml}</div>`;
@@ -1017,14 +1011,11 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     if (!isDetail) {
         return mainRow;
     } else {
-        // In vista DETTAGLIO, aggiungiamo i bonus sotto
         const bd = (!pending && score !== null) ? bonusBreakdownLine(p, stats, score) : '';
-        // Inseriamo tutto in un wrapper per il dettaglio
         return `<div class="cp-player-wrap detail">${mainRow}${bd}</div>`;
     }
 }
 
-// Breakdown bonus come riga separata, leggibile
 function bonusBreakdownLine(player, stats, totalScore) {
     if (!stats) return '';
     const base = stats.rating ?? 6;
@@ -1051,7 +1042,6 @@ function bonusBreakdownLine(player, stats, totalScore) {
         parts.push(`<span class="bd-chip bd-cs"><span class="material-symbols-outlined">security</span>+${SCORE_TABLE.clean_sheet[player.role].toFixed(1)}</span>`);
     }
     
-    // Mostra breakdown solo se c'è almeno un bonus/malus oltre il base
     if (parts.length <= 1) return '';
     return `<div class="bd-line">${parts.join('')}</div>`;
 }
@@ -1071,13 +1061,11 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         const h = homeLineup[i];
         const a = awayLineup[i];
         
-        // Stats dall'API o null
         const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
         const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
         
-        // Voto solo se abbiamo stats reali dall'API (lineups o events)
-        // Se non abbiamo stats → null → mostra "SV"
-        const hScore = (h && hStats) ? calcLiveScore(h, hStats) : null;
+        const hPlayed = hStats && (hStats.minutes ?? 0) > 0;
+        const hScore = (!isBench && h && hPlayed) ? calcLiveScore(h, hStats) : null;
         const aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
 
         if (hScore != null) { homeTotal += hScore; homeCount++; }
@@ -1086,7 +1074,7 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         rows += `
         <div class="confronto-row ${isDetail ? 'detail' : ''} ${isBench ? 'bench' : ''}">
             <div class="confronto-player home ${h ? '' : 'empty'}">
-                ${renderPlayerCell(h, hStats, hScore, 'home', pending, isDetail)}
+                ${renderPlayerCell(h, hStats, hScore, 'home', pending && !isBench, isDetail)}
             </div>
             <div class="confronto-divider ${isBench ? 'bench-num' : ''}">${i + 1}</div>
             <div class="confronto-player away ${a ? '' : 'empty'}">
@@ -1095,7 +1083,6 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         </div>`;
     }
 
-    // Salva i totali per la score bar (solo titolari, non panchina)
     if (!isBench) {
         liveTotals.home = homeCount > 0 ? homeTotal : null;
         liveTotals.away = awayCount > 0 ? awayTotal : null;
