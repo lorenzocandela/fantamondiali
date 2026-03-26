@@ -5,35 +5,38 @@ import { toast, formatDate } from './utils.js';
 // ─── SCHEDULE ────────────────────────────────────────────────────────────────
 
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-03-26 19:00:00', end: '2026-03-26 23:59:59' }, // TEST
-//    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
-    { round: 2, label: 'Fase a gironi – Giornata 2', short: 'GJ2', start: '2026-06-15', end: '2026-06-19' },
-    { round: 3, label: 'Fase a gironi – Giornata 3', short: 'GJ3', start: '2026-06-20', end: '2026-06-25' },
-    { round: 4, label: 'Ottavi di finale',            short: 'R16', start: '2026-06-27', end: '2026-07-03' },
-    { round: 5, label: 'Quarti di finale',            short: 'QF',  start: '2026-07-04', end: '2026-07-05' },
-    { round: 6, label: 'Semifinali',                  short: 'SF',  start: '2026-07-07', end: '2026-07-08' },
-    { round: 7, label: 'Finale 3° posto + Finale',   short: 'F',   start: '2026-07-11', end: '2026-07-19' },
+    { round: 1, label: 'Gironi – Giornata 1', short: 'GJ1', start: '2026-03-26T19:00:00', end: '2026-03-26T23:59:59' }, // TEST STASERA
+//  { round: 1, label: 'Gironi – Giornata 1', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' }, PRODUZIONE
+    { round: 2, label: 'Gironi – Giornata 2', short: 'GJ2', start: '2026-06-15T00:00:00', end: '2026-06-19T23:59:59' },
+    { round: 3, label: 'Gironi – Giornata 3', short: 'GJ3', start: '2026-06-20T00:00:00', end: '2026-06-25T23:59:59' },
+    { round: 4, label: 'Ottavi di finale',            short: 'R16', start: '2026-06-27T00:00:00', end: '2026-07-03T23:59:59' },
+    { round: 5, label: 'Quarti di finale',            short: 'QF',  start: '2026-07-04T00:00:00', end: '2026-07-05T23:59:59' },
+    { round: 6, label: 'Semifinali',                  short: 'SF',  start: '2026-07-07T00:00:00', end: '2026-07-08T23:59:59' },
+    { round: 7, label: 'Finale 3° posto + Finale',   short: 'F',   start: '2026-07-11T00:00:00', end: '2026-07-19T23:59:59' },
 ];
-
 export { MATCHDAY_SCHEDULE };
 
 export function getCurrentMatchday() {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    
     for (const md of MATCHDAY_SCHEDULE) {
-        const start = new Date(md.start + 'T00:00:00');
-        const end   = new Date(md.end   + 'T23:59:59');
+        const start = new Date(md.start);
+        const end   = new Date(md.end);
         if (today >= start && today <= end) return { ...md, status: 'live' };
     }
-    const first = new Date(MATCHDAY_SCHEDULE[0].start + 'T00:00:00');
+    
+    const first = new Date(MATCHDAY_SCHEDULE[0].start);
     if (today < first) return { ...MATCHDAY_SCHEDULE[0], status: 'upcoming' };
+    
     for (let i = 0; i < MATCHDAY_SCHEDULE.length - 1; i++) {
-        const endCur   = new Date(MATCHDAY_SCHEDULE[i].end     + 'T23:59:59');
-        const startNxt = new Date(MATCHDAY_SCHEDULE[i + 1].start + 'T00:00:00');
+        const endCur   = new Date(MATCHDAY_SCHEDULE[i].end);
+        const startNxt = new Date(MATCHDAY_SCHEDULE[i + 1].start);
         if (today > endCur && today < startNxt) return { ...MATCHDAY_SCHEDULE[i + 1], status: 'next' };
     }
+    
     return { ...MATCHDAY_SCHEDULE[MATCHDAY_SCHEDULE.length - 1], status: 'ended' };
 }
+
 
 // ─── ADMIN MATCHDAY ──────────────────────────────────────────────────────────
 
@@ -308,9 +311,11 @@ function getMatchdayMeta(round) {
 function getRoundStatus(round) {
     const md = getMatchdayMeta(round);
     if (!md) return 'future';
-    const now   = new Date(); now.setHours(0,0,0,0);
-    const start = new Date(md.start + 'T00:00:00');
-    const end   = new Date(md.end   + 'T23:59:59');
+    
+    const now   = new Date();
+    const start = new Date(md.start);
+    const end   = new Date(md.end);
+    
     if (now >= start && now <= end) return 'live';
     if (now > end) return 'past';
     return 'future';
