@@ -114,8 +114,6 @@ export function getFiltered() {
 export function buildSubtitle() {
     const parts = [];
     if (allPlayers.length) parts.push(`${allPlayers.length} giocatori`);
-    if (!window.__competitionActive) parts.push('mercato chiuso');
-    if (apiSource) parts.push(apiSource);
     document.getElementById('listone-subtitle').textContent = parts.join(' · ');
 }
 

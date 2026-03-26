@@ -600,7 +600,7 @@
 /* competizioni */
 
 .comp-banner {
-    margin: 0 20px 14px;
+    margin: 20px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-xl);
