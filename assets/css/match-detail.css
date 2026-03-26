@@ -156,6 +156,172 @@
 }
 
 /* ─── CONFRONTO VIEW ──────────────────────────────────────────────────────── */
+
+.confronto-wrap {
+    margin: 0 20px;
+}
+
+.confronto-modules {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    margin-bottom: 12px;
+}
+
+.confronto-mod {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--mono);
+    letter-spacing: -0.3px;
+}
+
+.confronto-mod-label {
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.confronto-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 6px 8px;
+}
+
+.confronto-team-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-family: var(--mono);
+}
+
+.confronto-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.confronto-row {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    min-height: 38px;
+}
+
+.confronto-player {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.confronto-player.home { align-items: flex-start; }
+.confronto-player.away { align-items: flex-end; }
+.confronto-player.empty { opacity: 0.35; justify-content: center; }
+
+.cp-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.confronto-player.home .cp-row { justify-content: flex-start; }
+.confronto-player.away .cp-row { justify-content: flex-end; }
+
+.cp-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+.cp-info.home { justify-content: flex-end; }
+.cp-info.away { justify-content: flex-start; }
+
+.confronto-pname {
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.confronto-score {
+    font-size: 12px;
+    font-weight: 800;
+    font-family: var(--mono);
+    min-width: 30px;
+    text-align: center;
+    padding: 3px 5px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.confronto-score.pending { color: var(--text-3); background: transparent; }
+.confronto-score.sv { color: var(--text-3); background: var(--surface-3); font-size: 10px; }
+.confronto-score.score-high { background: var(--green-soft); color: var(--green); }
+.confronto-score.score-mid  { background: var(--amber-soft); color: var(--amber); }
+.confronto-score.score-low  { background: var(--red-soft);   color: var(--red); }
+
+.confronto-empty-slot { color: var(--text-3); font-size: 11px; }
+
+.confronto-divider {
+    width: 28px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-3);
+    font-family: var(--mono);
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 2px 0;
+}
+
+.confronto-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    margin-top: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+}
+
+.confronto-total-val {
+    font-size: 20px;
+    font-weight: 800;
+    font-family: var(--mono);
+    letter-spacing: -0.5px;
+}
+
+.confronto-total-label {
+    font-size: 10px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
 /* --- CORREZIONE: Nuova struttura verticale CONFRONTO (Vedi image_0.png) --- */
 
 .confronto-list {
@@ -307,7 +473,6 @@
 /* Allineamento simmetrico dei bonus */
 .confronto-player.home .bd-line { justify-content: flex-start; padding-left: 44px; /* Allineato sotto il nome */ }
 .confronto-player.away .bd-line { justify-content: flex-end; padding-right: 44px; }
-
 
 /* ─── STAT BADGES ─────────────────────────────────────────────────────────── */
 
