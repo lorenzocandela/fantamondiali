@@ -33,26 +33,6 @@
     overflow: hidden;
 }
 
-.player-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2.5px;
-    border-radius: var(--r-xl) var(--r-xl) 0 0;
-    opacity: 0;
-    transition: opacity 0.18s;
-}
-
-.player-card:hover { transform: translateY(-3px); box-shadow: var(--sh-md); border-color: transparent; }
-.player-card:hover::after { opacity: 1; }
-.player-card:active { transform: scale(0.975); }
-.player-card[data-role="POR"]::after { background: var(--role-por); }
-.player-card[data-role="DIF"]::after { background: var(--role-dif); }
-.player-card[data-role="CEN"]::after { background: var(--role-cen); }
-.player-card[data-role="ATT"]::after { background: var(--role-att); }
-
-.player-card.buying { animation: cardPop 0.38s var(--spring), cardBuy 0.5s var(--ease); }
-
 .player-photo-wrap { position: relative; margin-bottom: 10px; margin-top: 4px; }
 
 .player-photo {
