@@ -1019,7 +1019,7 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
 function bonusBreakdownLine(player, stats, totalScore) {
     if (!stats) return '';
     const base = stats.rating ?? 6;
-    const parts = [`<span class="bd-chip bd-base">base ${base.toFixed(1)}</span>`];
+    const parts = [`<span class="bd-chip bd-base">${base.toFixed(1)}</span>`];
     const g = stats.goals ?? 0;
     const a = stats.assists ?? 0;
     const y = stats.yellow ?? 0;
