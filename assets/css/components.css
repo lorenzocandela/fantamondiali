@@ -160,7 +160,7 @@
 .btn-logout-full .material-symbols-outlined { font-size: 18px; }
 
 .search-wrap {
-    padding: 0 20px 10px;
+    padding: 20px 14px;
     position: relative;
 }
 
@@ -187,7 +187,7 @@
 .filter-row {
     display: flex;
     gap: 6px;
-    padding: 0 20px 12px;
+    padding: 0 20px 8px;
     overflow-x: auto;
     scrollbar-width: none;
 }
