@@ -1038,9 +1038,6 @@ function bonusBreakdownLine(player, stats, totalScore) {
     } else if (y > 0) {
         parts.push(`<span class="bd-chip bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
     }
-    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
-        parts.push(`<span class="bd-chip bd-cs"><span class="material-symbols-outlined">security</span>+${SCORE_TABLE.clean_sheet[player.role].toFixed(1)}</span>`);
-    }
     
     if (parts.length <= 1) return '';
     return `<div class="bd-line">${parts.join('')}</div>`;
