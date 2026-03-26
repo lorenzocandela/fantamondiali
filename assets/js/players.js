@@ -50,7 +50,7 @@ function natFlag(nationality) {
     if (!nationality) return '';
     const code = COUNTRY_CODES[nationality];
     if (!code) return `<span class="player-nat-text">${nationality}</span>`;
-    return `<img class="player-nat-flag" src="assets/flags/${code}.svg" alt="${nationality}" title="${nationality}"><span class="player-nat-text">${nationality}</span>`;
+    return `<img class="player-nat-flag" src="assets/flags/${code}.svg" alt="${nationality}" title="${nationality}">`;
 }
 
 export let allPlayers   = [];
