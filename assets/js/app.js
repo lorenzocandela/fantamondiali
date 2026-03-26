@@ -7,6 +7,7 @@ import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
 import { loadCalendario, renderMatchdayAdmin, loadAdminModules } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
 import { initNotifications, requestNotificationPermission } from './notifications.js';
+import { loadCalendario, renderMatchdayAdmin, loadAdminModules, stopLivePolling } from './calendar.js';
 
 window.__addPlayer = (player, customPrice) => addPlayer(player, customPrice);
 window.__myTeam    = [];
@@ -51,16 +52,24 @@ document.getElementById('btn-install-pwa-auth')?.addEventListener('click', handl
 
 initTabPill();
 
-document.getElementById('nav-listone')?.addEventListener('click', () => showPage('listone'));
+document.getElementById('nav-listone')?.addEventListener('click', () => {
+    stopLivePolling();
+    showPage('listone');
+});
+
 document.getElementById('nav-calendario')?.addEventListener('click', () => { 
     showPage('calendario'); 
     loadCalendario();
 });
+
 document.getElementById('nav-competizione')?.addEventListener('click', () => { 
+    stopLivePolling();
     showPage('competizione');
     loadCompetizioni(); 
 });
+
 document.getElementById('nav-admin')?.addEventListener('click', () => {
+    stopLivePolling();
     showPage('admin');
     loadAdminStats();
     syncAdminUI();
@@ -70,17 +79,20 @@ document.getElementById('nav-admin')?.addEventListener('click', () => {
 
 // avatar → profilo
 document.getElementById('btn-profile-avatar')?.addEventListener('click', () => {
+    stopLivePolling();
     showPage('profilo');
     loadProfilo();
 });
 
 // topbar team logo → squadra
 document.getElementById('btn-topbar-logo')?.addEventListener('click', () => {
+    stopLivePolling();
     showPage('squadra');
     loadSquadra();
 });
 
 document.addEventListener('goto:profilo', () => {
+    stopLivePolling();
     showPage('profilo');
     loadProfilo();
 });

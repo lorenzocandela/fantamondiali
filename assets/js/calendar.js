@@ -143,12 +143,12 @@ let calSchedule = [];
 let calResults  = {};
 let calTeams    = [];
 let calRound    = 1;
-let calUsersMap = {};  // uid → user data (per formazioni)
+let calUsersMap = {};
+let cachedModules = null;
 
 // ─── LOAD CALENDARIO ─────────────────────────────────────────────────────────
 
 export async function loadCalendario() {
-    // torna alla vista principale se eri nel dettaglio
     document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-main-view')?.classList.remove('hidden');
     document.getElementById('cal-match-detail')?.classList.add('hidden');
@@ -338,41 +338,47 @@ async function openMatchDetail(homeUid, awayUid, round) {
         mdView = 'confronto';
     }
 
-    // nascondo la vista principale, mostro il dettaglio
-    document.querySelector('#page-calendario .content-header')?.classList.add('hidden'); // AGGIUNGI QUESTA
+    document.querySelector('#page-calendario .content-header')?.classList.add('hidden');
     document.getElementById('cal-main-view').classList.add('hidden');
     document.getElementById('cal-match-detail').classList.remove('hidden');
 
-    // carico dati formazione utente corrente
-    const [userSnap, settingsSnap] = await Promise.all([
-        getDoc(doc(db, 'users', window.__user.uid)),
-        getDoc(doc(db, 'settings', 'modules')),
-    ]);
+    const userData = calUsersMap[window.__user.uid];
 
-    if (userSnap.exists()) {
-        const data = userSnap.data();
-        roster = data.players ?? [];
-        if (settingsSnap.exists()) {
-            const custom = settingsSnap.data().list ?? [];
-            availableModules = [...new Set([...DEFAULT_MODULES, ...custom])].sort();
+    if (userData) {
+        roster = userData.players ?? [];
+        
+        if (!cachedModules) {
+            const settingsSnap = await getDoc(doc(db, 'settings', 'modules'));
+            const custom = settingsSnap.exists() ? (settingsSnap.data().list ?? []) : [];
+            cachedModules = [...new Set([...DEFAULT_MODULES, ...custom])].sort();
         }
-        const savedIds = data[`lineup_r${round}`] ?? data.lineup ?? [];
-        activeModule   = data[`module_r${round}`] ?? data.module ?? '4-3-3';
+        availableModules = cachedModules;
+
+        const savedIds = userData[`lineup_r${round}`] ?? userData.lineup ?? [];
+        activeModule   = userData[`module_r${round}`] ?? userData.module ?? '4-3-3';
+        
         lineup = savedIds.length
             ? savedIds.map(id => roster.find(p => String(p.id) === String(id))).filter(Boolean)
             : autoFill(roster, activeModule);
+            
         roster.forEach(p => {
             if (!lineup.find(l => String(l.id) === String(p.id))) lineup.push(p);
         });
     }
 
-    // Se live, fetch immediato prima del render così i voti sono già disponibili
     if (status === 'live') {
         await fetchLiveScores();
         startLivePolling();
     }
 
     renderMatchDetail();
+}
+
+
+// ─── LIVE POLLING ───────────────────────────────────────────────────────────
+
+export function stopLivePolling() {
+    if (liveRefreshTimer) { clearInterval(liveRefreshTimer); liveRefreshTimer = null; }
 }
 
 function closeMatchDetail() {
@@ -1190,8 +1196,7 @@ async function fetchLiveScores() {
 
 function startLivePolling() {
     stopLivePolling();
-    // il fetch iniziale è già fatto da openMatchDetail (await fetchLiveScores)
-    liveRefreshTimer = setInterval(fetchLiveScores, 60000); // ogni 60s
+    liveRefreshTimer = setInterval(fetchLiveScores, 300000); // ogni 5 minuti
 }
 
 function stopLivePolling() {
