@@ -978,8 +978,8 @@ function calcLiveScore(player, stats) {
 function statBadgesCompact(stats) {
     if (!stats) return '';
     let b = '';
-    if ((stats.goals ?? 0) > 0)  b += `<span class="confronto-badge badge-goal"><span class="material-symbols-outlined">sports_soccer</span>${stats.goals > 1 ? '×' + stats.goals : ''}</span>`;
-    if ((stats.assists ?? 0) > 0) b += `<span class="confronto-badge badge-assist"><span class="material-symbols-outlined">handshake</span>${stats.assists > 1 ? '×' + stats.assists : ''}</span>`;
+    if ((stats.goals ?? 0) > 0)  b += `<span class="confronto-badge badge-goal"><span class="material-symbols-outlined">sports_soccer</span>${stats.goals > 1 ? '×' + Math.round(stats.goals) : ''}</span>`;
+    if ((stats.assists ?? 0) > 0) b += `<span class="confronto-badge badge-assist"><span class="material-symbols-outlined">handshake</span>${stats.assists > 1 ? '×' + Math.round(stats.assists) : ''}</span>`;
     if ((stats.red ?? 0) > 0) b += `<span class="confronto-badge badge-red"><span class="material-symbols-outlined">square</span></span>`;
     else if ((stats.yellow ?? 0) > 0) b += `<span class="confronto-badge badge-yellow"><span class="material-symbols-outlined">square</span></span>`;
     return b;
