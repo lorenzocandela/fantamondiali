@@ -374,13 +374,6 @@ async function openMatchDetail(homeUid, awayUid, round) {
     renderMatchDetail();
 }
 
-
-// ─── LIVE POLLING ───────────────────────────────────────────────────────────
-
-export function stopLivePolling() {
-    if (liveRefreshTimer) { clearInterval(liveRefreshTimer); liveRefreshTimer = null; }
-}
-
 function closeMatchDetail() {
     stopLivePolling();
     document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
@@ -1199,7 +1192,7 @@ function startLivePolling() {
     liveRefreshTimer = setInterval(fetchLiveScores, 300000); // ogni 5 minuti
 }
 
-function stopLivePolling() {
+export function stopLivePolling() {
     if (liveRefreshTimer) { clearInterval(liveRefreshTimer); liveRefreshTimer = null; }
 }
 
