@@ -366,13 +366,10 @@ async function openMatchDetail(homeUid, awayUid, round) {
         });
     }
 
-    // Se live, fetch immediato prima del render così i voti sono già disponibili
-    if (status === 'live') {
-        await fetchLiveScores();
-        startLivePolling();
-    }
-
     renderMatchDetail();
+
+    // Se live, inizia polling
+    if (status === 'live') startLivePolling();
 }
 
 function closeMatchDetail() {
@@ -942,7 +939,7 @@ function renderConfrontoFromResults(res) {
 // ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
 
 const SCORE_TABLE = {
-    goal: { POR: 5, DIF: 3, CEN: 3, ATT: 3 },
+    goal: { POR: 3, DIF: 3, CEN: 3, ATT: 3 },
     assist: 1,
     yellow: -0.5,
     red: -2,
@@ -1167,7 +1164,7 @@ async function fetchLiveScores() {
 
 function startLivePolling() {
     stopLivePolling();
-    // fetch iniziale già fatto con await in openMatchDetail
+    fetchLiveScores(); // fetch immediato
     liveRefreshTimer = setInterval(fetchLiveScores, 300000); // ogni 5 minuti
 }
 
@@ -1270,7 +1267,7 @@ document.getElementById('btn-reset-calendar')?.addEventListener('click', async (
     finally { btn.disabled = false; }
 });
 
-// ─── ADMIN MODULI ─────────────────────────────
+// ─── ADMIN MODULI (spostato qui da formation.js) ─────────────────────────────
 
 export async function loadAdminModules() {
     const snap = await getDoc(doc(db, 'settings', 'modules'));
