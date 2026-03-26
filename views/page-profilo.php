@@ -19,8 +19,8 @@
         <button class="profilo-squad-btn" id="btn-open-squad">
             <div class="profilo-squad-btn-left">
                 <span class="material-symbols-outlined">shield</span>
-                <div>
-                    <div class="profilo-squad-btn-label">La mia Rosa</div>
+                <div style="text-align:left;">
+                    <div class="profilo-squad-btn-label">La mia rosa</div>
                     <div class="profilo-squad-btn-meta" id="profilo-squad-meta">0 giocatori · 500 crediti</div>
                 </div>
             </div>
