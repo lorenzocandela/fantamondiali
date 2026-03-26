@@ -942,8 +942,8 @@ function renderConfrontoFromResults(res) {
 // ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
 
 const SCORE_TABLE = {
-    goal: { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
-    assist: 3,
+    goal: { POR: 10, DIF: 3, CEN: 3, ATT: 3 },
+    assist: { POR: 2, DIF: 1, CEN: 1, ATT: 1 },
     yellow: -0.5,
     red: -2,
     clean_sheet: { POR: 1 },
@@ -953,13 +953,12 @@ let confrontoDetail = false;
 
 function calcLiveScore(player, stats) {
     if (!stats) return null;
-    // rating=0 significa che il giocatore non ha giocato nella vera partita (panchina reale)
     if (!stats.rating || stats.rating === 0) return null;
     const base = stats.rating;
     let score = base;
     if (stats) {
         score += (stats.goals ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
-        score += (stats.assists ?? 0) * SCORE_TABLE.assist;
+        score += (stats.assists ?? 0) * (SCORE_TABLE.assist[player.role] ?? 1);
         score += (stats.yellow ?? 0) * SCORE_TABLE.yellow;
         score += (stats.red ?? 0) * SCORE_TABLE.red;
         if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
