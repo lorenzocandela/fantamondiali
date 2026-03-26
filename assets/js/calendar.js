@@ -17,8 +17,8 @@ const MATCHDAY_SCHEDULE = [{
         round: 1,
         label: 'Gironi',
         short: 'GJ1',
-        start: '2026-03-27T19:00:00',
-        end: '2026-03-27T23:59:59'
+        start: '2026-03-26T19:00:00',
+        end: '2026-03-26T23:59:59'
     }, // TEST
     // { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' }, PRODUZIONE
     {
