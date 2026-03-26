@@ -1050,16 +1050,16 @@ function bonusBreakdownLine(player, stats, totalScore) {
     
     if (g > 0) {
         const val = g * (SCORE_TABLE.goal[player.role] ?? 6);
-        parts.push(`<span class="bd-chip bd-goal"><span class="material-symbols-outlined">sports_soccer</span>${g > 1 ? g + '×' : ''}+${val.toFixed(1)}</span>`);
+        parts.push(`<span class="bd-chip bd-goal"><span class="material-symbols-outlined">sports_soccer</span>${g > 1 ? g + '×' : ''}+${val}</span>`);
     }
     if (a > 0) {
         const val = a * SCORE_TABLE.assist;
-        parts.push(`<span class="bd-chip bd-assist"><span class="material-symbols-outlined">handshake</span>${a > 1 ? a + '×' : ''}+${val.toFixed(1)}</span>`);
+        parts.push(`<span class="bd-chip bd-assist"><span class="material-symbols-outlined">handshake</span>${a > 1 ? a + '×' : ''}+${val}</span>`);
     }
     if (r > 0) {
-        parts.push(`<span class="bd-chip bd-red"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.red.toFixed(1)}</span>`);
+        parts.push(`<span class="bd-chip bd-red"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.red}</span>`);
     } else if (y > 0) {
-        parts.push(`<span class="bd-chip bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
+        parts.push(`<span class="bd-chip bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow}</span>`);
     }
     
     return `<div class="bd-line">${parts.join('')}</div>`;
