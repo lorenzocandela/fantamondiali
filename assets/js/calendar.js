@@ -467,10 +467,11 @@ async function openMatchDetail(homeUid, awayUid, round) {
             if (!lineup.find(l => String(l.id) === String(p.id))) lineup.push(p);
         });
     }
-    // Se live, fetch immediato prima del render così i voti sono già disponibili
-    if (status === 'live') {
+    if (status === 'live' || status === 'past') {
         await fetchLiveScores();
-        startLivePolling();
+        if (status === 'live') {
+            startLivePolling();
+        }
     }
     renderMatchDetail();
 }
@@ -1126,8 +1127,7 @@ function renderConfrontoView(res, status) {
     const awayBench = awayAll.slice(11);
     const homeModule = homeData[`module_r${mdRound}`] ?? homeData.module ?? '4-3-3';
     const awayModule = awayData[`module_r${mdRound}`] ?? awayData.module ?? '4-3-3';
-    // Se live, prova a mostrare voti live
-    const liveStats = (status === 'live') ? liveScoresCache : null;
+    const liveStats = (status === 'live' || status === 'past') ? liveScoresCache : null;
     const homeName = calTeams.find(t => t.uid === mdHomeUid)?.team_name ?? '?';
     const awayName = calTeams.find(t => t.uid === mdAwayUid)?.team_name ?? '?';
     // Panchina
@@ -1636,11 +1636,14 @@ function scoreClass(score) {
 // ─── LIVE POLLING ───────────────────────────────────────────────────────────
 async function fetchLiveScores() {
     try {
-        const res = await fetch('get_live_scores.php?mode=test');
+        const md = getMatchdayMeta(mdRound);
+        const dateStr = md ? md.start.split('T')[0] : '';
+        
+        const res = await fetch(`get_live_scores.php?mode=test&date=${dateStr}`);
         const data = await res.json();
+        
         if (data.status === 'success') {
             liveScoresCache = data.players ?? {};
-            // re-render solo il body del confronto se siamo in quella view
             if (mdView === 'confronto') {
                 const bodyEl = document.getElementById('md-body');
                 const status = getRoundStatus(mdRound);
