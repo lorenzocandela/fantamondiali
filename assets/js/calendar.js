@@ -1044,7 +1044,6 @@ function bonusBreakdownLine(player, stats, totalScore) {
         parts.push(`<span class="bd-chip bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
     }
     
-    if (parts.length <= 1) return '';
     return `<div class="bd-line">${parts.join('')}</div>`;
 }
 
@@ -1066,8 +1065,8 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
         const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
         
-        const hScore = (!isBench && h && hStats) ? calcLiveScore(h, hStats) : null;
-        const aScore = (!isBench && a && aStats) ? calcLiveScore(a, aStats) : null;
+        const hScore = (h && hStats) ? calcLiveScore(h, hStats) : null;
+        const aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
  
         if (hScore != null) { homeTotal += hScore; homeCount++; }
         if (aScore != null) { awayTotal += aScore; awayCount++; }
