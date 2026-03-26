@@ -149,6 +149,7 @@ let calUsersMap = {};  // uid → user data (per formazioni)
 
 export async function loadCalendario() {
     // torna alla vista principale se eri nel dettaglio
+    document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-main-view')?.classList.remove('hidden');
     document.getElementById('cal-match-detail')?.classList.add('hidden');
     document.getElementById('cal-subtitle').textContent = 'caricamento...';
@@ -344,6 +345,7 @@ async function openMatchDetail(homeUid, awayUid, round) {
     }
 
     // nascondo la vista principale, mostro il dettaglio
+    document.querySelector('#page-calendario .content-header')?.classList.add('hidden'); // AGGIUNGI QUESTA
     document.getElementById('cal-main-view').classList.add('hidden');
     document.getElementById('cal-match-detail').classList.remove('hidden');
 
@@ -378,6 +380,7 @@ async function openMatchDetail(homeUid, awayUid, round) {
 
 function closeMatchDetail() {
     stopLivePolling();
+    document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-match-detail').classList.add('hidden');
     document.getElementById('cal-main-view').classList.remove('hidden');
     document.getElementById('cal-subtitle').textContent = `${calTeams.length} squadre · ${calSchedule.length} giornate`;
