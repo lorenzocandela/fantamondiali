@@ -953,25 +953,29 @@ let confrontoDetail = false;
 
 function calcLiveScore(player, stats) {
     if (!stats) return null;
+
+    if (stats.sub_in != null && stats.sub_in >= 75) {
+        const hasBonus = (stats.goals ?? 0) > 0 || (stats.assists ?? 0) > 0
+                      || (stats.yellow ?? 0) > 0 || (stats.red ?? 0) > 0 || stats.cs;
+        
+        if (!hasBonus) return null; 
+    }
+
     if (!stats.rating || stats.rating === 0) {
-        if (stats.sub_in != null && stats.sub_in >= 75) {
-            const hasBonus = (stats.goals ?? 0) > 0 || (stats.assists ?? 0) > 0
-                        || (stats.yellow ?? 0) > 0 || (stats.red ?? 0) > 0 || stats.cs;
-            if (!hasBonus) return null;
-        }
         return null;
     }
+
     const base = stats.rating;
     let score = base;
-    if (stats) {
-        score += (stats.goals ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
-        score += (stats.assists ?? 0) * SCORE_TABLE.assist;
-        score += (stats.yellow ?? 0) * SCORE_TABLE.yellow;
-        score += (stats.red ?? 0) * SCORE_TABLE.red;
-        if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
-            score += SCORE_TABLE.clean_sheet[player.role];
-        }
+    
+    score += (stats.goals ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
+    score += (stats.assists ?? 0) * SCORE_TABLE.assist;
+    score += (stats.yellow ?? 0) * SCORE_TABLE.yellow;
+    score += (stats.red ?? 0) * SCORE_TABLE.red;
+    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
+        score += SCORE_TABLE.clean_sheet[player.role];
     }
+    
     return Math.round(score * 100) / 100;
 }
 
