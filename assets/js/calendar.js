@@ -939,11 +939,11 @@ function renderConfrontoFromResults(res) {
 // ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
 
 const SCORE_TABLE = {
-    goal:        { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
-    assist:      3,
-    yellow:     -0.5,
-    red:        -2,
-    clean_sheet: { POR: 2, DIF: 1 },
+    goal: { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
+    assist: 3,
+    yellow: -0.5,
+    red: -2,
+    clean_sheet: { POR: 1 },
 };
 
 let confrontoDetail = false;
@@ -953,10 +953,10 @@ function calcLiveScore(player, stats) {
     const base = stats.rating ?? 6;
     let score = base;
     if (stats) {
-        score += (stats.goals   ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
+        score += (stats.goals ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
         score += (stats.assists ?? 0) * SCORE_TABLE.assist;
-        score += (stats.yellow  ?? 0) * SCORE_TABLE.yellow;
-        score += (stats.red     ?? 0) * SCORE_TABLE.red;
+        score += (stats.yellow ?? 0) * SCORE_TABLE.yellow;
+        score += (stats.red ?? 0) * SCORE_TABLE.red;
         if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
             score += SCORE_TABLE.clean_sheet[player.role];
         }
@@ -1061,12 +1061,9 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
         const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
         
-        // Voto solo se: non è panchina, ha stats reali, ha giocato (minutes > 0)
-        const hPlayed = hStats && (hStats.minutes ?? 0) > 0;
-        const aPlayed = aStats && (aStats.minutes ?? 0) > 0;
-        const hScore = (!isBench && h && hPlayed) ? calcLiveScore(h, hStats) : null;
-        const aScore = (!isBench && a && aPlayed) ? calcLiveScore(a, aStats) : null;
-
+        const hScore = (!isBench && h && hStats) ? calcLiveScore(h, hStats) : null;
+        const aScore = (!isBench && a && aStats) ? calcLiveScore(a, aStats) : null;
+ 
         if (hScore != null) { homeTotal += hScore; homeCount++; }
         if (aScore != null) { awayTotal += aScore; awayCount++; }
 
