@@ -156,7 +156,7 @@
 .content-header {
     padding: 26px 20px 14px;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
 }

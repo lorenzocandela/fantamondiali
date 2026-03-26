@@ -9,9 +9,6 @@
         </button>
     </div>
     <div class="search-wrap">
-        <div class="search-icon">
-            <span class="material-symbols-outlined">search</span>
-        </div>
         <input id="search-in" class="search-in" type="text" placeholder="Cerca giocatore o nazione...">
     </div>
     <div class="filter-row" id="role-filter-row">

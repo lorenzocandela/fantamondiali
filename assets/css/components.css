@@ -164,18 +164,6 @@
     position: relative;
 }
 
-.search-icon {
-    position: absolute;
-    left: 36px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-3);
-    pointer-events: none;
-    display: flex;
-}
-
-.search-icon .material-symbols-outlined { font-size: 18px; }
-
 .search-in {
     width: 100%;
     background: var(--surface);
