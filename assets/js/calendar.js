@@ -152,7 +152,6 @@ export async function loadCalendario() {
     document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-main-view')?.classList.remove('hidden');
     document.getElementById('cal-match-detail')?.classList.add('hidden');
-    document.getElementById('cal-subtitle').textContent = 'caricamento...';
 
     try {
         const [calSnap, usersSnap] = await Promise.all([
@@ -176,14 +175,12 @@ export async function loadCalendario() {
                     <h3>Calendario non ancora generato</h3>
                     <p>L'admin deve generarlo dalla dashboard</p>
                 </div>`;
-            document.getElementById('cal-subtitle').textContent = `${calTeams.length} squadre iscritte`;
             return;
         }
         calSchedule = calSnap.data().schedule ?? [];
         calResults  = calSnap.data().results  ?? {};
         calRound    = getCurrentMatchday().round;
         if (calRound > calSchedule.length) calRound = calSchedule.length;
-        document.getElementById('cal-subtitle').textContent = `${calTeams.length} squadre · ${calSchedule.length} giornate`;
         renderCalRound();
     } catch (err) {
         document.getElementById('cal-matches-list').innerHTML =
@@ -380,7 +377,6 @@ function closeMatchDetail() {
     document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-match-detail').classList.add('hidden');
     document.getElementById('cal-main-view').classList.remove('hidden');
-    document.getElementById('cal-subtitle').textContent = `${calTeams.length} squadre · ${calSchedule.length} giornate`;
 }
 
 // ─── RENDER MATCH DETAIL ────────────────────────────────────────────────────

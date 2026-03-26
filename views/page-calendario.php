@@ -1,11 +1,4 @@
 <section id="page-calendario" class="page">
-    <div class="content-header">
-        <div>
-            <h2 class="page-title">Calendario</h2>
-            <p class="page-subtitle" id="cal-subtitle">scontri diretti</p>
-        </div>
-    </div>
-
     <!-- VISTA PRINCIPALE: lista giornate + classifica -->
     <div id="cal-main-view">
         <div class="cal-seg-wrap">
