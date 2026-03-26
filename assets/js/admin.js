@@ -402,6 +402,6 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         toast('Errore: ' + err.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span class="material-symbols-outlined">calculate</span> Calcola punteggi giornata';
+        btn.innerHTML = '<span class="material-symbols-outlined">calculate</span> Calcola';
     }
 });

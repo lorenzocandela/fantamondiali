@@ -1,11 +1,4 @@
 <section id="page-admin" class="page">
-    <div class="content-header">
-        <div>
-            <h2 class="page-title">Admin</h2>
-            <p class="page-subtitle" id="admin-subtitle">pannello di controllo</p>
-        </div>
-    </div>
-
     <div class="admin-stats-row">
         <div class="admin-stat-card">
             <div class="admin-stat-icon" style="background:var(--blue-mid);color:var(--blue)">
@@ -35,7 +28,7 @@
         <div class="admin-control-row">
             <div class="admin-control-info">
                 <div class="admin-control-label" id="admin-market-status-text">Mercato chiuso</div>
-                <div class="admin-control-desc">Gli utenti non possono acquistare giocatori</div>
+                <div class="admin-control-desc">Gli utenti non possono acquistare giocatori.</div>
             </div>
             <div class="admin-toggle-btn-wrap">
                 <button class="admin-toggle-btn" id="toggle-market" data-state="off">
@@ -51,7 +44,7 @@
         <div class="admin-control-row">
             <div class="admin-control-info">
                 <div class="admin-control-label" id="admin-comp-status-text">Non attiva</div>
-                <div class="admin-control-desc">Abilita la competizione ufficiale</div>
+                <div class="admin-control-desc">Abilita la competizione ufficiale.</div>
             </div>
             <div class="admin-toggle-btn-wrap">
                 <button class="admin-toggle-btn" id="toggle-competition" data-state="off">
@@ -63,7 +56,7 @@
         <div class="admin-control-row">
             <div class="admin-control-info">
                 <div class="admin-control-label">Registrazioni</div>
-                <div class="admin-control-desc">Permetti iscrizioni nuovi utenti</div>
+                <div class="admin-control-desc">Permetti iscrizioni nuovi utenti.</div>
             </div>
             <div class="admin-toggle-btn-wrap">
                 <button class="admin-toggle-btn" id="toggle-registrations" data-state="on">
@@ -128,16 +121,13 @@
         </div>
         <button class="admin-action-btn" id="btn-calc-scores" style="margin-top:8px">
             <span class="material-symbols-outlined">calculate</span>
-            Calcola punteggi giornata
+            Calcola
         </button>
         <div id="admin-score-result" class="admin-score-result hidden"></div>
     </div>
 
     <div class="admin-section">
         <div class="admin-section-title">Moduli di gioco</div>
-        <div class="admin-control-info" style="margin-bottom:12px">
-            <div class="admin-control-label">Moduli disponibili</div>
-        </div>
         <div id="admin-modules-list" class="admin-modules-list"></div>
         <div class="admin-module-input-row" style="margin-top:10px">
             <input id="admin-module-input" class="field-in" type="text" placeholder="es. 4-3-3" style="font-family:var(--mono)">
@@ -152,7 +142,7 @@
         <div class="admin-section-title">Cache API</div>
         <div class="admin-control-info" style="margin-bottom:12px">
             <div class="admin-control-label">Listone giocatori</div>
-            <div class="admin-control-desc">Elimina la cache per forzare il ricaricamento dall'API al prossimo accesso</div>
+            <div class="admin-control-desc">Elimina la cache per forzare il ricaricamento dall'API al prossimo accesso.</div>
         </div>
         <button class="admin-action-btn danger" id="btn-clear-cache">
             <span class="material-symbols-outlined">refresh</span>

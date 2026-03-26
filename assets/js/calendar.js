@@ -49,10 +49,10 @@ export function renderMatchdayAdmin() {
     if (!numEl) return;
 
     const statusMap = {
-        live:     { text: 'In corso', cls: 'md-live' },
-        upcoming: { text: 'Prossima', cls: 'md-upcoming' },
-        next:     { text: 'Prossima', cls: 'md-upcoming' },
-        ended:    { text: 'Concluso', cls: 'md-ended' },
+        live:     { text: 'in corso', cls: 'md-live' },
+        upcoming: { text: 'prossima', cls: 'md-upcoming' },
+        next:     { text: 'prossima', cls: 'md-upcoming' },
+        ended:    { text: 'conclusa', cls: 'md-ended' },
     };
 
     const s = statusMap[md.status] ?? statusMap.upcoming;
