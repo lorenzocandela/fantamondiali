@@ -49,6 +49,7 @@ $leagueUsed = '';
 
 // Prova in ordine: FIFA Series, playoff UEFA, intercontinental playoffs, amichevoli
 $attempts = [
+    ['endpoint' => "fixtures?date={$today}&league=32&season=2024",   'label' => 'WC Qual Europe'],
     ['endpoint' => "fixtures?date={$today}&league=1222&season=2026", 'label' => 'FIFA Series 2026'],
     ['endpoint' => "fixtures?date={$today}&league=960&season=2026",  'label' => 'UEFA Playoff WC'],
     ['endpoint' => "fixtures?date={$today}&league=37&season=2026",   'label' => 'Intercontinental Playoff'],

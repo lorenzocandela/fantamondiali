@@ -54,6 +54,7 @@ $fixturesMeta = [];
 if ($mode === 'test') {
     // Partite di oggi — FIFA Series + playoff UEFA + intercontinental + amichevoli
     $candidates = [
+        "fixtures?date={$today}&league=32&season=2024",   // WC Qual Europe (season 2024!)
         "fixtures?date={$today}&league=1222&season=2026", // FIFA Series 2026
         "fixtures?date={$today}&league=960&season=2026",  // UEFA playoff WC 2026
         "fixtures?date={$today}&league=37&season=2026",   // Intercontinental playoff
