@@ -134,7 +134,7 @@
     content: '';
     position: absolute;
     left: 0; top: 0; bottom: 0;
-    width: 3px;
+    width: 7px;
     border-radius: var(--r-sm) 0 0 var(--r-sm);
 }
 
@@ -146,7 +146,7 @@
 .player-row:hover { box-shadow: var(--sh-sm); border-color: transparent; }
 .player-row:active { transform: scale(0.99); }
 
-.player-row-photo-wrap { flex-shrink: 0; }
+.player-row-photo-wrap { flex-shrink: 0; margin-left: 10px;}
 
 .player-row-photo {
     width: 42px;
