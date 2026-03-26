@@ -47,7 +47,6 @@
             </div>
         </div>
         <button id="btn-save-profilo" class="btn-cta" style="margin-top:4px">
-            <span class="material-symbols-outlined">save</span>
             Salva modifiche
         </button>
     </div>
@@ -84,7 +83,7 @@
     <div id="squad-sheet">
         <div class="modal-handle" style="margin:10px auto 0"></div>
         <div class="squad-sheet-header">
-            <div class="squad-sheet-title">La mia Rosa</div>
+            <div class="squad-sheet-title">La mia rosa</div>
             <button id="btn-close-squad-sheet" class="fpicker-close">
                 <span class="material-symbols-outlined">close</span>
             </button>

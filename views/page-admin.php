@@ -99,8 +99,7 @@
                 Anteprima
             </button>
             <button class="admin-action-btn" id="btn-generate-calendar" style="flex:1;background:var(--green-soft);color:var(--green)" disabled>
-                <span class="material-symbols-outlined">save</span>
-                Genera e salva
+                Genera
             </button>
             <button class="admin-action-btn danger" id="btn-reset-calendar" style="flex:1">
                 <span class="material-symbols-outlined">delete_sweep</span>
@@ -118,13 +117,13 @@
         <div class="admin-score-row">
             <select id="admin-score-round" class="nation-select" style="flex:1">
                 <option value="">Seleziona giornata...</option>
-                <option value="1">GJ1 – Fase gironi 1</option>
-                <option value="2">GJ2 – Fase gironi 2</option>
-                <option value="3">GJ3 – Fase gironi 3</option>
-                <option value="4">Ottavi di finale</option>
-                <option value="5">Quarti di finale</option>
+                <option value="1">GJ1</option>
+                <option value="2">GJ2</option>
+                <option value="3">GJ3</option>
+                <option value="4">Ottavi</option>
+                <option value="5">Quarti</option>
                 <option value="6">Semifinali</option>
-                <option value="7">Finale</option>
+                <option value="7">Finali</option>
             </select>
         </div>
         <button class="admin-action-btn" id="btn-calc-scores" style="margin-top:8px">
@@ -138,7 +137,6 @@
         <div class="admin-section-title">Moduli di gioco</div>
         <div class="admin-control-info" style="margin-bottom:12px">
             <div class="admin-control-label">Moduli disponibili</div>
-            <div class="admin-control-desc">Formato: DIF-CEN-ATT (es. 4-3-3) o DIF-MED-TRQ-ATT (es. 4-2-3-1)</div>
         </div>
         <div id="admin-modules-list" class="admin-modules-list"></div>
         <div class="admin-module-input-row" style="margin-top:10px">
