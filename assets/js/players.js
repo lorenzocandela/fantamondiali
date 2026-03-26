@@ -114,7 +114,6 @@ export function getFiltered() {
 export function buildSubtitle() {
     const parts = [];
     if (allPlayers.length) parts.push(`${allPlayers.length} giocatori`);
-    document.getElementById('listone-subtitle').textContent = parts.join(' · ');
 }
 
 export function populateNationFilter(players) {
@@ -280,6 +279,7 @@ function attachScrollSentinel(players, currentSlice) {
 
 export async function loadListone() {
     showSkeletons();
+    document.getElementById('listone-subtitle').textContent = 'caricamento...';
     try {
         const res  = await fetch('get_api_test.php');
         //const res  = await fetch('get_api.php'); PRODUZIONE
