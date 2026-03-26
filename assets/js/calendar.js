@@ -366,10 +366,13 @@ async function openMatchDetail(homeUid, awayUid, round) {
         });
     }
 
-    renderMatchDetail();
+    // Se live, fetch immediato prima del render così i voti sono già disponibili
+    if (status === 'live') {
+        await fetchLiveScores();
+        startLivePolling();
+    }
 
-    // Se live, inizia polling
-    if (status === 'live') startLivePolling();
+    renderMatchDetail();
 }
 
 function closeMatchDetail() {
@@ -939,8 +942,8 @@ function renderConfrontoFromResults(res) {
 // ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
 
 const SCORE_TABLE = {
-    goal: { POR: 3, DIF: 3, CEN: 3, ATT: 3 },
-    assist: 1,
+    goal: { POR: 10, DIF: 3, CEN: 3, ATT: 3 },
+    assist: { POR: 2, DIF: 1, CEN: 1, ATT: 1 },
     yellow: -0.5,
     red: -2,
     clean_sheet: { POR: 1 },
@@ -950,11 +953,12 @@ let confrontoDetail = false;
 
 function calcLiveScore(player, stats) {
     if (!stats) return null;
-    const base = stats.rating ?? 6;
+    if (!stats.rating || stats.rating === 0) return null;
+    const base = stats.rating;
     let score = base;
     if (stats) {
         score += (stats.goals ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
-        score += (stats.assists ?? 0) * SCORE_TABLE.assist;
+        score += (stats.assists ?? 0) * (SCORE_TABLE.assist[player.role] ?? 1);
         score += (stats.yellow ?? 0) * SCORE_TABLE.yellow;
         score += (stats.red ?? 0) * SCORE_TABLE.red;
         if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
@@ -1030,7 +1034,7 @@ function bonusBreakdownLine(player, stats, totalScore) {
         parts.push(`<span class="bd-chip bd-goal"><span class="material-symbols-outlined">sports_soccer</span>${g > 1 ? g + '×' : ''}+${val.toFixed(1)}</span>`);
     }
     if (a > 0) {
-        const val = a * (typeof SCORE_TABLE.assist === 'object' ? (SCORE_TABLE.assist[player.role] ?? 1) : SCORE_TABLE.assist);
+        const val = a * SCORE_TABLE.assist;
         parts.push(`<span class="bd-chip bd-assist"><span class="material-symbols-outlined">handshake</span>${a > 1 ? a + '×' : ''}+${val.toFixed(1)}</span>`);
     }
     if (r > 0) {
@@ -1039,7 +1043,6 @@ function bonusBreakdownLine(player, stats, totalScore) {
         parts.push(`<span class="bd-chip bd-yellow"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow.toFixed(1)}</span>`);
     }
     
-    if (parts.length <= 1) return '';
     return `<div class="bd-line">${parts.join('')}</div>`;
 }
 
@@ -1061,8 +1064,8 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
         const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
         
-        const hScore = (!isBench && h && hStats) ? calcLiveScore(h, hStats) : null;
-        const aScore = (!isBench && a && aStats) ? calcLiveScore(a, aStats) : null;
+        const hScore = (h && hStats) ? calcLiveScore(h, hStats) : null;
+        const aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
  
         if (hScore != null) { homeTotal += hScore; homeCount++; }
         if (aScore != null) { awayTotal += aScore; awayCount++; }
@@ -1164,8 +1167,8 @@ async function fetchLiveScores() {
 
 function startLivePolling() {
     stopLivePolling();
-    fetchLiveScores(); // fetch immediato
-    liveRefreshTimer = setInterval(fetchLiveScores, 300000); // ogni 5 minuti
+    // il fetch iniziale è già fatto da openMatchDetail (await fetchLiveScores)
+    liveRefreshTimer = setInterval(fetchLiveScores, 60000); // ogni 60s
 }
 
 function stopLivePolling() {
