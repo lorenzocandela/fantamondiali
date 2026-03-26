@@ -69,10 +69,10 @@
     font-family: var(--mono);
 }
 
-.badge-POR { background: var(--amber-soft); color: var(--role-por); }
-.badge-DIF { background: var(--green-soft);  color: var(--role-dif); }
-.badge-CEN { background: var(--blue-mid);    color: var(--role-cen); }
-.badge-ATT { background: var(--red-soft);    color: var(--role-att); }
+.badge-POR { color: var(--amber-soft); color: #fff; }
+.badge-DIF { color: var(--green-soft); color: #fff }
+.badge-CEN { color: var(--blue-mid); color: #fff; }
+.badge-ATT { color: var(--red-soft); color: #fff; }
 
 .player-name { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; line-height: 1.35; color: var(--text); letter-spacing: -0.1px; }
 .player-nat  { font-size: 10.5px; color: var(--text-3); margin-bottom: 9px; font-family: var(--mono); }
