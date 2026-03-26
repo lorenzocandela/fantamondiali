@@ -407,7 +407,7 @@
 .btn-add.taken { background: var(--red-soft); color: var(--red); cursor: default; font-size: 10px; }
 .btn-add.taken:hover { background: var(--red-soft); color: var(--red); }
 .btn-add-row.taken { background: var(--red-soft); color: var(--red); cursor: default; }
-.modal-btn-add.taken { background: var(--red-soft); color: var(--red); cursor: default; }
+.modal-btn-add.taken { background: var(--red-soft); color: var(--red); cursor: default; box-shadow: none; }
 
 /* price wheel picker */
 
