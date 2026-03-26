@@ -279,7 +279,6 @@ function attachScrollSentinel(players, currentSlice) {
 
 export async function loadListone() {
     showSkeletons();
-    document.getElementById('listone-subtitle').textContent = 'caricamento...';
     try {
         const res  = await fetch('get_api_test.php');
         //const res  = await fetch('get_api.php'); PRODUZIONE
