@@ -5,7 +5,7 @@ import { toast, formatDate } from './utils.js';
 // ─── SCHEDULE ────────────────────────────────────────────────────────────────
 
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-03-26', end: '2026-03-26' }, // TEST
+    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-03-26 19:00:00', end: '2026-03-26 23:59:59' }, // TEST
 //    { round: 1, label: 'Fase a gironi – Giornata 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
     { round: 2, label: 'Fase a gironi – Giornata 2', short: 'GJ2', start: '2026-06-15', end: '2026-06-19' },
     { round: 3, label: 'Fase a gironi – Giornata 3', short: 'GJ3', start: '2026-06-20', end: '2026-06-25' },
