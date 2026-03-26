@@ -96,7 +96,10 @@
 .confronto-nat-text { font-size: 8px; color: var(--text-3); font-family: var(--mono); font-weight: 700; background: var(--surface-3); padding: 1px 3px; border-radius: 2px; flex-shrink: 0; }
 
 .player-nat { display: flex; align-items: center; gap: 4px; justify-content: center; }
-.player-nat-flag { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; flex-shrink: 0; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.1); }
+.player-nat-flag {
+    width: 16px;
+    height: auto;
+}
 .player-nat-text { font-size: 10.5px; color: var(--text-3); font-family: var(--mono); }
 
 .player-row-meta .player-nat-flag { width: 14px; height: 14px; border-radius: 50%; object-fit: cover; vertical-align: middle; }
