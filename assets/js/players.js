@@ -225,7 +225,6 @@ export function renderPlayers(players, slice) {
                     <div class="player-row-meta">
                         <span class="role-badge badge-${p.role}" style="margin-bottom:0">${p.role}</span>
                         ${natFlag(p.nationality)}
-                        ${p.team ? `<span class="player-row-team">${p.team}</span>` : ''}
                     </div>
                 </div>
                 <div class="player-row-right">

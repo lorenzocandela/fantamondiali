@@ -198,7 +198,6 @@
 }
 
 .player-row-nat  { font-size: 11px; color: var(--text-2); font-family: var(--mono); white-space: nowrap; }
-.player-row-team { font-size: 11px; color: var(--text-3); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .player-row-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
