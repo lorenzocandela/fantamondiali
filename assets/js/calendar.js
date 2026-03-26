@@ -942,7 +942,7 @@ function renderConfrontoFromResults(res) {
 // ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
 
 const SCORE_TABLE = {
-    goal: { POR: 10, DIF: 3, CEN: 3, ATT: 3 },
+    goal: { POR: 5, DIF: 3, CEN: 3, ATT: 3 },
     assist: 1,
     yellow: -0.5,
     red: -2,
@@ -953,8 +953,14 @@ let confrontoDetail = false;
 
 function calcLiveScore(player, stats) {
     if (!stats) return null;
-    // rating=0 significa che il giocatore non ha giocato nella vera partita (panchina reale)
-    if (!stats.rating || stats.rating === 0) return null;
+    if (!stats.rating || stats.rating === 0) {
+        if (stats.sub_in != null && stats.sub_in >= 75) {
+            const hasBonus = (stats.goals ?? 0) > 0 || (stats.assists ?? 0) > 0
+                        || (stats.yellow ?? 0) > 0 || (stats.red ?? 0) > 0 || stats.cs;
+            if (!hasBonus) return null;
+        }
+        return null;
+    }
     const base = stats.rating;
     let score = base;
     if (stats) {
@@ -984,6 +990,18 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     
     const flag = flagImg(p.nationality || p.team);
     const name = p.name?.split(' ').pop() ?? ''; 
+    const subInMin  = stats?.sub_in  ?? null;
+    const subOutMin = stats?.sub_out ?? null;
+
+    const subHtml = subOutMin != null
+        ? `<span class="confronto-sub sub-out" title="Uscito ${subOutMin}'">
+            <span class="material-symbols-outlined">arrow_downward</span>${subOutMin}'
+        </span>`
+        : subInMin != null
+        ? `<span class="confronto-sub sub-in" title="Entrato ${subInMin}'">
+            <span class="material-symbols-outlined">arrow_upward</span>${subInMin}'
+        </span>`
+        : '';
     const roleBadge = `<span class="role-badge badge-${p.role}">${p.role}</span>`;
     
     let scoreLabel, scoreClass2;
@@ -997,9 +1015,9 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     
     const scoreHtml = `<div class="confronto-score-wrap"><span class="confronto-score ${scoreClass2}">${scoreLabel}</span></div>`;
 
-    const metaHtml = side === 'home' 
-        ? `<div class="cp-meta">${roleBadge}${flag}</div>`
-        : `<div class="cp-meta away">${flag}${roleBadge}</div>`;
+    const metaHtml = side === 'home'
+        ? `<div class="cp-meta">${roleBadge}${flag}${subHtml}</div>`
+        : `<div class="cp-meta away">${subHtml}${flag}${roleBadge}</div>`;
         
     const infoHtml = `<div class="cp-info ${side}">
                         <div class="confronto-pname">${name}</div>

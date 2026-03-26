@@ -120,6 +120,19 @@
 .confronto-toggle-btn.active { background: var(--blue-mid); color: var(--blue); border-color: var(--blue-mid); }
 .confronto-toggle-btn .material-symbols-outlined { font-size: 14px; }
 
+.confronto-sub {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 1px 4px;
+}
+.confronto-sub .material-symbols-outlined { font-size: 11px; }
+.sub-in  { color: var(--green); background: var(--green-soft); }
+.sub-out { color: var(--red);   background: var(--red-soft); }
+
 
 /* ─── BONUS BREAKDOWN ─────────────────────────────────────────────────────── */
 

@@ -124,19 +124,29 @@ foreach ($fixtures as $f) {
 
 $playerStats = [];
 $liveStatuses = ['1H','HT','2H','ET','P','BT','LIVE','FT','AET','PEN'];
-$source = 'events'; // track data source
+$source = 'events';
 
 foreach ($fixturesMeta as $fm) {
-    // Prendi stats solo per partite in corso o concluse
     if (!in_array($fm['status'], $liveStatuses)) continue;
 
-    // Prova prima fixtures/players (stats complete con rating)
     $players = apiGet("fixtures/players?fixture={$fm['id']}");
     
     if (!empty($players)) {
         $source = 'players_stats';
 
-        // CS a livello squadra: basato sui gol reali della fixture, non sul campo 'conceded' del singolo
+        $events = apiGet("fixtures/events?fixture={$fm['id']}") ?? [];
+        $subsIn  = [];
+        $subsOut = [];
+
+        foreach ($events as $ev) {
+            if (($ev['type'] ?? '') !== 'subst') continue;
+            $minuteIn  = $ev['time']['elapsed'] ?? null;
+            $pidOut    = $ev['player']['id'] ?? null;
+            $pidIn     = $ev['assist']['id'] ?? null;
+            if ($pidOut) $subsOut[(string)$pidOut] = $minuteIn;
+            if ($pidIn)  $subsIn[(string)$pidIn]  = $minuteIn;
+        }
+
         $homeCs = ((int)($fm['away_goals'] ?? 1)) === 0;
         $awayCs = ((int)($fm['home_goals'] ?? 1)) === 0;
 
@@ -144,7 +154,7 @@ foreach ($fixturesMeta as $fm) {
             $teamCs = ($teamIdx === 0) ? $homeCs : $awayCs;
 
             foreach ($teamData['players'] ?? [] as $entry) {
-                $pid   = $entry['player']['id']   ?? null;
+                $pid   = $entry['player']['id'] ?? null;
                 $pname = $entry['player']['name']  ?? '';
                 $photo = $entry['player']['photo'] ?? '';
                 $stats = $entry['statistics'][0]   ?? [];
@@ -174,16 +184,16 @@ foreach ($fixturesMeta as $fm) {
                     'minutes'    => $minutes,
                     'position'   => $position,
                     'fixture_id' => $fm['id'],
+                    'sub_in'     => $subsIn[(string)$pid]  ?? null,
+                    'sub_out'    => $subsOut[(string)$pid] ?? null,
                 ];
             }
         }
     } else {
-        // FALLBACK: usa fixtures/events per ricostruire gol/assist/cartellini
         $events = apiGet("fixtures/events?fixture={$fm['id']}");
         if (empty($events)) continue;
         
-        // Costruisci stats dai singoli eventi
-        $eventsMap = []; // pid → {goals, assists, yellow, red}
+        $eventsMap = [];
         
         foreach ($events as $ev) {
             $pid  = $ev['player']['id'] ?? null;
