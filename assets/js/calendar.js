@@ -982,8 +982,10 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     if (!p) return `<span class="confronto-empty-slot">—</span>`;
     
     const flag = flagImg(p.nationality || p.team);
+    // Usiamo .split(' ').pop() per prendere il cognome per compattezza,
+    // ma con il nuovo layout verticale avremo più spazio orizzontale.
     const name = p.name?.split(' ').pop() ?? ''; 
-    const role = `<span class="role-badge badge-${p.role}" style="margin:0;font-size:9px">${p.role}</span>`;
+    const roleBadge = `<span class="role-badge badge-${p.role}">${p.role}</span>`;
     
     let scoreLabel, scoreClass2;
     if (pending) {
@@ -994,18 +996,21 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
         scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
     }
     
+    // NUOVA STRUTTURA: Punteggio blocco grande (34x34)
     const scoreHtml = `<div class="confronto-score-wrap"><span class="confronto-score ${scoreClass2}">${scoreLabel}</span></div>`;
 
+    // NUOVA STRUTTURA VERTICALE: Nome (top), Meta (bottom)
+    // Allineamento simmetrico per Casa/Trasferta
     const metaHtml = side === 'home' 
-        ? `<div class="cp-meta">${role}${flag}</div>`
-        : `<div class="cp-meta away">${flag}${role}</div>`;
+        ? `<div class="cp-meta">${roleBadge}${flag}</div>`
+        : `<div class="cp-meta away">${flag}${roleBadge}</div>`;
         
     const infoHtml = `<div class="cp-info ${side}">
                         <div class="confronto-pname">${name}</div>
                         ${metaHtml}
-                    </div>`;
+                      </div>`;
 
-    // Costruzione della riga principale (Voto a sinistra per home, a destra per away)
+    // Costruzione della riga di base (Voto a sx per casa, a dx per trasferta)
     let mainRow = '';
     if (side === 'home') {
         mainRow = `<div class="cp-row home">${scoreHtml}${infoHtml}</div>`;
@@ -1016,9 +1021,10 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
     if (!isDetail) {
         return mainRow;
     } else {
-        // Aggiunta dei bonus sotto
+        // In vista DETTAGLIO, aggiungiamo i bonus sotto
         const bd = (!pending && score !== null) ? bonusBreakdownLine(p, stats, score) : '';
-        return `<div class="cp-player-wrap">${mainRow}${bd}</div>`;
+        // Inseriamo tutto in un wrapper per il dettaglio
+        return `<div class="cp-player-wrap detail">${mainRow}${bd}</div>`;
     }
 }
 

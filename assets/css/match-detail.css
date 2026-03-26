@@ -156,21 +156,22 @@
 }
 
 /* ─── CONFRONTO VIEW ──────────────────────────────────────────────────────── */
+/* --- CORREZIONE: Nuova struttura verticale CONFRONTO (Vedi image_0.png) --- */
 
 .confronto-list {
     display: flex;
     flex-direction: column;
-    gap: 6px; /* Più spazio tra i giocatori */
+    gap: 6px; /* Più spazio verticale tra i blocchi */
 }
 
 .confronto-row {
     display: flex;
-    align-items: center;
+    align-items: stretch; /* Permette all'altezza di adattarsi al contenuto */
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--r-md); /* Bordo un po' più arrotondato */
+    border-radius: var(--r-md);
     padding: 8px 6px;
-    min-height: 48px; /* Riga più alta per contenere le due linee di testo */
+    min-height: 48px; /* Altezza minima per le due righe di testo */
 }
 
 .confronto-player {
@@ -186,13 +187,15 @@
     align-items: center;
 }
 
-.cp-player-wrap {
+/* Wrapper per la vista dettaglio */
+.cp-player-wrap.detail {
     display: flex;
     flex-direction: column;
     gap: 4px;
     width: 100%;
 }
 
+/* Riga principale (Voto + Info) */
 .cp-row {
     display: flex;
     align-items: center;
@@ -203,6 +206,7 @@
 .cp-row.home { justify-content: flex-start; }
 .cp-row.away { justify-content: flex-end; }
 
+/* Contenitore Voto: Blocco grande */
 .confronto-score-wrap {
     flex-shrink: 0;
 }
@@ -211,21 +215,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px; /* Voto più grande */
+    font-size: 14px; /* Voto più grande e leggibile */
     font-weight: 800;
     font-family: var(--mono);
-    width: 34px;
+    width: 34px; /* Blocco 34x34 */
     height: 34px;
-    border-radius: 8px; /* Design a blocchetto per il voto */
+    border-radius: 8px; /* Design a blocchetto arrotondato */
     line-height: 1;
 }
 
+/* Colori dei blocchetti voto */
 .confronto-score.pending { color: var(--text-3); background: transparent; }
 .confronto-score.sv { color: var(--text-3); background: var(--surface-3); font-size: 11px; }
 .confronto-score.score-high { background: var(--green-soft); color: var(--green); }
 .confronto-score.score-mid  { background: var(--amber-soft); color: var(--amber); }
 .confronto-score.score-low  { background: var(--red-soft);   color: var(--red); }
 
+/* Contenitore Info: Nome + Meta (Verticale) */
 .cp-info {
     display: flex;
     flex-direction: column;
@@ -234,9 +240,11 @@
     min-width: 0;
 }
 
+/* Allineamento simmetrico */
 .cp-info.home { align-items: flex-start; text-align: left; }
 .cp-info.away { align-items: flex-end; text-align: right; }
 
+/* Nome Giocatore: Più spazio e leggibilità */
 .confronto-pname {
     font-size: 13.5px; /* NOMI BEN VISIBILI */
     font-weight: 700;
@@ -244,18 +252,27 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100%;
+    width: 100%; /* Sfrutta tutta l'ampiezza orizzontale disponibile */
     letter-spacing: -0.2px;
 }
 
+/* Contenitore Meta: Ruolo + Bandiera */
 .cp-meta {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.cp-meta.away {
-    flex-direction: row;
+/* Wrapper per la bandiera, per gestione dimensione */
+.cp-meta img {
+    height: 12px;
+    width: auto;
+}
+
+/* Badge Ruolo: Leggermente più piccolo per equilibrio visivo */
+.role-badge {
+    margin: 0 !important;
+    font-size: 9px !important;
 }
 
 .confronto-empty-slot { 
@@ -265,8 +282,9 @@
     text-align: center;
 }
 
+/* Divisore centrale: Meno invasivo */
 .confronto-divider {
-    width: 20px; /* Più stretto per dare spazio ai nomi */
+    width: 20px;
     text-align: center;
     font-size: 10px;
     font-weight: 700;
@@ -274,10 +292,10 @@
     font-family: var(--mono);
     flex-shrink: 0;
     opacity: 0.6;
-    /* Rimosso il bordo destro/sinistro per renderlo più pulito */
+    /* Rimosso bordo verticale pesante */
 }
 
-/* Adattamento riga Bonus (dettaglio) */
+/* Adattamento riga Bonus (Dettaglio) */
 .bd-line {
     display: flex;
     gap: 4px;
@@ -286,6 +304,7 @@
     width: 100%;
 }
 
+/* Allineamento simmetrico dei bonus */
 .confronto-player.home .bd-line { justify-content: flex-start; padding-left: 44px; /* Allineato sotto il nome */ }
 .confronto-player.away .bd-line { justify-content: flex-end; padding-right: 44px; }
 
