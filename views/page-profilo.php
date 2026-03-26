@@ -63,11 +63,10 @@
 
     <!-- pwa -->
     <div id="pwa-install-section" style="display:none" class="profilo-section">
-        <div class="profilo-section-title">Installa app</div>
+        <div class="profilo-section-title">Download</div>
         <p class="profilo-section-desc">Aggiungi FantaMondiali alla home per un'esperienza a schermo intero.</p>
         <button id="btn-install-pwa" class="btn-join" style="background:var(--blue-mid);color:var(--blue)">
-            <span class="material-symbols-outlined">install_mobile</span>
-            Installa app
+            Download
         </button>
     </div>
 
@@ -75,7 +74,7 @@
     <div class="profilo-section">
         <button id="btn-logout" class="btn-logout-full">
             <span class="material-symbols-outlined">logout</span>
-            Esci dall'account
+            Esci
         </button>
     </div>
 </section>

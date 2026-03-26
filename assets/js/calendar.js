@@ -5,14 +5,14 @@ import { toast, formatDate } from './utils.js';
 // ─── SCHEDULE ────────────────────────────────────────────────────────────────
 
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Gironi – Giornata 1', short: 'GJ1', start: '2026-03-26T19:00:00', end: '2026-03-26T23:59:59' }, // TEST STASERA
-//  { round: 1, label: 'Gironi – Giornata 1', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' }, PRODUZIONE
-    { round: 2, label: 'Gironi – Giornata 2', short: 'GJ2', start: '2026-06-15T00:00:00', end: '2026-06-19T23:59:59' },
-    { round: 3, label: 'Gironi – Giornata 3', short: 'GJ3', start: '2026-06-20T00:00:00', end: '2026-06-25T23:59:59' },
-    { round: 4, label: 'Ottavi di finale',            short: 'R16', start: '2026-06-27T00:00:00', end: '2026-07-03T23:59:59' },
-    { round: 5, label: 'Quarti di finale',            short: 'QF',  start: '2026-07-04T00:00:00', end: '2026-07-05T23:59:59' },
-    { round: 6, label: 'Semifinali',                  short: 'SF',  start: '2026-07-07T00:00:00', end: '2026-07-08T23:59:59' },
-    { round: 7, label: 'Finale 3° posto + Finale',   short: 'F',   start: '2026-07-11T00:00:00', end: '2026-07-19T23:59:59' },
+    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-03-26T19:00:00', end: '2026-03-26T23:59:59' }, //   TEST
+//  { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' },      PRODUZIONE
+    { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-15T00:00:00', end: '2026-06-19T23:59:59' },
+    { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-20T00:00:00', end: '2026-06-25T23:59:59' },
+    { round: 4, label: 'Ottavi', short: 'R16', start: '2026-06-27T00:00:00', end: '2026-07-03T23:59:59' },
+    { round: 5, label: 'Quarti', short: 'QF',  start: '2026-07-04T00:00:00', end: '2026-07-05T23:59:59' },
+    { round: 6, label: 'Semifinali', short: 'SF',  start: '2026-07-07T00:00:00', end: '2026-07-08T23:59:59' },
+    { round: 7, label: 'Finali', short: 'F', start: '2026-07-11T00:00:00', end: '2026-07-19T23:59:59' },
 ];
 export { MATCHDAY_SCHEDULE };
 
@@ -282,9 +282,7 @@ document.querySelectorAll('.cal-seg-btn').forEach(btn => {
     });
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// MATCH DETAIL — formazione + confronto
-// ═══════════════════════════════════════════════════════════════════════════════
+// ─── MATCH DETAIL ─────────────────────────────────────────────────────────────
 
 const DEFAULT_MODULES = [
     '4-3-3','4-4-2','4-2-3-1','4-3-2-1',
@@ -292,10 +290,10 @@ const DEFAULT_MODULES = [
     '4-5-1','4-1-4-1','3-6-1',
 ];
 
-let mdRound          = null;  // round corrente del detail
+let mdRound          = null;
 let mdHomeUid        = null;
 let mdAwayUid        = null;
-let mdView           = 'confronto'; // 'formazione' | 'confronto'
+let mdView           = 'confronto';
 let roster           = [];
 let lineup           = [];
 let activeModule     = '4-3-3';
@@ -303,7 +301,7 @@ let availableModules = [...DEFAULT_MODULES];
 let pickerState      = null;
 let liveScoresCache  = null;
 let liveRefreshTimer = null;
-let liveTotals       = { home: null, away: null }; // aggiornati dal confronto
+let liveTotals       = { home: null, away: null };
 
 function getMatchdayMeta(round) {
     return MATCHDAY_SCHEDULE.find(m => m.round === round);
@@ -337,7 +335,6 @@ async function openMatchDetail(homeUid, awayUid, round) {
     const status = getRoundStatus(round);
     const isMine = isMyMatch(homeUid, awayUid);
     
-    // Se la giornata è futura e il match è mio → mostra formazione, altrimenti confronto
     if (status === 'future' && isMine) {
         mdView = 'formazione';
     } else {

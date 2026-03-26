@@ -50,7 +50,6 @@
     <?php include 'views/page-listone.php'; ?>
     <?php include 'views/page-squadra.php'; ?>
     <?php include 'views/page-formazione.php'; ?>
-    <?php include 'views/page-competizione.php'; ?>
     <?php include 'views/page-profilo.php'; ?>
     <?php include 'views/page-calendario.php'; ?>
     <?php include 'views/page-admin.php'; ?>

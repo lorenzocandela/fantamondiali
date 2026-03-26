@@ -56,10 +56,6 @@ document.getElementById('nav-calendario')?.addEventListener('click', () => {
     showPage('calendario'); 
     loadCalendario();
 });
-document.getElementById('nav-competizione')?.addEventListener('click', () => { 
-    showPage('competizione');
-    loadCompetizioni(); 
-});
 document.getElementById('nav-admin')?.addEventListener('click', () => {
     showPage('admin');
     loadAdminStats();
