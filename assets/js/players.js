@@ -111,12 +111,6 @@ export function getFiltered() {
     });
 }
 
-export function buildSubtitle() {
-    const parts = [];
-    if (allPlayers.length) parts.push(`${allPlayers.length} giocatori`);
-    document.getElementById('listone-subtitle').textContent = parts.join(' · ');
-}
-
 export function populateNationFilter(players) {
     const container = document.getElementById('nation-filter-row');
     const nations   = [...new Set(players.map(p => p.nationality))].filter(Boolean).sort();
@@ -280,7 +274,6 @@ function attachScrollSentinel(players, currentSlice) {
 
 export async function loadListone() {
     showSkeletons();
-    document.getElementById('listone-subtitle').textContent = 'caricamento...';
     try {
         const res  = await fetch('get_api_test.php');
         //const res  = await fetch('get_api.php'); PRODUZIONE
@@ -290,7 +283,6 @@ export async function loadListone() {
         apiSource    = data.source ? `dati ${data.source}` : '';
         displayCount = PAGE_SIZE;
         await loadGlobalOwnership();
-        buildSubtitle();
         populateNationFilter(allPlayers);
         renderPlayers(getFiltered(), displayCount);
     } catch (err) {
