@@ -69,9 +69,9 @@
     font-family: var(--mono);
 }
 
-.badge-POR { background: #ffbe76; color: #fff; }
+.badge-POR { background: #535c68; color: #fff; }
 .badge-DIF { background: #6ab04c; color: #fff; }
-.badge-CEN { background: #686de0; color: #fff; }
+.badge-CEN { background: #4645bf; color: #fff; }
 .badge-ATT { background: #eb4d4b; color: #fff; }
 
 .player-name { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; line-height: 1.35; color: var(--text); letter-spacing: -0.1px; }
