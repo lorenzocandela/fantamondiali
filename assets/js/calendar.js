@@ -366,10 +366,13 @@ async function openMatchDetail(homeUid, awayUid, round) {
         });
     }
 
-    renderMatchDetail();
+    // Se live, fetch immediato prima del render così i voti sono già disponibili
+    if (status === 'live') {
+        await fetchLiveScores();
+        startLivePolling();
+    }
 
-    // Se live, inizia polling
-    if (status === 'live') startLivePolling();
+    renderMatchDetail();
 }
 
 function closeMatchDetail() {
@@ -950,7 +953,9 @@ let confrontoDetail = false;
 
 function calcLiveScore(player, stats) {
     if (!stats) return null;
-    const base = stats.rating ?? 6;
+    // rating=0 significa che il giocatore non ha giocato nella vera partita (panchina reale)
+    if (!stats.rating || stats.rating === 0) return null;
+    const base = stats.rating;
     let score = base;
     if (stats) {
         score += (stats.goals ?? 0) * (SCORE_TABLE.goal[player.role] ?? 6);
@@ -1164,7 +1169,7 @@ async function fetchLiveScores() {
 
 function startLivePolling() {
     stopLivePolling();
-    fetchLiveScores(); // fetch immediato
+    // il fetch iniziale è già fatto da openMatchDetail (await fetchLiveScores)
     liveRefreshTimer = setInterval(fetchLiveScores, 60000); // ogni 60s
 }
 
