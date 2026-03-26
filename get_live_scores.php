@@ -249,16 +249,12 @@ foreach ($fixturesMeta as $fm) {
                 'red'        => $ev['red'],
                 'cs'         => false,
                 'played'     => true,
-                'minutes'    => 90,   // ha generato eventi → ha giocato
+                'minutes'    => 90,
                 'position'   => '',
                 'fixture_id' => $fm['id'],
                 'source'     => 'events',
             ];
         }
-        
-        // Per i giocatori NON coinvolti in eventi ma che stanno giocando,
-        // non possiamo sapere chi è in campo senza lineups.
-        // Segniamo solo quelli con eventi — gli altri avranno voto "–" nella UI.
     }
     usleep(150000);
 }
