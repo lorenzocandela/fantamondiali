@@ -275,494 +275,550 @@ function getEventIcon($type, $detail) {
 }
 
 function getScoreColor($score) {
-    if ($score === null) return 'bg-slate-600 text-slate-300';
-    if ($score >= 7.0) return 'bg-emerald-500 text-white';
-    if ($score >= 6.0) return 'bg-blue-500 text-white';
-    if ($score >= 5.0) return 'bg-amber-500 text-white';
-    return 'bg-red-500 text-white';
+    if ($score === null) return 'score-sv';
+    if ($score >= 7.0) return 'score-high';
+    if ($score >= 6.0) return 'score-mid';
+    if ($score >= 5.0) return 'score-warn';
+    return 'score-low';
 }
 
 function getSourceBadge($source) {
     $map = [
-        'players_stats' => ['⭐ API Stats', 'bg-emerald-500/20 text-emerald-400'],
-        'lineups'       => ['📋 Lineup XI', 'bg-blue-500/20 text-blue-400'],
-        'lineups_sub'   => ['🪑 Panchina', 'bg-slate-500/20 text-slate-400'],
-        'sub_entered'   => ['🔄 Subentrato', 'bg-cyan-500/20 text-cyan-400'],
-        'events_only'   => ['⚡ Solo eventi', 'bg-amber-500/20 text-amber-400'],
+        'players_stats' => ['⭐ Stats', 'background:rgba(16,185,129,0.12);color:#34d399'],
+        'lineups'       => ['📋 XI', 'background:rgba(59,130,246,0.12);color:#60a5fa'],
+        'lineups_sub'   => ['🪑 Bench', 'background:rgba(100,116,139,0.1);color:#64748b'],
+        'sub_entered'   => ['🔄 Sub', 'background:rgba(6,182,212,0.12);color:#22d3ee'],
+        'events_only'   => ['⚡ Evt', 'background:rgba(245,158,11,0.12);color:#fbbf24'],
     ];
-    $s = $map[$source] ?? ['?', 'bg-slate-500/20 text-slate-400'];
-    return "<span class=\"px-2 py-0.5 rounded text-[10px] font-bold {$s[1]}\">{$s[0]}</span>";
+    $s = $map[$source] ?? ['?', 'background:rgba(100,116,139,0.1);color:#64748b'];
+    return "<span class=\"src-badge\" style=\"{$s[1]}\">{$s[0]}</span>";
 }
 
 function covBadge($val) {
-    if ($val === true) return '<span class="text-emerald-400 font-bold">✓</span>';
-    if ($val === false) return '<span class="text-red-400 font-bold">✗</span>';
-    return '<span class="text-slate-500">?</span>';
+    if ($val === true) return '<span class="cov-dot cov-ok"></span>';
+    if ($val === false) return '<span class="cov-dot cov-no"></span>';
+    return '<span class="cov-dot" style="background:#334155"></span>';
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FM26 Debug Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 8px; }
-        <?php if ($fixtureId): ?>
-        /* Auto-refresh ogni 60s quando fixture è aperta */
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>FM26 Debug Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            dark: { 900: '#0a0f1a', 800: '#111827', 700: '#1a2234', 600: '#243044', 500: '#2d3b52' },
+                        }
+                    }
+                }
+            }
+        </script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+            * { -webkit-tap-highlight-color: transparent; }
+            body { font-family: 'Inter', sans-serif; background-color: #0a0f1a; color: #e2e8f0; -webkit-font-smoothing: antialiased; }
+            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+            
+            /* Soft card style */
+            .card { background: #111827; border: 1px solid #1e293b; border-radius: 16px; }
+            .card-inner { background: #0d1321; border: 1px solid #1a2234; border-radius: 12px; }
+            
+            /* Mobile grid fixes */
+            @media (max-width: 768px) {
+                body { padding: 8px !important; }
+                .score-header { flex-direction: column; gap: 12px; }
+                .score-header .team-side { width: 100%; justify-content: center; }
+                .score-header .score-center { order: -1; }
+                .lineup-grid { grid-template-columns: 1fr !important; }
+                .lineup-grid .timeline-col { order: 3; }
+                .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+                .search-grid { grid-template-columns: 1fr !important; }
+            }
+            @media (min-width: 769px) and (max-width: 1024px) {
+                .lineup-grid { grid-template-columns: 1fr 1fr !important; }
+                .lineup-grid .timeline-col { grid-column: span 2; order: 3; }
+            }
+            
+            /* Animate pulse for live */
+            .live-pulse { animation: softPulse 2s ease-in-out infinite; }
+            @keyframes softPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+            
+            /* Player rows */
+            .player-row { transition: background 0.15s; border-radius: 8px; padding: 6px 8px; }
+            .player-row:hover { background: rgba(255,255,255,0.03); }
+            
+            /* Score pills */
+            .score-pill { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: 'Inter', monospace; min-width: 36px; text-align: center; display: inline-block; }
+            .score-high { background: rgba(16,185,129,0.15); color: #34d399; }
+            .score-mid { background: rgba(59,130,246,0.15); color: #60a5fa; }
+            .score-warn { background: rgba(245,158,11,0.15); color: #fbbf24; }
+            .score-low { background: rgba(239,68,68,0.15); color: #f87171; }
+            .score-sv { background: rgba(100,116,139,0.1); color: #64748b; }
+            
+            /* Source badges */
+            .src-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+            
+            /* Coverage dots */
+            .cov-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+            .cov-ok { background: #34d399; }
+            .cov-no { background: #f87171; }
+            
+            /* Event card */
+            .event-card { background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 12px; transition: all 0.15s; }
+            .event-card:hover { border-color: #334155; }
+        </style>
         <?php
-            $status = $fixtureData['fixture']['status']['short'] ?? 'NS';
-            $liveStatuses = ['1H','HT','2H','ET','P','BT','LIVE'];
-            if (in_array($status, $liveStatuses)):
+        if ($fixtureId && isset($status) && in_array($status, ['1H','HT','2H','ET','P','BT','LIVE'])):
         ?>
-        /* LIVE — auto refresh */
+        <meta http-equiv="refresh" content="60">
         <?php endif; ?>
-        <?php endif; ?>
-    </style>
-    <?php
-    if ($fixtureId && isset($status) && in_array($status, ['1H','HT','2H','ET','P','BT','LIVE'])):
-    ?>
-    <meta http-equiv="refresh" content="60">
-    <?php endif; ?>
-</head>
-<body class="p-4 md:p-8">
+    </head>
+    <body class="p-2 md:p-6 lg:p-8">
+        <div class="max-w-7xl mx-auto space-y-4 md:space-y-6">
 
-<div class="max-w-7xl mx-auto space-y-6">
-
-    <!-- HEADER -->
-    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow flex flex-col md:flex-row justify-between items-center gap-4">
-        <a href="?" class="text-xl font-black bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent hover:opacity-80 transition">
-            ⚽ FM26 Debug Dashboard
-        </a>
-        <div class="flex items-center gap-3 text-xs text-slate-500 font-mono">
-            <span>API calls: <?= $apiCallCount ?></span>
-            <span>·</span>
-            <span><?= date('H:i:s') ?></span>
-            <?php if ($fixtureId && isset($status) && in_array($status, ['1H','HT','2H','ET','P','BT','LIVE'])): ?>
-            <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded font-bold animate-pulse">LIVE AUTO-REFRESH 60s</span>
-            <?php endif; ?>
-        </div>
-        
-        <?php if (!$fixtureId): ?>
-        <form method="GET" class="flex flex-wrap gap-3 w-full md:w-auto">
-            <input type="date" name="date" value="<?= htmlspecialchars($searchDate) ?>" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-            <input type="text" name="search" value="<?= htmlspecialchars($searchQuery) ?>" placeholder="Es. Italy" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-slate-500">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition">Cerca</button>
-        </form>
-        <?php else: ?>
-        <a href="?" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition">⬅ Torna</a>
-        <?php endif; ?>
-    </div>
-
-    <?php if (!$fixtureId): ?>
-    <!-- ═══════════════════ SEARCH RESULTS ═══════════════════ -->
-    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 shadow-inner min-h-[50vh]">
-        <h2 class="text-xl font-bold mb-4">Risultati per il <?= date('d/m/Y', strtotime($searchDate)) ?> <?= $searchQuery ? " — \"$searchQuery\"" : '' ?>
-            <span class="text-sm text-slate-500 font-normal ml-2">(<?= count($matchesList) ?> partite)</span>
-        </h2>
-        
-        <?php if (empty($matchesList)): ?>
-            <div class="text-center text-slate-500 py-10">Nessuna partita trovata.</div>
-        <?php else: ?>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <?php foreach ($matchesList as $m): 
-                    $st = $m['fixture']['status']['short'] ?? 'NS';
-                    $stColor = match(true) {
-                        in_array($st, ['1H','2H','HT','ET','LIVE']) => 'text-red-400',
-                        in_array($st, ['FT','AET','PEN']) => 'text-emerald-400',
-                        default => 'text-yellow-400',
-                    };
-                ?>
-                <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl hover:border-blue-500 transition">
-                    <div class="flex justify-between text-xs text-slate-400 mb-2 pb-2 border-b border-slate-800">
-                        <span class="truncate"><?= $m['league']['name'] ?> <span class="text-slate-600">(<?= $m['league']['id'] ?>)</span></span>
-                        <span class="font-bold <?= $stColor ?>"><?= $st ?></span>
-                    </div>
-                    <div class="flex justify-between items-center my-2">
-                        <div class="flex items-center gap-2 w-2/5">
-                            <img src="<?= $m['teams']['home']['logo'] ?>" class="w-6 h-6 object-contain">
-                            <span class="font-bold text-sm truncate"><?= $m['teams']['home']['name'] ?></span>
-                        </div>
-                        <div class="text-lg font-black bg-slate-800 px-3 rounded text-slate-300">
-                            <?= $m['goals']['home'] ?? '-' ?> : <?= $m['goals']['away'] ?? '-' ?>
-                        </div>
-                        <div class="flex items-center justify-end gap-2 w-2/5">
-                            <span class="font-bold text-sm truncate text-right"><?= $m['teams']['away']['name'] ?></span>
-                            <img src="<?= $m['teams']['away']['logo'] ?>" class="w-6 h-6 object-contain">
-                        </div>
-                    </div>
-                    <a href="?fixture=<?= $m['fixture']['id'] ?>" class="mt-3 block text-center bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white py-2 rounded-lg text-xs font-bold transition">
-                        Debug (ID: <?= $m['fixture']['id'] ?>) · League <?= $m['league']['id'] ?> · Season <?= $m['league']['season'] ?>
+            <!-- HEADER -->
+            <div class="card p-3 md:p-4 flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <a href="?" class="text-lg md:text-xl font-black bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+                        ⚽ FM26 Debug
                     </a>
+                    <div class="flex items-center gap-2 text-[10px] md:text-xs text-slate-600 font-mono">
+                        <span>calls: <?= $apiCallCount ?></span>
+                        <span><?= date('H:i:s') ?></span>
+                        <?php if ($fixtureId && isset($status) && in_array($status, ['1H','HT','2H','ET','P','BT','LIVE'])): ?>
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold live-pulse" style="background:rgba(239,68,68,0.15);color:#f87171">● LIVE 60s</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <?php endforeach; ?>
+                
+                <?php if (!$fixtureId): ?>
+                <form method="GET" class="flex flex-wrap gap-2">
+                    <input type="date" name="date" value="<?= htmlspecialchars($searchDate) ?>" class="flex-1 min-w-[130px] bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500/50">
+                    <input type="text" name="search" value="<?= htmlspecialchars($searchQuery) ?>" placeholder="Es. Italy" class="flex-1 min-w-[100px] bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500/50 placeholder-slate-600">
+                    <button type="submit" class="bg-blue-600/80 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition">Cerca</button>
+                </form>
+                <?php else: ?>
+                <a href="?" class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-white transition">← Torna alla ricerca</a>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
-    </div>
-    <?php endif; ?>
 
-    <?php if ($fixtureId && $fixtureData): ?>
-    <!-- ═══════════════════ FIXTURE DETAIL ═══════════════════ -->
-    
-    <!-- Score header -->
-    <div class="bg-slate-800 rounded-2xl shadow-2xl p-6 border border-slate-700">
-        <div class="flex flex-col md:flex-row items-center justify-between">
-            <div class="flex items-center gap-4 w-full md:w-1/3 justify-center md:justify-end">
-                <h2 class="text-xl md:text-2xl font-bold text-slate-200 text-right"><?= $fixtureData['teams']['home']['name'] ?></h2>
-                <img src="<?= $fixtureData['teams']['home']['logo'] ?>" class="w-16 h-16 object-contain">
-            </div>
-            <div class="flex flex-col items-center w-full md:w-1/3 my-4 md:my-0">
-                <?php 
-                $st = $fixtureData['fixture']['status']['short'];
-                $elapsed = $fixtureData['fixture']['status']['elapsed'];
-                $stClass = in_array($st, ['1H','2H','HT','ET','LIVE']) ? 'text-red-400 animate-pulse' : 'text-emerald-400';
-                ?>
-                <span class="text-sm font-semibold <?= $stClass ?> mb-1 tracking-widest uppercase">
-                    <?= $st ?> <?= $elapsed ? $elapsed . "'" : '' ?>
-                </span>
-                <div class="text-5xl font-extrabold text-white">
-                    <?= $fixtureData['goals']['home'] ?? 0 ?> — <?= $fixtureData['goals']['away'] ?? 0 ?>
-                </div>
-                <span class="text-xs text-slate-400 mt-2"><?= $fixtureData['league']['name'] ?> · League <?= $fixtureData['league']['id'] ?> · Season <?= $fixtureData['league']['season'] ?></span>
-                <span class="text-xs text-slate-500 mt-1 font-mono">Fixture ID: <?= $fixtureId ?></span>
-            </div>
-            <div class="flex items-center gap-4 w-full md:w-1/3 justify-center md:justify-start">
-                <img src="<?= $fixtureData['teams']['away']['logo'] ?>" class="w-16 h-16 object-contain">
-                <h2 class="text-xl md:text-2xl font-bold text-slate-200"><?= $fixtureData['teams']['away']['name'] ?></h2>
-            </div>
-        </div>
-    </div>
-
-    <!-- Coverage check -->
-    <?php if ($coverage): ?>
-    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
-        <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-3">Coverage League <?= $fixtureData['league']['id'] ?> · Season <?= $fixtureData['league']['season'] ?></h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div class="flex items-center gap-2"><?= covBadge($coverage['fixtures']['events'] ?? null) ?> Events</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['fixtures']['lineups'] ?? null) ?> Lineups</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['fixtures']['statistics_fixtures'] ?? null) ?> Stats Fixture</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['fixtures']['statistics_players'] ?? null) ?> Stats Players</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['standings'] ?? null) ?> Standings</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['players'] ?? null) ?> Players</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['top_scorers'] ?? null) ?> Top Scorers</div>
-            <div class="flex items-center gap-2"><?= covBadge($coverage['predictions'] ?? null) ?> Predictions</div>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- Data availability summary -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <?php
-        $checks = [
-            ['Lineups', count($lineups), $lineups ? 'emerald' : 'slate', count($lineups) . ' teams'],
-            ['Events', count($events), $events ? 'blue' : 'slate', count($events) . ' eventi'],
-            ['Player Stats', count($playerStats), $playerStats ? 'emerald' : 'slate', $playerStats ? array_sum(array_map(fn($t) => count($t['players'] ?? []), $playerStats)) . ' players' : 'N/A'],
-            ['Team Stats', count($rawStats['response'] ?? []), ($rawStats['response'] ?? []) ? 'cyan' : 'slate', count($rawStats['response'] ?? []) . ' teams'],
-            ['Voti Calc.', count($playerScores), $playerScores ? 'amber' : 'slate', count(array_filter($playerScores, fn($p) => $p['score'] !== null)) . ' con voto'],
-        ];
-        foreach ($checks as [$label, $count, $color, $detail]):
-        ?>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-            <div class="text-2xl font-black text-<?= $color ?>-400"><?= $count ?></div>
-            <div class="text-xs text-slate-400 font-semibold"><?= $label ?></div>
-            <div class="text-[10px] text-slate-500 mt-1"><?= $detail ?></div>
-        </div>
-        <?php endforeach; ?>
-    </div>
-
-    <!-- 3-column layout -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        
-        <!-- HOME LINEUP -->
-        <div class="col-span-1 bg-slate-800 rounded-2xl p-5 border border-slate-700">
-            <?php if (!empty($lineups[0])): $home = $lineups[0]; ?>
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                    <h3 class="font-bold text-lg"><?= $home['team']['name'] ?></h3>
-                    <span class="px-2 py-1 bg-slate-700 text-xs font-bold rounded-lg"><?= $home['formation'] ?></span>
-                </div>
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Titolari</p>
-                <div class="space-y-1">
-                    <?php foreach ($home['startXI'] as $p): 
-                        $pid = $p['player']['id'];
-                        $ps = $playerScores[$pid] ?? null;
-                        $score = $ps['score'] ?? null;
-                    ?>
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-700/50 rounded-lg transition gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
-                            <span class="font-semibold text-sm truncate"><?= $p['player']['name'] ?></span>
+            <?php if (!$fixtureId): ?>
+            <!-- ═══════════════════ SEARCH RESULTS ═══════════════════ -->
+            <div class="card p-4 md:p-6 min-h-[40vh]">
+                <h2 class="text-base md:text-xl font-bold mb-4"><?= date('d/m/Y', strtotime($searchDate)) ?> <?= $searchQuery ? "— \"$searchQuery\"" : '' ?>
+                    <span class="text-xs text-slate-600 font-normal ml-2">(<?= count($matchesList) ?>)</span>
+                </h2>
+                
+                <?php if (empty($matchesList)): ?>
+                    <div class="text-center text-slate-600 py-10">Nessuna partita trovata.</div>
+                <?php else: ?>
+                    <div class="search-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <?php foreach ($matchesList as $m): 
+                            $st = $m['fixture']['status']['short'] ?? 'NS';
+                            $stColor = match(true) {
+                                in_array($st, ['1H','2H','HT','ET','LIVE']) => 'color:#f87171',
+                                in_array($st, ['FT','AET','PEN']) => 'color:#34d399',
+                                default => 'color:#64748b',
+                            };
+                        ?>
+                        <div class="card-inner p-3 hover:border-blue-500/30 transition">
+                            <div class="flex justify-between text-[10px] text-slate-500 mb-2 pb-2 border-b border-dark-600">
+                                <span class="truncate"><?= $m['league']['name'] ?> <span class="text-slate-700"><?= $m['league']['id'] ?></span></span>
+                                <span class="font-bold" style="<?= $stColor ?>"><?= $st ?></span>
+                            </div>
+                            <div class="flex justify-between items-center my-2">
+                                <div class="flex items-center gap-1.5 w-2/5 min-w-0">
+                                    <img src="<?= $m['teams']['home']['logo'] ?>" class="w-5 h-5 object-contain shrink-0">
+                                    <span class="font-semibold text-xs truncate"><?= $m['teams']['home']['name'] ?></span>
+                                </div>
+                                <div class="text-sm font-black text-slate-300 px-2 shrink-0">
+                                    <?= $m['goals']['home'] ?? '-' ?>:<?= $m['goals']['away'] ?? '-' ?>
+                                </div>
+                                <div class="flex items-center justify-end gap-1.5 w-2/5 min-w-0">
+                                    <span class="font-semibold text-xs truncate text-right"><?= $m['teams']['away']['name'] ?></span>
+                                    <img src="<?= $m['teams']['away']['logo'] ?>" class="w-5 h-5 object-contain shrink-0">
+                                </div>
+                            </div>
+                            <a href="?fixture=<?= $m['fixture']['id'] ?>" class="mt-2 block text-center py-1.5 rounded-lg text-[10px] font-bold transition" style="background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.2)">
+                                ID:<?= $m['fixture']['id'] ?> · L<?= $m['league']['id'] ?>/S<?= $m['league']['season'] ?>
+                            </a>
                         </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            <?php if ($ps): echo getSourceBadge($ps['source']); endif; ?>
-                            <span class="px-2 py-0.5 rounded text-xs font-bold <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($fixtureId && $fixtureData): ?>
+            <!-- ═══════════════════ FIXTURE DETAIL ═══════════════════ -->
+            
+            <!-- Score header -->
+            <div class="card p-4 md:p-6">
+                <div class="score-header flex items-center justify-between gap-4">
+                    <div class="team-side flex items-center gap-3 flex-1 min-w-0 justify-end">
+                        <h2 class="text-sm md:text-xl font-bold text-slate-200 text-right truncate"><?= $fixtureData['teams']['home']['name'] ?></h2>
+                        <img src="<?= $fixtureData['teams']['home']['logo'] ?>" class="w-10 h-10 md:w-14 md:h-14 object-contain shrink-0">
+                    </div>
+                    <div class="score-center flex flex-col items-center shrink-0 px-2">
+                        <?php 
+                        $st = $fixtureData['fixture']['status']['short'];
+                        $elapsed = $fixtureData['fixture']['status']['elapsed'];
+                        $isLive = in_array($st, ['1H','2H','HT','ET','LIVE']);
+                        ?>
+                        <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1 <?= $isLive ? 'live-pulse' : '' ?>" style="color:<?= $isLive ? '#f87171' : '#34d399' ?>">
+                            <?= $st ?> <?= $elapsed ? $elapsed . "'" : '' ?>
+                        </span>
+                        <div class="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
+                            <?= $fixtureData['goals']['home'] ?? 0 ?> — <?= $fixtureData['goals']['away'] ?? 0 ?>
+                        </div>
+                        <div class="text-[9px] md:text-xs text-slate-500 mt-1 text-center font-mono">
+                            <?= $fixtureData['league']['name'] ?> · L<?= $fixtureData['league']['id'] ?>/S<?= $fixtureData['league']['season'] ?> · #<?= $fixtureId ?>
                         </div>
                     </div>
-                    <?php endforeach; ?>
-                </div>
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-2 mt-4">Panchina</p>
-                <div class="space-y-1">
-                    <?php foreach ($home['substitutes'] as $p): 
-                        $pid = $p['player']['id'];
-                        $ps = $playerScores[$pid] ?? null;
-                        $score = $ps['score'] ?? null;
-                    ?>
-                    <div class="flex items-center justify-between p-1.5 hover:bg-slate-700/50 rounded-lg transition opacity-60 gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
-                            <span class="text-sm truncate"><?= $p['player']['name'] ?></span>
-                        </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            <?php if ($ps && $ps['source'] === 'sub_entered'): echo getSourceBadge($ps['source']); endif; ?>
-                            <span class="px-2 py-0.5 rounded text-xs font-bold <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : '—' ?></span>
-                        </div>
+                    <div class="team-side flex items-center gap-3 flex-1 min-w-0">
+                        <img src="<?= $fixtureData['teams']['away']['logo'] ?>" class="w-10 h-10 md:w-14 md:h-14 object-contain shrink-0">
+                        <h2 class="text-sm md:text-xl font-bold text-slate-200 truncate"><?= $fixtureData['teams']['away']['name'] ?></h2>
                     </div>
-                    <?php endforeach; ?>
                 </div>
-            <?php elseif (!empty($playerStats)): ?>
-                <!-- No lineups but have player stats — show from stats -->
-                <?php 
-                $homeTeamId = $fixtureData['teams']['home']['id'];
-                $homeStats = null;
-                foreach ($playerStats as $t) { if (($t['team']['id'] ?? 0) == $homeTeamId) { $homeStats = $t; break; } }
-                ?>
-                <?php if ($homeStats): ?>
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                    <h3 class="font-bold text-lg"><?= $homeStats['team']['name'] ?></h3>
-                    <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg">da Player Stats</span>
-                </div>
-                <div class="space-y-1">
-                    <?php foreach ($homeStats['players'] as $entry):
-                        $pid = $entry['player']['id'];
-                        $ps = $playerScores[$pid] ?? null;
-                        $score = $ps['score'] ?? null;
-                        $stats = $entry['statistics'][0] ?? [];
-                    ?>
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-700/50 rounded-lg transition gap-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="text-xs text-slate-500 font-mono w-4"><?= $stats['games']['position'] ?? '?' ?></span>
-                            <span class="font-semibold text-sm truncate"><?= $entry['player']['name'] ?></span>
-                            <span class="text-[10px] text-slate-500"><?= $stats['games']['minutes'] ?? 0 ?>'</span>
-                        </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            <?php if ($stats['games']['rating'] ?? null): ?>
-                            <span class="text-[10px] text-slate-500 font-mono"><?= number_format((float)$stats['games']['rating'], 1) ?></span>
-                            <?php endif; ?>
-                            <span class="px-2 py-0.5 rounded text-xs font-bold <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
-                        </div>
+            </div>
+
+            <!-- Coverage + Data availability -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <?php if ($coverage): ?>
+                <div class="card p-3">
+                    <h3 class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-2">Coverage</h3>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <?php foreach ([
+                            'Events' => $coverage['fixtures']['events'] ?? null,
+                            'Lineups' => $coverage['fixtures']['lineups'] ?? null,
+                            'Stats Fix' => $coverage['fixtures']['statistics_fixtures'] ?? null,
+                            'Stats Players' => $coverage['fixtures']['statistics_players'] ?? null,
+                            'Standings' => $coverage['standings'] ?? null,
+                            'Players' => $coverage['players'] ?? null,
+                        ] as $label => $val): ?>
+                        <div class="flex items-center gap-2 text-slate-400"><?= covBadge($val) ?> <?= $label ?></div>
+                        <?php endforeach; ?>
                     </div>
-                    <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
-            <?php else: ?>
-                <div class="h-full flex flex-col items-center justify-center text-slate-500 p-6 text-center">
-                    <p class="text-4xl mb-3">⏳</p>
-                    <p>In attesa formazioni (Home)</p>
-                    <p class="text-xs mt-2">Disponibili ~20-40 min prima del match</p>
+                
+                <div class="card p-3">
+                    <h3 class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-2">Dati disponibili</h3>
+                    <div class="stats-grid grid grid-cols-5 gap-2">
+                        <?php
+                        $checks = [
+                            ['Lin', count($lineups), $lineups ? '#34d399' : '#334155'],
+                            ['Evt', count($events), $events ? '#60a5fa' : '#334155'],
+                            ['Pl.S', count($playerStats) ? array_sum(array_map(fn($t) => count($t['players'] ?? []), $playerStats)) : 0, $playerStats ? '#34d399' : '#334155'],
+                            ['T.S', count($rawStats['response'] ?? []), ($rawStats['response'] ?? []) ? '#22d3ee' : '#334155'],
+                            ['Voti', count(array_filter($playerScores, fn($p) => $p['score'] !== null)), $playerScores ? '#fbbf24' : '#334155'],
+                        ];
+                        foreach ($checks as [$label, $count, $color]):
+                        ?>
+                        <div class="text-center">
+                            <div class="text-lg md:text-xl font-black" style="color:<?= $color ?>"><?= $count ?></div>
+                            <div class="text-[9px] text-slate-500 font-semibold"><?= $label ?></div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
+            </div>
+
+            <!-- 3-column layout (stacks on mobile) -->
+            <div class="lineup-grid grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-6">
+                
+                <!-- HOME LINEUP -->
+                <div class="col-span-1 card p-4">
+                    <?php if (!empty($lineups[0])): $home = $lineups[0]; ?>
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                            <h3 class="font-bold text-lg"><?= $home['team']['name'] ?></h3>
+                            <span class="px-2 py-1 bg-slate-700 text-xs font-bold rounded-lg"><?= $home['formation'] ?></span>
+                        </div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Titolari</p>
+                        <div class="space-y-1">
+                            <?php foreach ($home['startXI'] as $p): 
+                                $pid = $p['player']['id'];
+                                $ps = $playerScores[$pid] ?? null;
+                                $score = $ps['score'] ?? null;
+                            ?>
+                            <div class="player-row flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
+                                    <span class="font-semibold text-sm truncate"><?= $p['player']['name'] ?></span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <?php if ($ps): echo getSourceBadge($ps['source']); endif; ?>
+                                    <span class="score-pill <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2 mt-4">Panchina</p>
+                        <div class="space-y-1">
+                            <?php foreach ($home['substitutes'] as $p): 
+                                $pid = $p['player']['id'];
+                                $ps = $playerScores[$pid] ?? null;
+                                $score = $ps['score'] ?? null;
+                            ?>
+                            <div class="player-row flex items-center justify-between opacity-60 gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
+                                    <span class="text-sm truncate"><?= $p['player']['name'] ?></span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <?php if ($ps && $ps['source'] === 'sub_entered'): echo getSourceBadge($ps['source']); endif; ?>
+                                    <span class="score-pill <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : '—' ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php elseif (!empty($playerStats)): ?>
+                        <!-- No lineups but have player stats — show from stats -->
+                        <?php 
+                        $homeTeamId = $fixtureData['teams']['home']['id'];
+                        $homeStats = null;
+                        foreach ($playerStats as $t) { if (($t['team']['id'] ?? 0) == $homeTeamId) { $homeStats = $t; break; } }
+                        ?>
+                        <?php if ($homeStats): ?>
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                            <h3 class="font-bold text-lg"><?= $homeStats['team']['name'] ?></h3>
+                            <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg">da Player Stats</span>
+                        </div>
+                        <div class="space-y-1">
+                            <?php foreach ($homeStats['players'] as $entry):
+                                $pid = $entry['player']['id'];
+                                $ps = $playerScores[$pid] ?? null;
+                                $score = $ps['score'] ?? null;
+                                $stats = $entry['statistics'][0] ?? [];
+                            ?>
+                            <div class="player-row flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-xs text-slate-500 font-mono w-4"><?= $stats['games']['position'] ?? '?' ?></span>
+                                    <span class="font-semibold text-sm truncate"><?= $entry['player']['name'] ?></span>
+                                    <span class="text-[10px] text-slate-500"><?= $stats['games']['minutes'] ?? 0 ?>'</span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <?php if ($stats['games']['rating'] ?? null): ?>
+                                    <span class="text-[10px] text-slate-500 font-mono"><?= number_format((float)$stats['games']['rating'], 1) ?></span>
+                                    <?php endif; ?>
+                                    <span class="score-pill <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="h-full flex flex-col items-center justify-center text-slate-500 p-6 text-center">
+                            <p class="text-4xl mb-3">⏳</p>
+                            <p>In attesa formazioni (Home)</p>
+                            <p class="text-xs mt-2">Disponibili ~20-40 min prima del match</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- TIMELINE EVENTI -->
+                <div class="col-span-1 md:col-span-2 timeline-col card p-4">
+                    <h3 class="font-bold text-lg mb-4 text-center text-slate-300">Timeline Eventi</h3>
+                    <?php if (empty($events)): ?>
+                        <div class="text-center text-slate-500 py-10">Nessun evento.</div>
+                    <?php else: ?>
+                        <div class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                            <?php foreach (array_reverse($events) as $ev): 
+                                $isHome = ($ev['team']['id'] ?? 0) === ($fixtureData['teams']['home']['id'] ?? -1);
+                                $pid = $ev['player']['id'] ?? null;
+                                $ps = $pid ? ($playerScores[$pid] ?? null) : null;
+                            ?>
+                            <div class="event-card flex items-center gap-3 relative overflow-hidden">
+                                <div class="absolute inset-y-0 <?= $isHome ? 'left-0 border-l-4 border-blue-500' : 'right-0 border-r-4 border-green-500' ?> w-full bg-gradient-to-r <?= $isHome ? 'from-blue-500/10 to-transparent' : 'from-transparent to-green-500/10' ?> pointer-events-none"></div>
+                                <div class="font-black text-slate-400 w-10 text-right shrink-0 font-mono"><?= $ev['time']['elapsed'] ?>'<?= $ev['time']['extra'] ? '+' . $ev['time']['extra'] : '' ?></div>
+                                <div class="text-2xl shrink-0"><?= getEventIcon($ev['type'], $ev['detail'] ?? '') ?></div>
+                                <div class="flex-1 min-w-0 z-10">
+                                    <p class="font-bold text-slate-200 truncate">
+                                        <?= $ev['player']['name'] ?? '?' ?>
+                                        <?php if($ev['type'] === 'subst' && ($ev['assist']['name'] ?? null)): ?>
+                                            <span class="text-slate-400 text-sm font-normal">↔ <?= $ev['assist']['name'] ?></span>
+                                        <?php endif; ?>
+                                        <?php if($ev['type'] === 'Goal' && ($ev['assist']['name'] ?? null)): ?>
+                                            <span class="text-slate-400 text-sm font-normal">(🅰 <?= $ev['assist']['name'] ?>)</span>
+                                        <?php endif; ?>
+                                    </p>
+                                    <p class="text-xs text-slate-400">
+                                        <?= $ev['detail'] ?> · <?= $ev['team']['name'] ?>
+                                        <?php if ($pid): ?><span class="text-slate-600 font-mono"> · pid:<?= $pid ?></span><?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- AWAY LINEUP -->
+                <div class="col-span-1 card p-4">
+                    <?php if (!empty($lineups[1])): $away = $lineups[1]; ?>
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                            <span class="px-2 py-1 bg-slate-700 text-xs font-bold rounded-lg"><?= $away['formation'] ?></span>
+                            <h3 class="font-bold text-lg"><?= $away['team']['name'] ?></h3>
+                        </div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2 text-right">Titolari</p>
+                        <div class="space-y-1">
+                            <?php foreach ($away['startXI'] as $p): 
+                                $pid = $p['player']['id'];
+                                $ps = $playerScores[$pid] ?? null;
+                                $score = $ps['score'] ?? null;
+                            ?>
+                            <div class="player-row flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <span class="score-pill <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
+                                    <?php if ($ps): echo getSourceBadge($ps['source']); endif; ?>
+                                </div>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="font-semibold text-sm truncate text-right"><?= $p['player']['name'] ?></span>
+                                    <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2 mt-4 text-right">Panchina</p>
+                        <div class="space-y-1">
+                            <?php foreach ($away['substitutes'] as $p): 
+                                $pid = $p['player']['id'];
+                                $ps = $playerScores[$pid] ?? null;
+                                $score = $ps['score'] ?? null;
+                            ?>
+                            <div class="player-row flex items-center justify-between opacity-60 gap-2">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <span class="score-pill <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : '—' ?></span>
+                                    <?php if ($ps && $ps['source'] === 'sub_entered'): echo getSourceBadge($ps['source']); endif; ?>
+                                </div>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-sm truncate text-right"><?= $p['player']['name'] ?></span>
+                                    <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php elseif (!empty($playerStats)): ?>
+                        <?php 
+                        $awayTeamId = $fixtureData['teams']['away']['id'];
+                        $awayStatsData = null;
+                        foreach ($playerStats as $t) { if (($t['team']['id'] ?? 0) == $awayTeamId) { $awayStatsData = $t; break; } }
+                        ?>
+                        <?php if ($awayStatsData): ?>
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                            <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg">da Player Stats</span>
+                            <h3 class="font-bold text-lg"><?= $awayStatsData['team']['name'] ?></h3>
+                        </div>
+                        <div class="space-y-1">
+                            <?php foreach ($awayStatsData['players'] as $entry):
+                                $pid = $entry['player']['id'];
+                                $ps = $playerScores[$pid] ?? null;
+                                $score = $ps['score'] ?? null;
+                                $stats = $entry['statistics'][0] ?? [];
+                            ?>
+                            <div class="player-row flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <span class="score-pill <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
+                                    <?php if ($stats['games']['rating'] ?? null): ?>
+                                    <span class="text-[10px] text-slate-500 font-mono"><?= number_format((float)$stats['games']['rating'], 1) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="font-semibold text-sm truncate text-right"><?= $entry['player']['name'] ?></span>
+                                    <span class="text-xs text-slate-500 font-mono w-4"><?= $stats['games']['position'] ?? '?' ?></span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="h-full flex flex-col items-center justify-center text-slate-500 p-6 text-center">
+                            <p class="text-4xl mb-3">⏳</p>
+                            <p>In attesa formazioni (Away)</p>
+                            <p class="text-xs mt-2">Disponibili ~20-40 min prima del match</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Team Stats -->
+            <?php if (!empty($rawStats['response'])): ?>
+            <div class="card p-4">
+                <h3 class="font-bold text-lg mb-4 text-slate-300">Statistiche Partita</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <?php foreach ($rawStats['response'] as $teamStat): ?>
+                    <div>
+                        <h4 class="font-bold text-sm mb-2"><?= $teamStat['team']['name'] ?? '?' ?></h4>
+                        <div class="space-y-1">
+                            <?php foreach ($teamStat['statistics'] ?? [] as $stat): ?>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-400"><?= $stat['type'] ?></span>
+                                <span class="font-mono font-bold"><?= $stat['value'] ?? '—' ?></span>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
             <?php endif; ?>
-        </div>
 
-        <!-- TIMELINE EVENTI -->
-        <div class="col-span-2 bg-slate-900 rounded-2xl p-5 border border-slate-700">
-            <h3 class="font-bold text-lg mb-4 text-center text-slate-300">Timeline Eventi</h3>
-            <?php if (empty($events)): ?>
-                <div class="text-center text-slate-500 py-10">Nessun evento.</div>
-            <?php else: ?>
-                <div class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
-                    <?php foreach (array_reverse($events) as $ev): 
-                        $isHome = ($ev['team']['id'] ?? 0) === ($fixtureData['teams']['home']['id'] ?? -1);
-                        $pid = $ev['player']['id'] ?? null;
-                        $ps = $pid ? ($playerScores[$pid] ?? null) : null;
-                    ?>
-                    <div class="flex items-center gap-3 bg-slate-800 p-3 rounded-xl border border-slate-700/50 relative overflow-hidden">
-                        <div class="absolute inset-y-0 <?= $isHome ? 'left-0 border-l-4 border-blue-500' : 'right-0 border-r-4 border-green-500' ?> w-full bg-gradient-to-r <?= $isHome ? 'from-blue-500/10 to-transparent' : 'from-transparent to-green-500/10' ?> pointer-events-none"></div>
-                        <div class="font-black text-slate-400 w-10 text-right shrink-0 font-mono"><?= $ev['time']['elapsed'] ?>'<?= $ev['time']['extra'] ? '+' . $ev['time']['extra'] : '' ?></div>
-                        <div class="text-2xl shrink-0"><?= getEventIcon($ev['type'], $ev['detail'] ?? '') ?></div>
-                        <div class="flex-1 min-w-0 z-10">
-                            <p class="font-bold text-slate-200 truncate">
-                                <?= $ev['player']['name'] ?? '?' ?>
-                                <?php if($ev['type'] === 'subst' && ($ev['assist']['name'] ?? null)): ?>
-                                    <span class="text-slate-400 text-sm font-normal">↔ <?= $ev['assist']['name'] ?></span>
-                                <?php endif; ?>
-                                <?php if($ev['type'] === 'Goal' && ($ev['assist']['name'] ?? null)): ?>
-                                    <span class="text-slate-400 text-sm font-normal">(🅰 <?= $ev['assist']['name'] ?>)</span>
-                                <?php endif; ?>
-                            </p>
-                            <p class="text-xs text-slate-400">
-                                <?= $ev['detail'] ?> · <?= $ev['team']['name'] ?>
-                                <?php if ($pid): ?><span class="text-slate-600 font-mono"> · pid:<?= $pid ?></span><?php endif; ?>
-                            </p>
-                        </div>
+            <!-- Raw data -->
+            <div class="card overflow-hidden">
+                <button onclick="document.getElementById('debug-content').classList.toggle('hidden')" class="w-full p-4 flex justify-between items-center card-inner hover:border-dark-500 transition">
+                    <span class="font-bold text-yellow-500">🛠 Raw API Data</span>
+                    <span class="text-slate-400 text-sm">Clicca per espandere</span>
+                </button>
+                <div id="debug-content" class="hidden p-4 space-y-4">
+                    <div>
+                        <h4 class="text-emerald-400 font-bold mb-2">Lineups (<?= count($lineups) ?> teams)</h4>
+                        <pre class="card-inner text-emerald-400/70 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawLineups, JSON_PRETTY_PRINT) ?></pre>
                     </div>
-                    <?php endforeach; ?>
+                    <div>
+                        <h4 class="text-blue-400 font-bold mb-2">Events (<?= count($events) ?>)</h4>
+                        <pre class="card-inner text-blue-400/70 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawEvents, JSON_PRETTY_PRINT) ?></pre>
+                    </div>
+                    <div>
+                        <h4 class="text-purple-400 font-bold mb-2">Player Stats (<?= count($playerStats) ?> teams)</h4>
+                        <pre class="card-inner text-purple-400/70 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawPlayers, JSON_PRETTY_PRINT) ?></pre>
+                    </div>
+                    <div>
+                        <h4 class="text-cyan-400 font-bold mb-2">Team Statistics</h4>
+                        <pre class="card-inner text-cyan-400/70 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawStats, JSON_PRETTY_PRINT) ?></pre>
+                    </div>
+                    <div>
+                        <h4 class="text-amber-400 font-bold mb-2">Fantacalcio Engine (<?= count($playerScores) ?> players)</h4>
+                        <pre class="card-inner text-amber-400/70 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($playerScores, JSON_PRETTY_PRINT) ?></pre>
+                    </div>
                 </div>
+            </div>
+
             <?php endif; ?>
-        </div>
 
-        <!-- AWAY LINEUP -->
-        <div class="col-span-1 bg-slate-800 rounded-2xl p-5 border border-slate-700">
-            <?php if (!empty($lineups[1])): $away = $lineups[1]; ?>
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                    <span class="px-2 py-1 bg-slate-700 text-xs font-bold rounded-lg"><?= $away['formation'] ?></span>
-                    <h3 class="font-bold text-lg"><?= $away['team']['name'] ?></h3>
-                </div>
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-2 text-right">Titolari</p>
-                <div class="space-y-1">
-                    <?php foreach ($away['startXI'] as $p): 
-                        $pid = $p['player']['id'];
-                        $ps = $playerScores[$pid] ?? null;
-                        $score = $ps['score'] ?? null;
-                    ?>
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-700/50 rounded-lg transition gap-2">
-                        <div class="flex items-center gap-1 shrink-0">
-                            <span class="px-2 py-0.5 rounded text-xs font-bold <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
-                            <?php if ($ps): echo getSourceBadge($ps['source']); endif; ?>
+            <!-- Known leagues reference -->
+            <div class="card p-3 opacity-60">
+                <details>
+                    <summary class="cursor-pointer text-xs text-slate-500 font-bold uppercase tracking-wider">League Config Reference</summary>
+                    <div class="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                        <?php foreach ($KNOWN_LEAGUES as $lg): ?>
+                        <div class="card-inner rounded-lg p-2 font-mono">
+                            <span class="text-slate-400">league=</span><span class="text-blue-400"><?= $lg['id'] ?></span>
+                            <span class="text-slate-400">&season=</span><span class="text-emerald-400"><?= $lg['season'] ?></span>
+                            <div class="text-slate-500 text-[10px] mt-1"><?= $lg['name'] ?></div>
                         </div>
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="font-semibold text-sm truncate text-right"><?= $p['player']['name'] ?></span>
-                            <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
-                    <?php endforeach; ?>
-                </div>
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-2 mt-4 text-right">Panchina</p>
-                <div class="space-y-1">
-                    <?php foreach ($away['substitutes'] as $p): 
-                        $pid = $p['player']['id'];
-                        $ps = $playerScores[$pid] ?? null;
-                        $score = $ps['score'] ?? null;
-                    ?>
-                    <div class="flex items-center justify-between p-1.5 hover:bg-slate-700/50 rounded-lg transition opacity-60 gap-2">
-                        <div class="flex items-center gap-1 shrink-0">
-                            <span class="px-2 py-0.5 rounded text-xs font-bold <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : '—' ?></span>
-                            <?php if ($ps && $ps['source'] === 'sub_entered'): echo getSourceBadge($ps['source']); endif; ?>
-                        </div>
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="text-sm truncate text-right"><?= $p['player']['name'] ?></span>
-                            <span class="text-xs text-slate-500 font-mono w-4"><?= $p['player']['pos'] ?? '?' ?></span>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php elseif (!empty($playerStats)): ?>
-                <?php 
-                $awayTeamId = $fixtureData['teams']['away']['id'];
-                $awayStatsData = null;
-                foreach ($playerStats as $t) { if (($t['team']['id'] ?? 0) == $awayTeamId) { $awayStatsData = $t; break; } }
-                ?>
-                <?php if ($awayStatsData): ?>
-                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                    <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg">da Player Stats</span>
-                    <h3 class="font-bold text-lg"><?= $awayStatsData['team']['name'] ?></h3>
-                </div>
-                <div class="space-y-1">
-                    <?php foreach ($awayStatsData['players'] as $entry):
-                        $pid = $entry['player']['id'];
-                        $ps = $playerScores[$pid] ?? null;
-                        $score = $ps['score'] ?? null;
-                        $stats = $entry['statistics'][0] ?? [];
-                    ?>
-                    <div class="flex items-center justify-between p-2 hover:bg-slate-700/50 rounded-lg transition gap-2">
-                        <div class="flex items-center gap-1 shrink-0">
-                            <span class="px-2 py-0.5 rounded text-xs font-bold <?= getScoreColor($score) ?>"><?= $score !== null ? number_format($score, 1) : 'SV' ?></span>
-                            <?php if ($stats['games']['rating'] ?? null): ?>
-                            <span class="text-[10px] text-slate-500 font-mono"><?= number_format((float)$stats['games']['rating'], 1) ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="font-semibold text-sm truncate text-right"><?= $entry['player']['name'] ?></span>
-                            <span class="text-xs text-slate-500 font-mono w-4"><?= $stats['games']['position'] ?? '?' ?></span>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <?php endif; ?>
-            <?php else: ?>
-                <div class="h-full flex flex-col items-center justify-center text-slate-500 p-6 text-center">
-                    <p class="text-4xl mb-3">⏳</p>
-                    <p>In attesa formazioni (Away)</p>
-                    <p class="text-xs mt-2">Disponibili ~20-40 min prima del match</p>
-                </div>
-            <?php endif; ?>
+                </details>
+            </div>
+
         </div>
-    </div>
-
-    <!-- Team Stats -->
-    <?php if (!empty($rawStats['response'])): ?>
-    <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-        <h3 class="font-bold text-lg mb-4 text-slate-300">Statistiche Partita</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <?php foreach ($rawStats['response'] as $teamStat): ?>
-            <div>
-                <h4 class="font-bold text-sm mb-2"><?= $teamStat['team']['name'] ?? '?' ?></h4>
-                <div class="space-y-1">
-                    <?php foreach ($teamStat['statistics'] ?? [] as $stat): ?>
-                    <div class="flex justify-between text-xs">
-                        <span class="text-slate-400"><?= $stat['type'] ?></span>
-                        <span class="font-mono font-bold"><?= $stat['value'] ?? '—' ?></span>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- Raw data -->
-    <div class="border border-slate-700 rounded-2xl bg-slate-900 overflow-hidden">
-        <button onclick="document.getElementById('debug-content').classList.toggle('hidden')" class="w-full p-4 flex justify-between items-center bg-slate-800 hover:bg-slate-700 transition">
-            <span class="font-bold text-yellow-500">🛠 Raw API Data</span>
-            <span class="text-slate-400 text-sm">Clicca per espandere</span>
-        </button>
-        <div id="debug-content" class="hidden p-4 space-y-4">
-            <div>
-                <h4 class="text-emerald-400 font-bold mb-2">Lineups (<?= count($lineups) ?> teams)</h4>
-                <pre class="bg-black text-green-400 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawLineups, JSON_PRETTY_PRINT) ?></pre>
-            </div>
-            <div>
-                <h4 class="text-blue-400 font-bold mb-2">Events (<?= count($events) ?>)</h4>
-                <pre class="bg-black text-blue-400 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawEvents, JSON_PRETTY_PRINT) ?></pre>
-            </div>
-            <div>
-                <h4 class="text-purple-400 font-bold mb-2">Player Stats (<?= count($playerStats) ?> teams)</h4>
-                <pre class="bg-black text-purple-400 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawPlayers, JSON_PRETTY_PRINT) ?></pre>
-            </div>
-            <div>
-                <h4 class="text-cyan-400 font-bold mb-2">Team Statistics</h4>
-                <pre class="bg-black text-cyan-400 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($rawStats, JSON_PRETTY_PRINT) ?></pre>
-            </div>
-            <div>
-                <h4 class="text-amber-400 font-bold mb-2">Fantacalcio Engine (<?= count($playerScores) ?> players)</h4>
-                <pre class="bg-black text-amber-400 p-4 rounded text-xs overflow-x-auto max-h-60 custom-scrollbar"><?= json_encode($playerScores, JSON_PRETTY_PRINT) ?></pre>
-            </div>
-        </div>
-    </div>
-
-    <?php endif; ?>
-
-    <!-- Known leagues reference -->
-    <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-        <details>
-            <summary class="cursor-pointer text-xs text-slate-500 font-bold uppercase tracking-wider">League Config Reference</summary>
-            <div class="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                <?php foreach ($KNOWN_LEAGUES as $lg): ?>
-                <div class="bg-slate-900 rounded-lg p-2 font-mono">
-                    <span class="text-slate-400">league=</span><span class="text-blue-400"><?= $lg['id'] ?></span>
-                    <span class="text-slate-400">&season=</span><span class="text-emerald-400"><?= $lg['season'] ?></span>
-                    <div class="text-slate-500 text-[10px] mt-1"><?= $lg['name'] ?></div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </details>
-    </div>
-
-</div>
-
-</body>
+    </body>
 </html>
