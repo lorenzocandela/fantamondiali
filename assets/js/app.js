@@ -4,7 +4,6 @@ import { toast } from './utils.js';
 import { showPage, initTabPill, updateTopbarAvatar, loadProfilo, saveProfilo, toggleJoinCompetition, handleAvatarUpload, handleLogoUpload } from './ui.js';
 import { loadListone } from './players.js';
 import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
-import { loadCalendario, renderMatchdayAdmin, loadAdminModules } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
 import { initNotifications, requestNotificationPermission } from './notifications.js';
 import { loadCalendario, renderMatchdayAdmin, loadAdminModules, stopLivePolling } from './calendar.js';
