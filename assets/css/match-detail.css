@@ -25,7 +25,7 @@
 .md-score-sep { font-size: 20px; color: var(--text-3); font-weight: 300; }
 .md-score-vs { font-size: 14px; font-weight: 700; font-family: var(--mono); color: var(--text-3); letter-spacing: 1px; }
 
-.md-switch-bar { display: flex; gap: 4px; margin: 0 20px 16px; background: var(--surface-3); border-radius: var(--r-md); padding: 3px; }
+.md-switch-bar { display: flex; gap: 4px; margin: 0 20px 14px; background: var(--surface-3); border-radius: var(--r-md); padding: 3px; }
 .md-switch-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 9px 8px; border: none; border-radius: var(--r-sm); background: transparent; color: var(--text-2); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s var(--ease); }
 .md-switch-btn .material-symbols-outlined { font-size: 16px; }
 .md-switch-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--sh-xs); }

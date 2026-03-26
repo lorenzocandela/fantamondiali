@@ -390,7 +390,7 @@
 /* profilo */
 
 .profilo-hero {
-    margin: 0 20px 16px;
+    margin: 0 20px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-2xl);
@@ -806,7 +806,7 @@
 
 /* admin */
 
-.admin-stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 0 20px 16px; }
+.admin-stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 0 20px 14px; }
 
 .admin-stat-card {
     background: var(--surface);

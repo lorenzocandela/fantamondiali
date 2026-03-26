@@ -60,7 +60,7 @@
 /* campo */
 
 .form-field {
-    margin: 0 20px 16px;
+    margin: 0 20px 14px;
     border-radius: var(--r-xl);
     overflow: hidden;
     box-shadow: var(--sh-md);
@@ -183,7 +183,7 @@
 /* panchina */
 
 .form-bench {
-    margin: 0 20px 16px;
+    margin: 0 20px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-xl);

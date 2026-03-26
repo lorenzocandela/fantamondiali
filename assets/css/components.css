@@ -331,7 +331,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin: 0 20px 16px;
+    margin: 0 20px 14px;
 }
 
 .modal-stat {
@@ -412,7 +412,7 @@
 /* price wheel picker */
 
 .price-picker {
-    margin: 0 20px 16px;
+    margin: 0 20px 14px;
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: var(--r-md);
