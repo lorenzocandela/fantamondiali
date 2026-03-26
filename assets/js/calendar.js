@@ -1064,9 +1064,11 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
         const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
         const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
         
+        // Voto solo se: non è panchina, ha stats reali, ha giocato (minutes > 0)
         const hPlayed = hStats && (hStats.minutes ?? 0) > 0;
+        const aPlayed = aStats && (aStats.minutes ?? 0) > 0;
         const hScore = (!isBench && h && hPlayed) ? calcLiveScore(h, hStats) : null;
-        const aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
+        const aScore = (!isBench && a && aPlayed) ? calcLiveScore(a, aStats) : null;
 
         if (hScore != null) { homeTotal += hScore; homeCount++; }
         if (aScore != null) { awayTotal += aScore; awayCount++; }
@@ -1078,7 +1080,7 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench)
             </div>
             <div class="confronto-divider ${isBench ? 'bench-num' : ''}">${i + 1}</div>
             <div class="confronto-player away ${a ? '' : 'empty'}">
-                ${renderPlayerCell(a, aStats, aScore, 'away', pending, isDetail)}
+                ${renderPlayerCell(a, aStats, aScore, 'away', pending && !isBench, isDetail)}
             </div>
         </div>`;
     }

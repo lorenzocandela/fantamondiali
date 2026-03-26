@@ -135,7 +135,14 @@ foreach ($fixturesMeta as $fm) {
     
     if (!empty($players)) {
         $source = 'players_stats';
-        foreach ($players as $teamData) {
+
+        // CS a livello squadra: basato sui gol reali della fixture, non sul campo 'conceded' del singolo
+        $homeCs = ((int)($fm['away_goals'] ?? 1)) === 0;
+        $awayCs = ((int)($fm['home_goals'] ?? 1)) === 0;
+
+        foreach ($players as $teamIdx => $teamData) {
+            $teamCs = ($teamIdx === 0) ? $homeCs : $awayCs;
+
             foreach ($teamData['players'] ?? [] as $entry) {
                 $pid   = $entry['player']['id']   ?? null;
                 $pname = $entry['player']['name']  ?? '';
@@ -143,15 +150,16 @@ foreach ($fixturesMeta as $fm) {
                 $stats = $entry['statistics'][0]   ?? [];
                 if (!$pid) continue;
 
-                $rating  = (float) ($stats['games']['rating']      ?? 0);
-                $goals   = (int)   ($stats['goals']['total']       ?? 0);
-                $assists = (int)   ($stats['goals']['assists']     ?? 0);
-                $yellow  = (int)   ($stats['cards']['yellow']      ?? 0);
-                $red     = (int)   ($stats['cards']['red']         ?? 0);
-                $cs      = ($stats['goals']['conceded'] ?? 1) === 0;
-                $played  = (bool)  ($stats['games']['minutes']     ?? 0);
-                $minutes = (int)   ($stats['games']['minutes']     ?? 0);
-                $position= $stats['games']['position']             ?? '';
+                $rating  = (float) ($stats['games']['rating']  ?? 0);
+                $goals   = (int)   ($stats['goals']['total']   ?? 0);
+                $assists = (int)   ($stats['goals']['assists'] ?? 0);
+                $yellow  = (int)   ($stats['cards']['yellow']  ?? 0);
+                $red     = (int)   ($stats['cards']['red']     ?? 0);
+                $minutes = (int)   ($stats['games']['minutes'] ?? 0);
+                $played  = $minutes > 0;
+                $position= $stats['games']['position']         ?? '';
+                // CS solo a chi ha giocato
+                $cs      = $played && $teamCs;
 
                 $playerStats[(string)$pid] = [
                     'name'       => $pname,
@@ -229,9 +237,9 @@ foreach ($fixturesMeta as $fm) {
                 'assists'    => $ev['assists'],
                 'yellow'     => $ev['yellow'],
                 'red'        => $ev['red'],
-                'cs'         => false, // non possiamo determinare per singolo giocatore
+                'cs'         => false,
                 'played'     => true,
-                'minutes'    => 0,
+                'minutes'    => 90,   // ha generato eventi → ha giocato
                 'position'   => '',
                 'fixture_id' => $fm['id'],
                 'source'     => 'events',
