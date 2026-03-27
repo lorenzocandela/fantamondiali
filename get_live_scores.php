@@ -5,10 +5,6 @@ define('API_KEY',      '1a4942a032906326bcdaa564e10dbe65');
 define('API_BASE_URL', 'https://v3.football.api-sports.io/');
 
 // ─── MODALITÀ ────────────────────────────────────────────────────────────────
-// ?mode=test  → prende le partite di OGGI (amichevoli, qualificazioni, ecc.)
-// ?mode=prod  → prende le partite dei Mondiali 2026 (league=1, season=2026)
-// In entrambi i casi restituisce le stats per giocatore delle fixture trovate.
-
 $mode = $_GET['mode'] ?? 'test';
 
 function apiGet(string $endpoint): ?array {
@@ -46,23 +42,35 @@ if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
 
 header('X-Cache: MISS');
 
-// ─── 1. TROVA LE FIXTURE ────────────────────────────────────────────────────
+// ─── CONNESSIONE AL DB LOCALE (MariaDB) ─────────────────────────────────────
+$db_host = '127.0.0.1';
+$db_name = 'fm';
+$db_user = 'root';
+$db_pass = '';
 
+try {
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e) {
+    die(json_encode(['status' => 'error', 'message' => 'DB error: ' . $e->getMessage()]));
+}
+
+// ─── 1. TROVA LE FIXTURE ────────────────────────────────────────────────────
 $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
-    // Partite di oggi — FIFA Series + playoff UEFA + intercontinental + amichevoli
     $candidates = [
-        "fixtures?date={$today}&league=32&season=2024",   // WC Qual Europe (season 2024!)
-        "fixtures?date={$today}&league=1222&season=2026", // FIFA Series 2026
-        "fixtures?date={$today}&league=960&season=2026",  // UEFA playoff WC 2026
-        "fixtures?date={$today}&league=37&season=2026",   // Intercontinental playoff
-        "fixtures?date={$today}&league=5&season=2026",    // amichevoli internazionali 2026
-        "fixtures?date={$today}&league=5&season=2025",    // amichevoli internazionali 2025
+        "fixtures?date={$today}&league=32&season=2024",
+        "fixtures?date={$today}&league=1222&season=2026",
+        "fixtures?date={$today}&league=960&season=2026",
+        "fixtures?date={$today}&league=37&season=2026",
+        "fixtures?date={$today}&league=5&season=2026",
+        "fixtures?date={$today}&league=5&season=2025",
     ];
 
-    // Accumula da più leghe
     foreach ($candidates as $endpoint) {
         $result = apiGet($endpoint);
         if (!empty($result)) {
@@ -72,40 +80,37 @@ if ($mode === 'test') {
         if (count($fixtures) >= 6) break;
     }
 } else {
-    // Produzione: Mondiali 2026
     $round = $_GET['round'] ?? null;
     $roundLabels = [
-        1 => 'Group Stage - 1',
-        2 => 'Group Stage - 2',
-        3 => 'Group Stage - 3',
-        4 => 'Round of 16',
-        5 => 'Quarter-finals',
-        6 => 'Semi-finals',
-        7 => 'Final',
+        1 => 'Group Stage - 1', 2 => 'Group Stage - 2', 3 => 'Group Stage - 3',
+        4 => 'Round of 16', 5 => 'Quarter-finals', 6 => 'Semi-finals', 7 => 'Final',
     ];
 
     if ($round && isset($roundLabels[(int)$round])) {
         $label = $roundLabels[(int)$round];
         $fixtures = apiGet("fixtures?league=1&season=2026&round=" . urlencode($label)) ?? [];
     } else {
-        // tutte le fixture live dei mondiali
         $fixtures = apiGet("fixtures?league=1&season=2026&live=all") ?? [];
         if (empty($fixtures)) {
-            // fallback: fixture di oggi
             $fixtures = apiGet("fixtures?league=1&season=2026&date={$today}") ?? [];
         }
     }
 }
 
-// ─── 2. ESTRAI METADATA FIXTURE ─────────────────────────────────────────────
+// ─── 2. ESTRAI METADATA E DIVIDI LIVE DA FINITE ─────────────────────────────
+$liveStatuses = ['1H','HT','2H','ET','P','BT','LIVE'];
+$finishedStatuses = ['FT','AET','PEN'];
+
+$liveFixtures = [];
+$finishedFixtureIds = [];
 
 foreach ($fixtures as $f) {
     $fid    = $f['fixture']['id'] ?? null;
-    $status = $f['fixture']['status']['short'] ?? 'NS'; // NS, 1H, HT, 2H, FT, etc.
+    $status = $f['fixture']['status']['short'] ?? 'NS';
     $minute = $f['fixture']['status']['elapsed'] ?? null;
     if (!$fid) continue;
 
-    $fixturesMeta[] = [
+    $meta = [
         'id'        => $fid,
         'status'    => $status,
         'minute'    => $minute,
@@ -118,22 +123,56 @@ foreach ($fixtures as $f) {
         'date'      => $f['fixture']['date'] ?? '',
         'venue'     => $f['fixture']['venue']['name'] ?? '',
     ];
+    
+    $fixturesMeta[] = $meta;
+
+    if (in_array($status, $liveStatuses)) {
+        $liveFixtures[] = $meta;
+    } elseif (in_array($status, $finishedStatuses)) {
+        $finishedFixtureIds[] = $fid;
+    }
 }
 
 // ─── 3. ESTRAI STATS GIOCATORI ──────────────────────────────────────────────
-
 $playerStats = [];
-$liveStatuses = ['1H','HT','2H','ET','P','BT','LIVE','FT','AET','PEN'];
+
+// 3A. DATI DA MARIADB PER PARTITE FINITE
+if (!empty($finishedFixtureIds)) {
+    $inQuery = implode(',', array_fill(0, count($finishedFixtureIds), '?'));
+    $stmt = $pdo->prepare("SELECT * FROM player_match_stats WHERE fixture_id IN ($inQuery)");
+    $stmt->execute($finishedFixtureIds);
+    $dbData = $stmt->fetchAll();
+
+    foreach ($dbData as $row) {
+        $pid = $row['player_id'];
+        $playerStats[(string)$pid] = [
+            'name'       => $row['player_name'],
+            'photo'      => '', // Il DB non ha la foto, il frontend userà il placeholder o quella della rosa
+            'rating'     => (float)$row['rating'],
+            'goals'      => (int)$row['goals'],
+            'assists'    => (int)$row['assists'],
+            'yellow'     => (int)$row['yellow_cards'],
+            'red'        => (int)$row['red_cards'],
+            'cs'         => (bool)$row['clean_sheet'],
+            'played'     => ($row['minutes_played'] > 0),
+            'minutes'    => (int)$row['minutes_played'],
+            'position'   => $row['role'],
+            'fixture_id' => $row['fixture_id'],
+            'sub_in'     => null,
+            'sub_out'    => null,
+            'is_finished'=> true // FLAG PER IL FRONTEND
+        ];
+    }
+}
+
+// 3B. DATI DA API PER PARTITE IN CORSO
 $source = 'events';
 
-foreach ($fixturesMeta as $fm) {
-    if (!in_array($fm['status'], $liveStatuses)) continue;
-
+foreach ($liveFixtures as $fm) {
     $players = apiGet("fixtures/players?fixture={$fm['id']}");
     
     if (!empty($players)) {
         $source = 'players_stats';
-
         $events = apiGet("fixtures/events?fixture={$fm['id']}") ?? [];
         $subsIn  = [];
         $subsOut = [];
@@ -168,7 +207,6 @@ foreach ($fixturesMeta as $fm) {
                 $minutes = (int)   ($stats['games']['minutes'] ?? 0);
                 $played  = $minutes > 0;
                 $position= $stats['games']['position']         ?? '';
-                // CS solo a chi ha giocato
                 $cs      = $played && $teamCs;
 
                 $playerStats[(string)$pid] = [
@@ -186,6 +224,7 @@ foreach ($fixturesMeta as $fm) {
                     'fixture_id' => $fm['id'],
                     'sub_in'     => $subsIn[(string)$pid]  ?? null,
                     'sub_out'    => $subsOut[(string)$pid] ?? null,
+                    'is_finished'=> false // FLAG PER IL FRONTEND
                 ];
             }
         }
@@ -194,7 +233,6 @@ foreach ($fixturesMeta as $fm) {
         if (empty($events)) continue;
         
         $eventsMap = [];
-        
         foreach ($events as $ev) {
             $pid  = $ev['player']['id'] ?? null;
             $type = $ev['type'] ?? '';
@@ -202,28 +240,15 @@ foreach ($fixturesMeta as $fm) {
             if (!$pid) continue;
             
             if (!isset($eventsMap[$pid])) {
-                $eventsMap[$pid] = [
-                    'name'    => $ev['player']['name'] ?? '',
-                    'goals'   => 0,
-                    'assists' => 0,
-                    'yellow'  => 0,
-                    'red'     => 0,
-                ];
+                $eventsMap[$pid] = ['name' => $ev['player']['name'] ?? '', 'goals' => 0, 'assists' => 0, 'yellow' => 0, 'red' => 0];
             }
             
             if ($type === 'Goal' && $detail !== 'Missed Penalty') {
                 $eventsMap[$pid]['goals']++;
-                // Registra anche l'assist se presente
                 $assistId = $ev['assist']['id'] ?? null;
                 if ($assistId) {
                     if (!isset($eventsMap[$assistId])) {
-                        $eventsMap[$assistId] = [
-                            'name'    => $ev['assist']['name'] ?? '',
-                            'goals'   => 0,
-                            'assists' => 0,
-                            'yellow'  => 0,
-                            'red'     => 0,
-                        ];
+                        $eventsMap[$assistId] = ['name' => $ev['assist']['name'] ?? '', 'goals' => 0, 'assists' => 0, 'yellow' => 0, 'red' => 0];
                     }
                     $eventsMap[$assistId]['assists']++;
                 }
@@ -233,16 +258,11 @@ foreach ($fixturesMeta as $fm) {
             }
         }
         
-        // Determina clean sheet: se la squadra non ha subito gol
-        $homeCs = ($fm['away_goals'] ?? 0) == 0;
-        $awayCs = ($fm['home_goals'] ?? 0) == 0;
-        
-        // Converti in playerStats con rating base 6.0
         foreach ($eventsMap as $pid => $ev) {
             $playerStats[(string)$pid] = [
                 'name'       => $ev['name'],
                 'photo'      => '',
-                'rating'     => 6.0,  // rating base, non disponibile
+                'rating'     => 6.0,
                 'goals'      => $ev['goals'],
                 'assists'    => $ev['assists'],
                 'yellow'     => $ev['yellow'],
@@ -253,6 +273,9 @@ foreach ($fixturesMeta as $fm) {
                 'position'   => '',
                 'fixture_id' => $fm['id'],
                 'source'     => 'events',
+                'sub_in'     => null,
+                'sub_out'    => null,
+                'is_finished'=> false // FLAG PER IL FRONTEND
             ];
         }
     }
@@ -260,7 +283,6 @@ foreach ($fixturesMeta as $fm) {
 }
 
 // ─── 4. OUTPUT ──────────────────────────────────────────────────────────────
-
 $output = json_encode([
     'status'   => 'success',
     'mode'     => $mode,
