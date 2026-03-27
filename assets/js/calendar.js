@@ -1141,7 +1141,7 @@ function renderConfrontoView(res, status) {
 
 <span class="material-symbols-outlined">${confrontoDetail ? 'unfold_less' : 'unfold_more'}</span>
 
-${confrontoDetail ? 'Compatto' : 'Espandi bonus'}
+${confrontoDetail ? 'Compatto' : 'Bonus'}
 
 </button>
 
