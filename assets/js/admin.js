@@ -2,8 +2,7 @@ import { db } from './firebase-init.js';
 import { doc, getDoc, setDoc, getDocs, deleteDoc, collection } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast } from './utils.js';
 import { buildSubtitle, renderPlayers, getFiltered, displayCount } from './players.js';
-import { renderMatchdayAdmin, generateRoundRobin } from './calendar.js';
-
+import { renderMatchdayAdmin, generateRoundRobin, MATCHDAY_SCHEDULE } from './calendar.js';
 
 export async function loadSystemSettings() {
     try {
@@ -228,77 +227,117 @@ document.getElementById('btn-clear-cache')?.addEventListener('click', async () =
     } catch { toast('clear_cache.php non trovato', 'error'); }
 });
 
-// ─── calcolo punteggi reale ───────────────────────────────────────────────────
+
+// ─── CALCOLO PUNTEGGI REALE & SOSTITUZIONI ──────────────────────────────────
 
 const SCORE_TABLE_REAL = {
-    goal:        { POR: 10, DIF: 6, CEN: 6, ATT: 8 },
-    assist:      3,
-    yellow:     -0.5,
-    red:        -2,
-    clean_sheet: { POR: 2, DIF: 1 },
+    goal: { POR: 5, DIF: 3, CEN: 3, ATT: 3 },
+    assist: 1,
+    yellow: -0.5,
+    red: -2,
+    clean_sheet: { POR: 1 },
 };
 
 function calcPlayerScoreReal(player, stats) {
-    if (!stats) return 0;
-    if (!stats.played) return 0;
+    if (!stats) return null; // SV
 
-    let score = stats.rating ?? 6;
-    score += (stats.goals   ?? 0) * (SCORE_TABLE_REAL.goal[player.role] ?? 6);
+    let base = stats.rating ?? 0;
+    const hasBonus = (stats.goals > 0) || (stats.assists > 0) || (stats.yellow_cards > 0) || (stats.red_cards > 0) || (stats.clean_sheet && player.role === 'POR');
+
+    if (base === 0) {
+        if (hasBonus && stats.played) base = 6.0;
+        else return null; // SV
+    }
+
+    let score = base;
+    score += (stats.goals ?? 0) * (SCORE_TABLE_REAL.goal[player.role] ?? 3);
     score += (stats.assists ?? 0) * SCORE_TABLE_REAL.assist;
-    score += (stats.yellow  ?? 0) * SCORE_TABLE_REAL.yellow;
-    score += (stats.red     ?? 0) * SCORE_TABLE_REAL.red;
-    if (stats.cs && SCORE_TABLE_REAL.clean_sheet[player.role]) {
+    score += (stats.yellow_cards ?? 0) * SCORE_TABLE_REAL.yellow;
+    score += (stats.red_cards ?? 0) * SCORE_TABLE_REAL.red;
+    if (stats.clean_sheet && SCORE_TABLE_REAL.clean_sheet[player.role]) {
         score += SCORE_TABLE_REAL.clean_sheet[player.role];
     }
     return Math.round(score * 100) / 100;
 }
 
-function calcTeamScoreFromLineup(lineup, playerStats) {
-    // lineup = array di player objects (solo i titolari, max 11)
-    // playerStats = { player_id: { rating, goals, ... } }
-    const starters = lineup.slice(0, 11).filter(Boolean);
-    if (!starters.length) return 0;
+function calcTeamWithSubs(lineupIds, roster, playerStats) {
+    const allPlayers = lineupIds.map(id => roster.find(p => String(p.id) === String(id))).filter(Boolean);
+    
+    let finalLineup = allPlayers;
+    if (finalLineup.length === 0) {
+        finalLineup = [...roster].sort((a, b) => b.price - a.price);
+    }
 
     let total = 0;
-    let count = 0;
+    let subsCount = 0;
+    const MAX_SUBS = 5;
 
-    starters.forEach(p => {
-        const stats = playerStats[String(p.id)];
-        if (!stats) return;
-        total += calcPlayerScoreReal(p, stats);
-        count++;
+    const detail = finalLineup.map(p => {
+        const stats = playerStats[String(p.id)] || null;
+        return {
+            id: p.id,
+            name: p.name,
+            role: p.role,
+            score: calcPlayerScoreReal(p, stats),
+            stats: stats,
+            is_used: false,
+            was_subbed_out: false,
+            was_subbed_in: false
+        };
     });
 
-    // se meno di 11 giocatori con stats, penalità per slot vuoti
-    const missing = 11 - count;
-    total -= missing * 2;
+    const starters = detail.slice(0, 11);
+    const bench = detail.slice(11);
 
-    return Math.max(0, Math.round(total * 10) / 10);
+    starters.forEach(starter => {
+        if (starter.score !== null) {
+            starter.is_used = true;
+            total += starter.score;
+        } else {
+            if (subsCount < MAX_SUBS) {
+                const sub = bench.find(b => b.role === starter.role && !b.is_used && b.score !== null);
+                if (sub) {
+                    sub.is_used = true;
+                    sub.was_subbed_in = true;
+                    starter.was_subbed_out = true;
+                    total += sub.score;
+                    subsCount++;
+                }
+            }
+        }
+    });
+
+    return { total: Math.round(total * 10) / 10, detail };
 }
 
-// sovrascrive il vecchio listener aggiungendo il nuovo flusso
+// sovrascrive il vecchio listener
 document.getElementById('btn-calc-scores')?.removeEventListener('click', () => {});
 
 document.getElementById('btn-calc-scores')?.addEventListener('click', async () => {
     const roundNum = parseInt(document.getElementById('admin-score-round').value);
     if (!roundNum) { toast('Seleziona una giornata', 'error'); return; }
 
+    const mdMeta = MATCHDAY_SCHEDULE.find(m => m.round === roundNum);
+    if (!mdMeta) { toast('Dati giornata non trovati', 'error'); return; }
+
+    const fromDate = mdMeta.start.split('T')[0];
+    const toDate = mdMeta.end.split('T')[0];
+
     const btn = document.getElementById('btn-calc-scores');
     btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Chiamata API...';
 
     try {
-        // 1. recupera rating giocatori dalla API (o fallback simulato)
-        const scoresRes = await fetch(`get_calcolo_giornata_scores.php?round=${roundNum}`);
+        // 1. Recupera rating dalla API PHP passandogli le date
+        const scoresRes = await fetch(`script/get_calcolo_giornata_scores.php?from=${fromDate}&to=${toDate}&league=32&season=2024&force=1`);
         const scoresData = await scoresRes.json();
         if (scoresData.status !== 'success') throw new Error(scoresData.message ?? 'Errore API scores');
 
         const playerStats = scoresData.players ?? {};
-        const source      = scoresData.source;
-
+        
         btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Calcolo formazioni...';
 
-        // 2. carica calendario e utenti
+        // 2. Carica calendario e utenti da Firestore
         const [calSnap, usersSnap] = await Promise.all([
             getDoc(doc(db, 'settings', 'calendar')),
             getDocs(collection(db, 'users')),
@@ -314,89 +353,52 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         const usersMap = {};
         usersSnap.forEach(d => { usersMap[d.id] = d.data(); });
 
-        // 3. calcola punteggio per ogni match dalla formazione schierata
         const roundResults = {};
 
+        // 3. Calcola scontri diretti con panchina
         rd.matches.forEach(m => {
             const homeUser = usersMap[m.home];
             const awayUser = usersMap[m.away];
             if (!homeUser || !awayUser) return;
 
-            // recupera lineup salvata → array di player objects
-            const homeLineupIds = homeUser.lineup ?? [];
-            const awayLineupIds = awayUser.lineup ?? [];
-
-            const homeRoster = homeUser.players ?? [];
-            const awayRoster = awayUser.players ?? [];
-
-            // ricostruisci oggetti player dai loro id
-            const homeLineup = homeLineupIds
-                .map(id => homeRoster.find(p => String(p.id) === String(id)))
-                .filter(Boolean)
-                .slice(0, 11);
-
-            const awayLineup = awayLineupIds
-                .map(id => awayRoster.find(p => String(p.id) === String(id)))
-                .filter(Boolean)
-                .slice(0, 11);
-
-            // se nessuna formazione → usa i migliori 11 per prezzo
-            const homeFinal = homeLineup.length >= 1 ? homeLineup
-                : [...homeRoster].sort((a, b) => b.price - a.price).slice(0, 11);
-            const awayFinal = awayLineup.length >= 1 ? awayLineup
-                : [...awayRoster].sort((a, b) => b.price - a.price).slice(0, 11);
-
-            const homeScore = calcTeamScoreFromLineup(homeFinal, playerStats);
-            const awayScore = calcTeamScoreFromLineup(awayFinal, playerStats);
-
-            // salva anche il dettaglio per giocatore (utile per visualizzazioni future)
-            const homeDetail = homeFinal.map(p => ({
-                id:    p.id,
-                name:  p.name,
-                role:  p.role,
-                score: calcPlayerScoreReal(p, playerStats[String(p.id)] ?? null),
-                stats: playerStats[String(p.id)] ?? null,
-            }));
-
-            const awayDetail = awayFinal.map(p => ({
-                id:    p.id,
-                name:  p.name,
-                role:  p.role,
-                score: calcPlayerScoreReal(p, playerStats[String(p.id)] ?? null),
-                stats: playerStats[String(p.id)] ?? null,
-            }));
+            const homeData = calcTeamWithSubs(homeUser.lineup ?? [], homeUser.players ?? [], playerStats);
+            const awayData = calcTeamWithSubs(awayUser.lineup ?? [], awayUser.players ?? [], playerStats);
 
             roundResults[`${m.home}_${m.away}`] = {
-                home_score:  homeScore,
-                away_score:  awayScore,
-                home_detail: homeDetail,
-                away_detail: awayDetail,
-                source,
+                home_score:  homeData.total,
+                away_score:  awayData.total,
+                home_detail: homeData.detail,
+                away_detail: awayData.detail,
+                source: 'real',
             };
         });
 
+        // 4. Salva risultati su Firestore (la classifica si aggiornerà in automatico leggendo i results)
         results[String(roundNum)] = roundResults;
         await setDoc(doc(db, 'settings', 'calendar'), { results }, { merge: true });
 
-        // 4. render risultati
+        // 5. Manda la Notifica Push
+        await sendPushNotification('Giornata Calcolata!', `I risultati ufficiali della Giornata ${roundNum} sono online. Scopri com'è andata!`);
+
+        // Render UI Admin
         const resultEl = document.getElementById('admin-score-result');
         resultEl.classList.remove('hidden');
         resultEl.innerHTML = `
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;color:var(--text-2);font-family:var(--mono)">
-                <span class="material-symbols-outlined" style="font-size:13px">${source === 'real' ? 'sports_soccer' : 'casino'}</span>
-                dati ${source === 'real' ? 'reali API' : 'simulati (torneo non iniziato)'}
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;color:var(--green);font-family:var(--mono)">
+                <span class="material-symbols-outlined" style="font-size:13px">check_circle</span>
+                Giornata calcolata con successo
             </div>
             ${rd.matches.map(m => {
                 const r = roundResults[`${m.home}_${m.away}`];
                 if (!r) return '';
                 return `<div class="admin-score-row-item">
-                    <span>${m.home_name} <strong>${r.home_score}</strong></span>
+                    <span>${m.home_name} <strong style="color:white">${r.home_score}</strong></span>
                     <span>–</span>
-                    <span><strong>${r.away_score}</strong> ${m.away_name}</span>
+                    <span><strong style="color:white">${r.away_score}</strong> ${m.away_name}</span>
                 </div>`;
             }).join('')}`;
 
-        toast(`Giornata ${roundNum} calcolata · ${source === 'real' ? 'dati reali' : 'simulazione'}`);
+        toast(`Giornata ${roundNum} calcolata e salvata!`);
 
     } catch (err) {
         toast('Errore: ' + err.message, 'error');

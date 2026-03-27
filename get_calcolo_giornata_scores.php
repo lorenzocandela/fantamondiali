@@ -1,38 +1,25 @@
 <?php
 header('Content-Type: application/json');
 
-define('API_KEY',      '1a4942a032906326bcdaa564e10dbe65');
+// ─── CONFIGURAZIONE DATABASE ────────────────────────────────────────────────
+$db_host = '127.0.0.1';
+$db_name = 'fm';
+$db_user = 'root';
+$db_pass = '';
+
+try {
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e) {
+    echo json_encode(['status' => 'error', 'message' => 'Errore DB: ' . $e->getMessage()]);
+    exit;
+}
+
+// ─── CONFIGURAZIONE API ─────────────────────────────────────────────────────
+define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
 define('API_BASE_URL', 'https://v3.football.api-sports.io/');
-define('LEAGUE_ID',    1);
-define('SEASON',       2026);
-
-$roundLabels = [
-    1 => 'Group Stage - 1',
-    2 => 'Group Stage - 2',
-    3 => 'Group Stage - 3',
-    4 => 'Round of 16',
-    5 => 'Quarter-finals',
-    6 => 'Semi-finals',
-    7 => 'Final',
-];
-
-$round = isset($_GET['round']) ? (int) $_GET['round'] : 1;
-
-if ($round < 1 || $round > 7) {
-    echo json_encode(['status' => 'error', 'message' => 'round non valido']);
-    exit;
-}
-
-$cacheFile = sys_get_temp_dir() . "/fm_scores_r{$round}.json";
-$cacheTtl  = 3600;
-
-if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
-    header('X-Cache: HIT');
-    echo file_get_contents($cacheFile);
-    exit;
-}
-
-header('X-Cache: MISS');
 
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
@@ -40,7 +27,7 @@ function apiGet(string $endpoint): ?array {
     curl_setopt_array($ch, [
         CURLOPT_URL            => $url,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 12,
+        CURLOPT_TIMEOUT        => 15,
         CURLOPT_HTTPHEADER     => [
             'x-apisports-key: ' . API_KEY,
             'Accept: application/json',
@@ -56,84 +43,67 @@ function apiGet(string $endpoint): ?array {
     return $data['response'];
 }
 
-$label    = $roundLabels[$round] ?? 'Group Stage - 1';
-$fixtures = apiGet("fixtures?league=" . LEAGUE_ID . "&season=" . SEASON . "&round=" . urlencode($label));
+// ─── INPUT DAL FRONTEND ─────────────────────────────────────────────────────
+$from   = $_GET['from'] ?? date('Y-m-d');
+$to     = $_GET['to'] ?? date('Y-m-d');
+$league = $_GET['league'] ?? 32;   // 32 = Test (Qualifiers), 1 = Mondiali
+$season = $_GET['season'] ?? 2024; // 2024 = Test, 2026 = Mondiali
+$force  = isset($_GET['force']) ? (int)$_GET['force'] : 1; // Messo a 1 di default per i tuoi test
 
-$playerRatings = [];
-$source        = 'real';
+// ─── 1. VERIFICA FIXTURES NEL RANGE ─────────────────────────────────────────
+$endpoint = "fixtures?league={$league}&season={$season}&from={$from}&to={$to}";
+$fixtures = apiGet($endpoint) ?? [];
 
-if (!empty($fixtures)) {
-    foreach ($fixtures as $fixture) {
-        $fixtureId = $fixture['fixture']['id'] ?? null;
-        if (!$fixtureId) continue;
+if (empty($fixtures)) {
+    echo json_encode(['status' => 'error', 'message' => "Nessuna partita reale trovata nel periodo $from al $to."]);
+    exit;
+}
 
-        $players = apiGet("fixtures/players?fixture={$fixtureId}");
-        if (empty($players)) continue;
+$fixtureIds = [];
+$finishedStatuses = ['FT', 'AET', 'PEN'];
+$allFinished = true;
 
-        foreach ($players as $teamData) {
-            foreach ($teamData['players'] ?? [] as $entry) {
-                $pid   = $entry['player']['id']    ?? null;
-                $stats = $entry['statistics'][0]   ?? [];
-                if (!$pid) continue;
-
-                $rating = (float) ($stats['games']['rating']         ?? 0);
-                $goals  = (int)   ($stats['goals']['total']          ?? 0);
-                $assists= (int)   ($stats['goals']['assists']        ?? 0);
-                $yellow = (int)   ($stats['cards']['yellow']         ?? 0);
-                $red    = (int)   ($stats['cards']['red']            ?? 0);
-                $cs     = ($stats['goals']['conceded'] ?? 1) === 0;
-                $played = (bool)  ($stats['games']['minutes']        ?? 0);
-
-                $playerRatings[(string)$pid] = [
-                    'rating'  => $rating,
-                    'goals'   => $goals,
-                    'assists' => $assists,
-                    'yellow'  => $yellow,
-                    'red'     => $red,
-                    'cs'      => $cs,
-                    'played'  => $played,
-                ];
-            }
-        }
-
-        usleep(150000);
+foreach ($fixtures as $f) {
+    $fixtureIds[] = $f['fixture']['id'];
+    if (!in_array($f['fixture']['status']['short'], $finishedStatuses)) {
+        $allFinished = false;
     }
 }
 
-if (empty($playerRatings)) {
-    $source = 'simulated';
-    $listonePath = sys_get_temp_dir() . '/fm_listone_v3.json';
-    if (file_exists($listonePath)) {
-        $listone = json_decode(file_get_contents($listonePath), true);
-        foreach ($listone['data'] ?? [] as $p) {
-            $baseRating = (float) ($p['rating'] ?? 6.5);
-            $simRating  = round(min(10, max(4, $baseRating + (mt_rand(-150, 150) / 100))), 2);
-            $goals      = mt_rand(0, 100) < 8 ? mt_rand(1, 2) : 0;    // 8% chance gol
-            $assists    = mt_rand(0, 100) < 6 ? 1 : 0;                  // 6% assist
-            $yellow     = mt_rand(0, 100) < 10 ? 1 : 0;                 // 10% giallo
-            $red        = mt_rand(0, 100) < 2  ? 1 : 0;                 // 2% rosso
-            $cs         = mt_rand(0, 100) < 30;                          // 30% clean sheet
-            $played     = mt_rand(0, 100) < 85;                          // 85% giocato
-
-            $playerRatings[(string)$p['id']] = [
-                'rating'  => $simRating,
-                'goals'   => $goals,
-                'assists' => $assists,
-                'yellow'  => $yellow,
-                'red'     => $red,
-                'cs'      => $cs,
-                'played'  => $played,
-            ];
-        }
-    }
+if (!$allFinished && !$force) {
+    echo json_encode(['status' => 'error', 'message' => "Ci sono ancora partite non terminate in questa giornata. Attendi o usa force=1."]);
+    exit;
 }
 
-$output = json_encode([
+// ─── 2. RECUPERA DATI DA MARIADB ────────────────────────────────────────────
+$inQuery = implode(',', array_fill(0, count($fixtureIds), '?'));
+$stmt = $pdo->prepare("SELECT * FROM player_match_stats WHERE fixture_id IN ($inQuery)");
+$stmt->execute($fixtureIds);
+$dbStats = $stmt->fetchAll();
+
+$playerStats = [];
+
+foreach ($dbStats as $row) {
+    $pid = $row['player_id'];
+    // Salviamo le stats raw, i punti li calcolerà il JS di Admin
+    $playerStats[(string)$pid] = [
+        'name'           => $row['player_name'],
+        'role'           => $row['role'],
+        'rating'         => (float)$row['rating'],
+        'goals'          => (int)$row['goals'],
+        'assists'        => (int)$row['assists'],
+        'yellow_cards'   => (int)$row['yellow_cards'],
+        'red_cards'      => (int)$row['red_cards'],
+        'clean_sheet'    => (bool)$row['clean_sheet'],
+        'minutes_played' => (int)$row['minutes_played'],
+        'played'         => ((int)$row['minutes_played'] > 0),
+        'fixture_id'     => $row['fixture_id']
+    ];
+}
+
+// ─── 3. OUTPUT JSON ─────────────────────────────────────────────────────────
+echo json_encode([
     'status'  => 'success',
-    'round'   => $round,
-    'source'  => $source,
-    'players' => $playerRatings,
+    'source'  => 'real',
+    'players' => $playerStats
 ]);
-
-file_put_contents($cacheFile, $output);
-echo $output;
