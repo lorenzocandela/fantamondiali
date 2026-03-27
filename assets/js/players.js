@@ -197,7 +197,9 @@ export function renderPlayers(players, slice) {
             <div class="player-card" data-role="${p.role}" data-id="${p.id}" tabindex="0">
                 <div class="player-photo-wrap">
                     <img class="player-photo" src="${p.photo}" alt="${p.name}" onerror="this.src='https://placehold.co/80x80/f2f2f7/aeaeb2?text=${encodeURIComponent(p.lastname?.[0] ?? '?')}'">
-                    ${p.team_logo ? `<img class="team-logo" src="${p.team_logo}" alt="" onerror="this.style.display='none'">` : ''}
+                    ${COUNTRY_CODES[p.team] 
+                        ? `<img class="team-logo" src="assets/flags/${COUNTRY_CODES[p.team]}.svg" alt="${p.team}" title="${p.team}" onerror="this.style.display='none'">` 
+                        : (p.team_logo ? `<img class="team-logo" src="${p.team_logo}" alt="" onerror="this.style.display='none'">` : '')}
                 </div>
                 <div class="role-badge badge-${p.role}">${p.role}</div>
                 <div class="player-name">${p.name}</div>
