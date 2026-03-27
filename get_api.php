@@ -8,7 +8,7 @@ define('MAX_PRICE', 60);
 
 // ─── CONFIGURAZIONE TORNEO ──────────────────────────────────────────────────
 $LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 960; // 960 = Playoff UEFA, 1 = World Cup
-$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2026;
+$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2024;
 
 // ─── CACHE PERMANENTE ───────────────────────────────────────────────────────
 $cacheFile = sys_get_temp_dir() . "/fm_listone_L{$LEAGUE_ID}_S{$SEASON}.json";
