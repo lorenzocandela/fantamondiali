@@ -53,7 +53,7 @@ function renderSquad() {
                             onerror="this.src='https://placehold.co/44x44/f2f2f7/aeaeb2?text=${encodeURIComponent(p.name?.[0] ?? '?')}'">
                         <div class="squad-player-info">
                             <div class="squad-player-name">${p.name}</div>
-                            <div class="squad-player-meta">${p.team ?? ''} · ${p.nationality ?? ''}</div>
+                            <div class="squad-player-meta">${p.nationality ?? ''}</div>
                         </div>
                         <span class="squad-player-price">${p.price}</span>
                         <button class="btn-remove" data-id="${p.id}" aria-label="Rimuovi">
@@ -232,7 +232,7 @@ function showOpponentSquad(team) {
                         onerror="this.src='https://placehold.co/38x38/f2f2f7/aeaeb2?text=${encodeURIComponent(p.name?.[0] ?? '?')}'">
                     <div class="squad-sheet-info">
                         <div class="squad-sheet-name">${p.name}</div>
-                        <div class="squad-sheet-meta">${p.team ?? ''} · ${p.nationality ?? ''}</div>
+                        <div class="squad-sheet-meta">${p.nationality ?? ''}</div>
                     </div>
                     <span class="squad-sheet-price">
                         <span class="material-symbols-outlined">toll</span>${p.price}
