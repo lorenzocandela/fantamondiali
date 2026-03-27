@@ -101,7 +101,7 @@ export async function removePlayer(playerId) {
     if (!window.__user?.uid) return;
     const playerData = window.__myTeam.find(p => p.id === playerId || p.id === String(playerId));
     if (!playerData) return;
-    const refund  = Math.round(playerData.price * 0.7);
+    const refund  = Math.round(playerData.price);
     const credits = (window.__user.credits ?? 0) + refund;
     try {
         await updateDoc(doc(db, 'users', window.__user.uid), {
@@ -111,7 +111,7 @@ export async function removePlayer(playerId) {
         await loadSquadra();
         await loadGlobalOwnership();
         renderPlayers(getFiltered(), displayCount);
-        toast('Giocatore rimosso (rimborso 70%)');
+        toast('Giocatore rimosso');
     } catch { toast('Errore di rete', 'error'); }
 }
 
