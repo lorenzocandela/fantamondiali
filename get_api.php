@@ -4,8 +4,8 @@ define('MIN_PRICE', 5);
 define('MAX_PRICE', 60);
 
 // CONFIG CALL
-$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 10;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevoli
-$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2026;  // 2024,         2026,         2026
+$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 1;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevoli
+$SEASON = isset($_GET['season']) ? (int)$_GET['season'] : 2026;    // 2024,         2026,         2026
 
 // CACHING
 $cacheFile = sys_get_temp_dir() . "/fm_listone_L{$LEAGUE_ID}_S{$SEASON}.json";
