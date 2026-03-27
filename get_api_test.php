@@ -47,7 +47,6 @@ function apiGet(string $endpoint): ?array {
 $fixtures = [];
 $leagueUsed = '';
 
-// Prova in ordine: FIFA Series, playoff UEFA, intercontinental playoffs, amichevoli
 $attempts = [
     ['endpoint' => "fixtures?date={$today}&league=32&season=2024",   'label' => 'WC Qual Europe'],
     ['endpoint' => "fixtures?date={$today}&league=1222&season=2026", 'label' => 'FIFA Series 2026'],
@@ -57,7 +56,6 @@ $attempts = [
     ['endpoint' => "fixtures?date={$today}&league=5&season=2025",    'label' => 'Amichevoli 2025'],
 ];
 
-// Accumula fixture da più leghe (playoff UEFA + intercontinental)
 $fixtures = [];
 $leagueLabels = [];
 foreach ($attempts as $a) {
@@ -67,7 +65,6 @@ foreach ($attempts as $a) {
         $leagueLabels[] = $a['label'];
     }
     usleep(200000);
-    // Se abbiamo già fixture dai playoff, non cercare le amichevoli
     if (count($fixtures) >= 4 && count($leagueLabels) >= 2) break;
 }
 $leagueUsed = implode(' + ', array_unique($leagueLabels));
@@ -77,7 +74,6 @@ if (empty($fixtures)) {
     exit;
 }
 
-// Filtra: se c'è un parametro ?teams=, prendi solo quelle squadre
 $filterTeams = isset($_GET['teams']) ? array_map('strtolower', explode(',', $_GET['teams'])) : [];
 if (!empty($filterTeams)) {
     $fixtures = array_filter($fixtures, function($f) use ($filterTeams) {
@@ -90,7 +86,6 @@ if (!empty($filterTeams)) {
         return false;
     });
 }
-// Massimo 10 fixture
 $fixtures = array_values(array_slice($fixtures, 0, 10));
 
 // ─── 2. INFO FIXTURE PER DEBUG ──────────────────────────────────────────────
@@ -109,7 +104,7 @@ foreach ($fixtures as $f) {
 // ─── 3. PRENDI I ROSTER DELLE SQUADRE ───────────────────────────────────────
 
 $teamIds = [];
-$teamCountry = []; // team_id → country name (per nazionali = nome squadra)
+$teamCountry = [];
 foreach ($fixtures as $f) {
     $homeId = $f['teams']['home']['id'] ?? null;
     $awayId = $f['teams']['away']['id'] ?? null;
@@ -117,14 +112,12 @@ foreach ($fixtures as $f) {
     if ($awayId) { $teamIds[$awayId] = $f['teams']['away']['name'] ?? ''; $teamCountry[$awayId] = $f['teams']['away']['name'] ?? ''; }
 }
 
-// Per ogni squadra, prendi i giocatori dal roster
 $allPlayers = [];
-$season = (int) date('Y'); // stagione corrente
+$season = (int) date('Y');
 
 foreach ($teamIds as $teamId => $teamName) {
     $countryName = $teamCountry[$teamId] ?? $teamName;
     
-    // Prova prima con la stagione corrente, poi con l'anno precedente
     $squad = apiGet("players/squads?team={$teamId}");
     
     if (!empty($squad) && !empty($squad[0]['players'])) {
