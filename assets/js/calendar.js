@@ -1064,7 +1064,7 @@ async function fetchLiveScores() {
         const md = getMatchdayMeta(mdRound);
         const dateStr = md ? md.start.split('T')[0] : '';
         
-        const res = await fetch(`script/get_live_scores.php?mode=test&date=${dateStr}`);
+        const res = await fetch(`get_live_scores.php?mode=test&date=${dateStr}`);
         const data = await res.json();
         
         if (data.status === 'success') {
