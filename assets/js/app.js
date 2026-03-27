@@ -6,7 +6,7 @@ import { loadListone } from './players.js';
 import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
 import { loadCalendario, renderMatchdayAdmin, loadAdminModules } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
-import { initNotifications, requestNotificationPermission } from './notifications.js';
+import { initNotifications, requestNotificationPermission, areNotificationsEnabled, askForNotificationPermission } from './notifications.js';
 
 window.__addPlayer = (player, customPrice) => addPlayer(player, customPrice);
 window.__myTeam    = [];
@@ -85,9 +85,36 @@ document.addEventListener('goto:profilo', () => {
     loadProfilo();
 });
 
+
 // profilo form
 document.getElementById('btn-save-profilo')?.addEventListener('click', saveProfilo);
 document.getElementById('btn-join-comp')?.addEventListener('click', toggleJoinCompetition);
+
+const btnNotif = document.getElementById('btn-enable-notifications');
+if (btnNotif) {
+    if (areNotificationsEnabled()) {
+        btnNotif.textContent = 'Notifiche attive!';
+        btnNotif.style.background = 'var(--bg-2)';
+        btnNotif.style.color = 'var(--text-2)';
+        btnNotif.disabled = true;
+    } else {
+        btnNotif.addEventListener('click', async () => {
+            const granted = await askForNotificationPermission();
+            if (granted) {
+                btnNotif.textContent = 'Notifiche attive!';
+                btnNotif.style.background = 'var(--bg-2)';
+                btnNotif.style.color = 'var(--text-2)';
+                btnNotif.disabled = true;
+                toast('Notifiche attivate con successo!');
+            } else {
+                toast('Permesso negato o impossibile attivare le notifiche', 'error');
+            }
+        });
+    }
+}
+
+document.getElementById('avatar-upload')?.addEventListener('change', handleAvatarUpload);
+
 document.getElementById('avatar-upload')?.addEventListener('change', handleAvatarUpload);
 document.getElementById('logo-upload')?.addEventListener('change', handleLogoUpload);
 document.getElementById('trigger-avatar-upload')?.addEventListener('click', () => document.getElementById('avatar-upload').click());

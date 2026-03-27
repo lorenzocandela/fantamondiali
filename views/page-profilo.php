@@ -51,6 +51,14 @@
         </button>
     </div>
 
+    <div class="profilo-section" id="notifications-section">
+        <div class="profilo-section-title">Notifiche Push</div>
+        <p class="profilo-section-desc">Attiva le notifiche per sapere in tempo reale quando vengono calcolati i risultati della giornata.</p>
+        <button id="btn-enable-notifications" class="btn-join" style="background:var(--green-soft);color:var(--green)">
+            Attiva Notifiche
+        </button>
+    </div>
+
     <!-- competizione -->
     <div class="profilo-section">
         <div class="profilo-section-title">Competizione</div>
