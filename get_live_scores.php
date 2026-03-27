@@ -1,12 +1,10 @@
 <?php
 header('Content-Type: application/json');
-
-define('API_KEY',      '1a4942a032906326bcdaa564e10dbe65');
-define('API_BASE_URL', 'https://v3.football.api-sports.io/');
-
-// ─── MODALITÀ ────────────────────────────────────────────────────────────────
 $mode = $_GET['mode'] ?? 'test';
 
+// API FUNZ
+define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
+define('API_BASE_URL', 'https://v3.football.api-sports.io/');
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
@@ -29,7 +27,7 @@ function apiGet(string $endpoint): ?array {
     return $data['response'];
 }
 
-// ─── CACHE ───────────────────────────────────────────────────────────────────
+// CACHING
 $today     = $_GET['date'] ?? date('Y-m-d');
 $cacheFile = sys_get_temp_dir() . "/fm_live_{$mode}_{$today}.json";
 $cacheTtl  = ($mode === 'test') ? 120 : 300; // test: 2min, prod: 5min
@@ -42,7 +40,7 @@ if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
 
 header('X-Cache: MISS');
 
-// ─── CONNESSIONE AL DB LOCALE (MariaDB) ─────────────────────────────────────
+// DB
 $db_host = '127.0.0.1';
 $db_name = 'fm';
 $db_user = 'root';
@@ -57,18 +55,13 @@ try {
     die(json_encode(['status' => 'error', 'message' => 'DB error: ' . $e->getMessage()]));
 }
 
-// ─── 1. TROVA LE FIXTURE ────────────────────────────────────────────────────
+// SQUAD STATS
 $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
     $candidates = [
-        "fixtures?date={$today}&league=32&season=2024",
-        "fixtures?date={$today}&league=1222&season=2026",
-        "fixtures?date={$today}&league=960&season=2026",
-        "fixtures?date={$today}&league=37&season=2026",
-        "fixtures?date={$today}&league=5&season=2026",
-        "fixtures?date={$today}&league=5&season=2025",
+        "fixtures?date={$today}&league=10&season=2026",
     ];
 
     foreach ($candidates as $endpoint) {
@@ -97,7 +90,7 @@ if ($mode === 'test') {
     }
 }
 
-// ─── 2. ESTRAI METADATA E DIVIDI LIVE DA FINITE ─────────────────────────────
+// PULL DATA BUILD ARRAYING
 $liveStatuses = ['1H','HT','2H','ET','P','BT','LIVE'];
 $finishedStatuses = ['FT','AET','PEN'];
 
@@ -133,10 +126,8 @@ foreach ($fixtures as $f) {
     }
 }
 
-// ─── 3. ESTRAI STATS GIOCATORI ──────────────────────────────────────────────
 $playerStats = [];
 
-// 3A. DATI DA MARIADB PER PARTITE FINITE
 if (!empty($finishedFixtureIds)) {
     $inQuery = implode(',', array_fill(0, count($finishedFixtureIds), '?'));
     $stmt = $pdo->prepare("SELECT * FROM player_match_stats WHERE fixture_id IN ($inQuery)");
@@ -147,7 +138,7 @@ if (!empty($finishedFixtureIds)) {
         $pid = $row['player_id'];
         $playerStats[(string)$pid] = [
             'name'       => $row['player_name'],
-            'photo'      => '', // Il DB non ha la foto, il frontend userà il placeholder o quella della rosa
+            'photo'      => '',
             'rating'     => (float)$row['rating'],
             'goals'      => (int)$row['goals'],
             'assists'    => (int)$row['assists'],
@@ -160,14 +151,13 @@ if (!empty($finishedFixtureIds)) {
             'fixture_id' => $row['fixture_id'],
             'sub_in'     => null,
             'sub_out'    => null,
-            'is_finished'=> true // FLAG PER IL FRONTEND
+            'is_finished'=> true
         ];
     }
 }
 
-// 3B. DATI DA API PER PARTITE IN CORSO
+// DATI PARTITE LIVE
 $source = 'events';
-
 foreach ($liveFixtures as $fm) {
     $players = apiGet("fixtures/players?fixture={$fm['id']}");
     
@@ -224,7 +214,7 @@ foreach ($liveFixtures as $fm) {
                     'fixture_id' => $fm['id'],
                     'sub_in'     => $subsIn[(string)$pid]  ?? null,
                     'sub_out'    => $subsOut[(string)$pid] ?? null,
-                    'is_finished'=> false // FLAG PER IL FRONTEND
+                    'is_finished'=> false
                 ];
             }
         }
@@ -275,14 +265,14 @@ foreach ($liveFixtures as $fm) {
                 'source'     => 'events',
                 'sub_in'     => null,
                 'sub_out'    => null,
-                'is_finished'=> false // FLAG PER IL FRONTEND
+                'is_finished'=> false
             ];
         }
     }
     usleep(150000);
 }
 
-// ─── 4. OUTPUT ──────────────────────────────────────────────────────────────
+// RETURN
 $output = json_encode([
     'status'   => 'success',
     'mode'     => $mode,
