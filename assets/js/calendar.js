@@ -29,7 +29,15 @@ const MATCHDAY_SCHEDULE = [
         short: 'GJ1',
         start: '2026-03-27T19:00:00',
         end: '2026-03-27T23:59:59'
-    }, // TEST 
+    },
+    {
+        round: 2,
+        label: 'Gironi',
+        short: 'GJ2',
+        start: '2026-03-27T19:00:00',
+        end: '2026-03-27T23:59:59'
+    },
+
     /*{
         round: 1,
         label: 'Gironi',
@@ -37,19 +45,21 @@ const MATCHDAY_SCHEDULE = [
         start: '2026-06-11T00:00:00',
         end: '2026-06-14T23:59:59'
     }, // PROD */
-    {
+    /*{
         round: 2,
         label: 'Gironi',
         short: 'GJ2',
         start: '2026-06-15T00:00:00',
         end: '2026-06-19T23:59:59'
-    }, {
+    }, // PROD */
+    {
         round: 3,
         label: 'Gironi',
         short: 'GJ3',
         start: '2026-06-20T00:00:00',
         end: '2026-06-25T23:59:59'
-    }, {
+    }, 
+    {
         round: 4,
         label: 'Ottavi',
         short: 'R16',
