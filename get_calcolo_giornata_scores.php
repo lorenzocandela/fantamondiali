@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 
-// ─── CONFIGURAZIONE DATABASE ────────────────────────────────────────────────
+// CONFIG
 $db_host = '127.0.0.1';
 $db_name = 'fm';
 $db_user = 'root';
@@ -17,10 +17,10 @@ try {
     exit;
 }
 
-// ─── CONFIGURAZIONE API ─────────────────────────────────────────────────────
+
+// API FUNZ
 define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
 define('API_BASE_URL', 'https://v3.football.api-sports.io/');
-
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
@@ -43,14 +43,14 @@ function apiGet(string $endpoint): ?array {
     return $data['response'];
 }
 
-// ─── INPUT DAL FRONTEND ─────────────────────────────────────────────────────
-$from   = $_GET['from'] ?? date('Y-m-d');
-$to     = $_GET['to'] ?? date('Y-m-d');
-$league = $_GET['league'] ?? 32;   // 32 = Test (Qualifiers), 1 = Mondiali
-$season = $_GET['season'] ?? 2024; // 2024 = Test, 2026 = Mondiali
+// INPUT
+$from = $_GET['from'] ?? date('Y-m-d');
+$to = $_GET['to'] ?? date('Y-m-d');
+$league = $_GET['league'] ?? 32;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevoli
+$season = $_GET['season'] ?? 2024;  // 2024,         2026,         2026
 $force  = isset($_GET['force']) ? (int)$_GET['force'] : 1; // Messo a 1 di default per i tuoi test
 
-// ─── 1. VERIFICA FIXTURES NEL RANGE ─────────────────────────────────────────
+// CHECK PARTITE DATA RANGE
 $endpoint = "fixtures?league={$league}&season={$season}&from={$from}&to={$to}";
 $fixtures = apiGet($endpoint) ?? [];
 
@@ -75,7 +75,7 @@ if (!$allFinished && !$force) {
     exit;
 }
 
-// ─── 2. RECUPERA DATI DA MARIADB ────────────────────────────────────────────
+// DB READ
 $inQuery = implode(',', array_fill(0, count($fixtureIds), '?'));
 $stmt = $pdo->prepare("SELECT * FROM player_match_stats WHERE fixture_id IN ($inQuery)");
 $stmt->execute($fixtureIds);
@@ -85,7 +85,6 @@ $playerStats = [];
 
 foreach ($dbStats as $row) {
     $pid = $row['player_id'];
-    // Salviamo le stats raw, i punti li calcolerà il JS di Admin
     $playerStats[(string)$pid] = [
         'name'           => $row['player_name'],
         'role'           => $row['role'],
@@ -101,7 +100,7 @@ foreach ($dbStats as $row) {
     ];
 }
 
-// ─── 3. OUTPUT JSON ─────────────────────────────────────────────────────────
+// RETURN
 echo json_encode([
     'status'  => 'success',
     'source'  => 'real',

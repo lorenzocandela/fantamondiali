@@ -1,7 +1,5 @@
 <?php
 header('Content-Type: application/json');
-define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
-define('API_BASE_URL', 'https://v3.football.api-sports.io/');
 define('MIN_PRICE', 5);
 define('MAX_PRICE', 60);
 
@@ -21,6 +19,8 @@ if (!$forceReset && file_exists($cacheFile) && filesize($cacheFile) > 0) {
 header('X-Cache: MISS');
 
 // API FUNZ
+define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
+define('API_BASE_URL', 'https://v3.football.api-sports.io/');
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
