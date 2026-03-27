@@ -60,8 +60,9 @@ $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
+    // per test chiamo direttamente id match -> ref in debug polling
     $candidates = [
-        "fixtures?date={$today}&league=10&season=2026",
+        "fixtures?id=1502470", // eng - uru -> test in GJ2
     ];
 
     foreach ($candidates as $endpoint) {
