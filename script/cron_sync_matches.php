@@ -49,7 +49,7 @@ $roleMap = [
 ];
 
 // ─── 1. OTTIENI LE PARTITE DI OGGI ──────────────────────────────────────────
-$today = '2026-03-26';
+$today = '2026-03-26'; // TEST SU PARTITE DI IERI (italia irlanda del nord es.)
 #$today = date('Y-m-d');
 
 echo "[".date('Y-m-d H:i:s')."] Avvio sincronizzazione partite...\n";
