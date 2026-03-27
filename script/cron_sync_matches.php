@@ -49,7 +49,8 @@ $roleMap = [
 ];
 
 // ─── 1. OTTIENI LE PARTITE DI OGGI ──────────────────────────────────────────
-$today = date('Y-m-d');
+$today = '2026-03-26';
+#$today = date('Y-m-d');
 
 echo "[".date('Y-m-d H:i:s')."] Avvio sincronizzazione partite...\n";
 
