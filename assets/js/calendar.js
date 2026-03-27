@@ -1433,7 +1433,7 @@ ${renderPlayerCell(h, hStats, hScore, 'home', pending && !isBench, isDetail)}
 
 </div>
 
-<div class="confronto-divider ${isBench ? 'bench-num' : ''}">${i + 1}</div>
+<div class="confronto-divider ${isBench ? 'bench-num' : ''}">|</div>
 
 <div class="confronto-player away ${a ? '' : 'empty'}">
 
