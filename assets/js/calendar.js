@@ -34,8 +34,8 @@ const MATCHDAY_SCHEDULE = [
         round: 2,
         label: 'Gironi',
         short: 'GJ2',
-        start: '2026-03-27T19:00:00',
-        end: '2026-03-27T23:59:59'
+        start: '2026-03-28T19:00:00',
+        end: '2026-03-28T23:59:59'
     },
 
     /*{
