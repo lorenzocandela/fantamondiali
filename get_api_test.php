@@ -8,15 +8,12 @@ define('MAX_PRICE', 60);
 
 $today = date('Y-m-d');
 
-// ─── CACHE PERMANENTE ───────────────────────────────────────────────────────
-// In get_api_test.php magari tieni $cacheFile = sys_get_temp_dir() . "/fm_listone_test.json"; (senza la data di oggi, altrimenti domani ne crea un altro!)
-// In get_api.php tieni $cacheFile = sys_get_temp_dir() . '/fm_listone_v3.json';
+// ─── CACHE (breve per test: 10 minuti) ──────────────────────────────────────
+$cacheFile = sys_get_temp_dir() . "/fm_listone_test_{$today}.json";
+$cacheTtl  = 600;
 
-$cacheFile = sys_get_temp_dir() . "/fm_listone_static.json";
-$forceReset = isset($_GET['reset']) && $_GET['reset'] === '1';
-
-if (!$forceReset && file_exists($cacheFile) && filesize($cacheFile) > 0) {
-    header('X-Cache: HIT-PERMANENT');
+if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
+    header('X-Cache: HIT');
     echo file_get_contents($cacheFile);
     exit;
 }
