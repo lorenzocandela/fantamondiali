@@ -257,16 +257,8 @@
 
 /* squadra */
 
-.squad-header {
-    margin: 20px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-xl);
-    padding: 16px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: var(--sh-sm);
+.squad-header, .content-header{
+    display: none;
 }
 
 .squad-icon {
