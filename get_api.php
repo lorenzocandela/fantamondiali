@@ -6,20 +6,22 @@ define('API_BASE_URL', 'https://v3.football.api-sports.io/');
 define('MIN_PRICE', 5);
 define('MAX_PRICE', 60);
 
-$today = date('Y-m-d');
+// ─── CONFIGURAZIONE TORNEO ──────────────────────────────────────────────────
+$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 960; // 960 = Playoff UEFA, 1 = World Cup
+$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2026;
 
-// ─── CACHE (breve per test: 10 minuti) ──────────────────────────────────────
-$cacheFile = sys_get_temp_dir() . "/fm_listone_test_{$today}.json";
-$cacheTtl  = 600;
+// ─── CACHE PERMANENTE ───────────────────────────────────────────────────────
+$cacheFile = sys_get_temp_dir() . "/fm_listone_L{$LEAGUE_ID}_S{$SEASON}.json";
+$forceReset = isset($_GET['reset']) && $_GET['reset'] === '1';
 
-if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
-    header('X-Cache: HIT');
+if (!$forceReset && file_exists($cacheFile) && filesize($cacheFile) > 0) {
+    header('X-Cache: HIT-PERMANENT');
     echo file_get_contents($cacheFile);
     exit;
 }
-
 header('X-Cache: MISS');
 
+// ─── FUNZIONE API HELPER ────────────────────────────────────────────────────
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
@@ -42,95 +44,35 @@ function apiGet(string $endpoint): ?array {
     return $data['response'] ?? null;
 }
 
-// ─── 1. TROVA LE FIXTURE DI OGGI ────────────────────────────────────────────
+// ─── 1. TROVA LE SQUADRE QUALIFICATE ────────────────────────────────────────
+$teamsResponse = apiGet("teams?league={$LEAGUE_ID}&season={$SEASON}");
 
-$fixtures = [];
-$leagueUsed = '';
-
-$attempts = [
-    ['endpoint' => "fixtures?date={$today}&league=32&season=2024",   'label' => 'WC Qual Europe'],
-    ['endpoint' => "fixtures?date={$today}&league=1222&season=2026", 'label' => 'FIFA Series 2026'],
-    ['endpoint' => "fixtures?date={$today}&league=960&season=2026",  'label' => 'UEFA Playoff WC'],
-    ['endpoint' => "fixtures?date={$today}&league=37&season=2026",   'label' => 'Intercontinental Playoff'],
-    ['endpoint' => "fixtures?date={$today}&league=5&season=2026",    'label' => 'Amichevoli 2026'],
-    ['endpoint' => "fixtures?date={$today}&league=5&season=2025",    'label' => 'Amichevoli 2025'],
-];
-
-$fixtures = [];
-$leagueLabels = [];
-foreach ($attempts as $a) {
-    $result = apiGet($a['endpoint']);
-    if (!empty($result)) {
-        $fixtures = array_merge($fixtures, $result);
-        $leagueLabels[] = $a['label'];
-    }
-    usleep(200000);
-    if (count($fixtures) >= 4 && count($leagueLabels) >= 2) break;
-}
-$leagueUsed = implode(' + ', array_unique($leagueLabels));
-
-if (empty($fixtures)) {
-    echo json_encode(['status' => 'error', 'message' => "Nessuna partita trovata per oggi ({$today})"]);
+if (empty($teamsResponse)) {
+    echo json_encode(['status' => 'error', 'message' => "Nessuna squadra trovata per League {$LEAGUE_ID} Season {$SEASON}"]);
     exit;
 }
 
-$filterTeams = isset($_GET['teams']) ? array_map('strtolower', explode(',', $_GET['teams'])) : [];
-if (!empty($filterTeams)) {
-    $fixtures = array_filter($fixtures, function($f) use ($filterTeams) {
-        $home = strtolower($f['teams']['home']['name'] ?? '');
-        $away = strtolower($f['teams']['away']['name'] ?? '');
-        foreach ($filterTeams as $t) {
-            $t = trim($t);
-            if (stripos($home, $t) !== false || stripos($away, $t) !== false) return true;
-        }
-        return false;
-    });
-}
-$fixtures = array_values(array_slice($fixtures, 0, 10));
-
-// ─── 2. INFO FIXTURE PER DEBUG ──────────────────────────────────────────────
-
-$fixtureInfo = [];
-foreach ($fixtures as $f) {
-    $fixtureInfo[] = [
-        'id'     => $f['fixture']['id'] ?? null,
-        'home'   => $f['teams']['home']['name'] ?? '?',
-        'away'   => $f['teams']['away']['name'] ?? '?',
-        'status' => $f['fixture']['status']['short'] ?? 'NS',
-        'date'   => $f['fixture']['date'] ?? '',
-    ];
-}
-
-// ─── 3. PRENDI I ROSTER DELLE SQUADRE ───────────────────────────────────────
-
-$teamIds = [];
-$teamCountry = [];
-foreach ($fixtures as $f) {
-    $homeId = $f['teams']['home']['id'] ?? null;
-    $awayId = $f['teams']['away']['id'] ?? null;
-    if ($homeId) { $teamIds[$homeId] = $f['teams']['home']['name'] ?? ''; $teamCountry[$homeId] = $f['teams']['home']['name'] ?? ''; }
-    if ($awayId) { $teamIds[$awayId] = $f['teams']['away']['name'] ?? ''; $teamCountry[$awayId] = $f['teams']['away']['name'] ?? ''; }
-}
-
+// ─── 2. SCARICA LE ROSE (SQUADS) ────────────────────────────────────────────
 $allPlayers = [];
-$season = (int) date('Y');
+$roleMap = [
+    'Goalkeeper' => 'POR',
+    'Defender'   => 'DIF',
+    'Midfielder' => 'CEN',
+    'Attacker'   => 'ATT',
+];
 
-foreach ($teamIds as $teamId => $teamName) {
-    $countryName = $teamCountry[$teamId] ?? $teamName;
+foreach ($teamsResponse as $t) {
+    $teamId   = $t['team']['id'];
+    $teamName = $t['team']['name'];
     
     $squad = apiGet("players/squads?team={$teamId}");
     
     if (!empty($squad) && !empty($squad[0]['players'])) {
         foreach ($squad[0]['players'] as $p) {
-            $roleMap = [
-                'Goalkeeper' => 'POR',
-                'Defender'   => 'DIF',
-                'Midfielder' => 'CEN',
-                'Attacker'   => 'ATT',
-            ];
-
             $role  = $roleMap[$p['position'] ?? 'Midfielder'] ?? 'CEN';
-            $price = mt_rand(MIN_PRICE, MAX_PRICE);
+            // L'endpoint squads non restituisce il rating, quindi generiamo un prezzo
+            // randomico o di base. Potrai affinarlo in seguito se serve.
+            $price = mt_rand(MIN_PRICE, MAX_PRICE); 
 
             $allPlayers[] = [
                 'id'          => $p['id'],
@@ -138,11 +80,11 @@ foreach ($teamIds as $teamId => $teamName) {
                 'firstname'   => '',
                 'lastname'    => '',
                 'photo'       => $p['photo'] ?? '',
-                'nationality' => $countryName, // per nazionali = nome paese
+                'nationality' => $teamName, // Usiamo il nome della nazionale come nazionalità
                 'age'         => $p['age'] ?? null,
                 'role'        => $role,
-                'team'        => $countryName,
-                'team_logo'   => '',
+                'team'        => $teamName,
+                'team_logo'   => $t['team']['logo'] ?? '',
                 'rating'      => 6.5,
                 'price'       => $price,
                 'goals'       => 0,
@@ -151,10 +93,11 @@ foreach ($teamIds as $teamId => $teamName) {
             ];
         }
     }
-    usleep(200000);
+    // Pausa di 200ms per non superare il rate limit dell'API (circa 5 req/sec)
+    usleep(200000); 
 }
 
-// Rimuovi duplicati per id
+// ─── 3. RIMUOVI DUPLICATI E ORDINA ──────────────────────────────────────────
 $seen = [];
 $unique = [];
 foreach ($allPlayers as $p) {
@@ -166,13 +109,12 @@ foreach ($allPlayers as $p) {
 
 usort($unique, fn($a, $b) => $b['price'] <=> $a['price']);
 
+// ─── 4. SALVA E RESTITUISCI ─────────────────────────────────────────────────
 $output = json_encode([
-    'status'   => 'success',
-    'total'    => count($unique),
-    'source'   => "test · {$leagueUsed}",
-    'date'     => $today,
-    'fixtures' => $fixtureInfo,
-    'data'     => $unique,
+    'status' => 'success', 
+    'total'  => count($unique), 
+    'source' => "League {$LEAGUE_ID} - Squads Only",
+    'data'   => $unique
 ]);
 
 file_put_contents($cacheFile, $output);
