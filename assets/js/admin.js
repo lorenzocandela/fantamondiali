@@ -378,8 +378,8 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
         await setDoc(doc(db, 'settings', 'calendar'), { results }, { merge: true });
 
         // 5. Manda la Notifica Push
-        await sendPushNotification('Giornata Calcolata!', `I risultati ufficiali della Giornata ${roundNum} sono online. Scopri com'è andata!`);
-
+        sendPushNotification('Giornata Calcolata!', 'I risultati ufficiali della Giornata ' + roundNum + ' sono online. Scopri com\'è andata!');
+        
         // Render UI Admin
         const resultEl = document.getElementById('admin-score-result');
         resultEl.classList.remove('hidden');
