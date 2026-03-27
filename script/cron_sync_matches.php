@@ -1,5 +1,21 @@
 <?php
-// ─── CONFIGURAZIONE DATABASE ────────────────────────────────────────────────
+// CONFIG
+$log_dir = __DIR__ . '/logs'; 
+if (!is_dir($log_dir)) {
+    mkdir($log_dir, 0755, true);
+}
+$log_file = $log_dir . '/sync_stats.log';
+
+function writeLog($message) {
+    global $log_file;
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($log_file, "[$timestamp] $message\n", FILE_APPEND);
+    echo "[$timestamp] $message\n";
+}
+
+writeLog("start sync...");
+
+// DB
 $db_host = '127.0.0.1';
 $db_name = 'fm';
 $db_user = 'root';
@@ -11,13 +27,13 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 } catch (PDOException $e) {
-    die("Errore di connessione al DB: " . $e->getMessage() . "\n");
+    writeLog("ERR di connessione al DB: " . $e->getMessage());
+    die();
 }
 
-// ─── CONFIGURAZIONE API ─────────────────────────────────────────────────────
+// API FUNZ
 define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
 define('API_BASE_URL', 'https://v3.football.api-sports.io/');
-
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
@@ -40,7 +56,7 @@ function apiGet(string $endpoint): ?array {
     return $data['response'];
 }
 
-// ─── MAPPA RUOLI ────────────────────────────────────────────────────────────
+// MAPPING
 $roleMap = [
     'Goalkeeper' => 'POR', 'G' => 'POR',
     'Defender'   => 'DIF', 'D' => 'DIF',
@@ -48,17 +64,27 @@ $roleMap = [
     'Attacker'   => 'ATT', 'F' => 'ATT',
 ];
 
-// ─── 1. OTTIENI LE PARTITE DI OGGI ──────────────────────────────────────────
-$today = '2026-03-26'; // TEST SU PARTITE DI IERI (italia irlanda del nord es.)
-#$today = date('Y-m-d');
+// SOLO PARTITE FINITE
 
-echo "[".date('Y-m-d H:i:s')."] Avvio sincronizzazione partite...\n";
+// TEST passo direttamente gli ID specifici (test su england e argentina)
+$test_fixtures_ids = [1502470, 1536911]; 
+$fixtures = [];
+foreach ($test_fixtures_ids as $id) {
+    $res = apiGet("fixtures?id={$id}");
+    if (!empty($res[0])) {
+        $fixtures[] = $res[0];
+    }
+    usleep(200000); // 0.2 sleep
+}
 
-$fixtures = apiGet("fixtures?date={$today}&league=32&season=2024") ?? []; 
-// PROD: $fixtures = apiGet("fixtures?date={$today}&league=1&season=2026") ?? [];
-
+// PROD
+/*
+$today = date('Y-m-d'); 
+$fixtures = apiGet("fixtures?date={$today}&league=1&season=2026") ?? []; 
+*/
 if (empty($fixtures)) {
-    die("Nessuna partita trovata per oggi.\n");
+    writeLog("0 match trovati");
+    exit;
 }
 
 $finishedStatuses = ['FT', 'AET', 'PEN'];
@@ -68,17 +94,29 @@ foreach ($fixtures as $f) {
     $fixtureId = $f['fixture']['id'];
     $status    = $f['fixture']['status']['short'];
 
+    // skip live match
     if (!in_array($status, $finishedStatuses)) {
+        writeLog("match ID {$fixtureId} saltata (status: $status)...");
         continue;
     }
 
-    echo "Partita ID {$fixtureId} terminata ($status). Scaricamento statistiche giocatori...\n";
+    // skip partite finite stesso range tempo
+    $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM player_match_stats WHERE fixture_id = ?");
+    $stmtCheck->execute([$fixtureId]);
+    $alreadyInDb = $stmtCheck->fetchColumn();
 
-    // ─── 2. SCARICA STATISTICHE GIOCATORI DELLA PARTITA ─────────────────────
+    if ($alreadyInDb > 0) {
+        writeLog("match ID {$fixtureId} già salvata a DB...skip...");
+        continue;
+    }
+
+    writeLog("match ID {$fixtureId} terminata ($status)...download statistiche...");
+
+    // stats player call
     $playersData = apiGet("fixtures/players?fixture={$fixtureId}");
     
     if (empty($playersData)) {
-        echo "  Nessuna statistica giocatori trovata per fixture {$fixtureId}.\n";
+        writeLog("  -> 0 stats giocatori trovata per fixture {$fixtureId}.");
         continue;
     }
 
@@ -107,26 +145,29 @@ foreach ($fixtures as $f) {
             
             $cs = ($teamCs && $minutes > 0) ? 1 : 0;
 
-            // ─── 3. INSERISCI O AGGIORNA A DB ───────────────────────────────
-            $stmt = $pdo->prepare("
-                INSERT INTO player_match_stats 
-                (fixture_id, player_id, player_name, role, rating, minutes_played, goals, assists, yellow_cards, red_cards, clean_sheet, status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE 
-                rating = VALUES(rating),
-                minutes_played = VALUES(minutes_played),
-                goals = VALUES(goals),
-                assists = VALUES(assists),
-                yellow_cards = VALUES(yellow_cards),
-                red_cards = VALUES(red_cards),
-                clean_sheet = VALUES(clean_sheet),
-                status = VALUES(status)
-            ");
+            // salva db
+            try {
+                $stmt = $pdo->prepare("INSERT INTO player_match_stats 
+                    (fixture_id, player_id, player_name, role, rating, minutes_played, goals, assists, yellow_cards, red_cards, clean_sheet, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                    rating = VALUES(rating),
+                    minutes_played = VALUES(minutes_played),
+                    goals = VALUES(goals),
+                    assists = VALUES(assists),
+                    yellow_cards = VALUES(yellow_cards),
+                    red_cards = VALUES(red_cards),
+                    clean_sheet = VALUES(clean_sheet),
+                    status = VALUES(status)
+                ");
 
-            $stmt->execute([
-                $fixtureId, $pid, $pname, $role, $rating, $minutes, 
-                $goals, $assists, $yellow, $red, $cs, $status
-            ]);
+                $stmt->execute([
+                    $fixtureId, $pid, $pname, $role, $rating, $minutes, 
+                    $goals, $assists, $yellow, $red, $cs, $status
+                ]);
+            } catch (PDOException $e) {
+                writeLog("  -> ERR DB su inserimento pid {$pid}: " . $e->getMessage());
+            }
         }
     }
     
@@ -134,4 +175,5 @@ foreach ($fixtures as $f) {
     usleep(200000); 
 }
 
-echo "[".date('Y-m-d H:i:s')."] Sincronizzazione completata. {$syncedCount} partite processate.\n";
+writeLog("sync OK per: {$syncedCount} match");
+?>
