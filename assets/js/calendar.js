@@ -8,7 +8,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, formatDate } from './utils.js';
 
-// ─── STILI DINAMICI PER VOTI FINITI ──────────────────────────────────────────
+// VOTI LIVE
 if (!document.getElementById('fm-live-styles')) {
     const style = document.createElement('style');
     style.id = 'fm-live-styles';
@@ -21,15 +21,22 @@ if (!document.getElementById('fm-live-styles')) {
     document.head.appendChild(style);
 }
 
-// ─── SCHEDULE ────────────────────────────────────────────────────────────────
-const MATCHDAY_SCHEDULE = [{
+// SCHEDULE - da controllare orari
+const MATCHDAY_SCHEDULE = [
+    {
         round: 1,
         label: 'Gironi',
         short: 'GJ1',
-        start: '2026-03-26T19:00:00',
-        end: '2026-03-26T23:59:59'
-    }, // TEST
-    // { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' }, PRODUZIONE
+        start: '2026-03-27T19:00:00',
+        end: '2026-03-27T23:59:59'
+    }, // TEST 
+    /*{
+        round: 1,
+        label: 'Gironi',
+        short: 'GJ1',
+        start: '2026-06-11T00:00:00',
+        end: '2026-06-14T23:59:59'
+    }, // PROD */
     {
         round: 2,
         label: 'Gironi',
@@ -87,7 +94,7 @@ export function getCurrentMatchday() {
     return { ...MATCHDAY_SCHEDULE[MATCHDAY_SCHEDULE.length - 1], status: 'ended' };
 }
 
-// ─── ADMIN MATCHDAY ──────────────────────────────────────────────────────────
+// ADMIN
 export function renderMatchdayAdmin() {
     const md = getCurrentMatchday();
     const numEl = document.getElementById('admin-matchday-num');
@@ -124,7 +131,7 @@ ${isCurrent ? '<span class="md-row-badge">corrente</span>' : ''}
     }).join('');
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// UTILS
 function logoHtml(uid, teams) {
     const t = teams.find(t => t.uid === uid);
     if (t?.team_logo) return `<img src="${t.team_logo}" class="cal-team-logo" alt="${t.team_name}" onerror="this.style.display='none'">`;
@@ -186,7 +193,7 @@ export function generateRoundRobin(teams) {
     return schedule;
 }
 
-// ─── STATO LOCALE ────────────────────────────────────────────────────────────
+// STATIC DATA
 let calSchedule = [];
 let calResults = {};
 let calTeams = [];
@@ -207,7 +214,7 @@ let liveRefreshTimer = null;
 let liveTotals = { home: null, away: null };
 let confrontoDetail = false;
 
-// ─── LOAD CALENDARIO ─────────────────────────────────────────────────────────
+// LOAD CALENDAR
 export async function loadCalendario() {
     document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-main-view')?.classList.remove('hidden');
@@ -245,7 +252,7 @@ export async function loadCalendario() {
     }
 }
 
-// ─── RENDER GIORNATA ─────────────────────────────────────────────────────────
+// RENDER GIORNATA
 function renderCalRound() {
     const rd = calSchedule[calRound - 1];
     if (!rd) return;
@@ -286,7 +293,7 @@ ${played
     document.getElementById('cal-round-next').disabled = calRound >= calSchedule.length;
 }
 
-// ─── CLASSIFICA ──────────────────────────────────────────────────────────────
+// RENDER CLASSIFICA
 function renderCalStandings() {
     const standings = buildStandings(calTeams, calSchedule, calResults);
     const list = document.getElementById('cal-standings-list');
@@ -306,7 +313,7 @@ function renderCalStandings() {
 </div>`).join('');
 }
 
-// ─── NAV LISTENERS ───────────────────────────────────────────────────────────
+// NAV LISTENERS
 document.getElementById('cal-round-prev')?.addEventListener('click', () => {
     if (calRound > 1) { calRound--; renderCalRound(); }
 });
@@ -324,7 +331,7 @@ document.querySelectorAll('.cal-seg-btn').forEach(btn => {
     });
 });
 
-// ─── MATCH DETAIL ─────────────────────────────────────────────────────────────
+// MATCH DETAIL
 function getMatchdayMeta(round) {
     return MATCHDAY_SCHEDULE.find(m => m.round === round);
 }
@@ -345,7 +352,7 @@ function isMyMatch(homeUid, awayUid) {
     return uid === homeUid || uid === awayUid;
 }
 
-// ─── OPEN MATCH DETAIL ──────────────────────────────────────────────────────
+// OPEN MATCH DETAIL
 async function openMatchDetail(homeUid, awayUid, round) {
     mdRound = round;
     mdHomeUid = homeUid;
@@ -392,7 +399,7 @@ function closeMatchDetail() {
     document.getElementById('cal-main-view').classList.remove('hidden');
 }
 
-// ─── RENDER MATCH DETAIL ────────────────────────────────────────────────────
+// RENDER MATCH DETAIL
 function renderMatchDetail() {
     const content = document.getElementById('match-detail-content');
     const md = getMatchdayMeta(mdRound);
@@ -416,7 +423,6 @@ function renderMatchDetail() {
 ${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
 </div>`;
 
-    // 1. GENERIAMO PRIMA IL BODY (così renderConfrontoView calcola i liveTotals aggiornati)
     let bodyHtml = '';
     if (mdView === 'formazione' && canEdit) {
         bodyHtml = renderFormationEditor();
@@ -424,11 +430,9 @@ ${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
         bodyHtml = renderConfrontoView(res, status);
     }
 
-    // 2. ORA PRENDIAMO I TOTALI AGGIORNATI
     const liveHome = liveTotals.home != null ? liveTotals.home.toFixed(1) : null;
     const liveAway = liveTotals.away != null ? liveTotals.away.toFixed(1) : null;
     
-    // Mostriamo i punteggi se siamo live o se la giornata è passata ma non ancora calcolata ufficialmente
     const hasLive = (status === 'live' || status === 'past') && liveHome != null;
 
     const scoreHtml = `
@@ -464,7 +468,6 @@ ${played
 </button>
 </div>` : '';
 
-    // 3. INSERIAMO TUTTO NELL'HTML
     content.innerHTML = headerHtml + scoreHtml + switchHtml + `<div id="md-body">${bodyHtml}</div>`;
     
     document.getElementById('md-back')?.addEventListener('click', closeMatchDetail);
@@ -491,9 +494,7 @@ document.getElementById('cal-match-detail')?.addEventListener('click', (e) => {
     }
 });
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// FORMAZIONE EDITOR
-// ═══════════════════════════════════════════════════════════════════════════════
+// SCHIERA FORMAZIONI
 function renderFormationEditor() {
     if (!roster.length) {
         return `
@@ -621,7 +622,6 @@ function attachFormationEvents() {
     document.getElementById('btn-save-formazione')?.addEventListener('click', saveFormazione);
 }
 
-// ─── PICKER ──────────────────────────────────────────────────────────────────
 function openPicker({ role, slotIdx, currentId, context }) {
     pickerState = { role, slotIdx, currentId, context };
     const candidates = context === 'starter' ? [...roster].sort((a, b) => {
@@ -716,7 +716,6 @@ function moveToBench(playerId) {
     renderMatchDetail();
 }
 
-// ─── SAVE FORMAZIONE ────────────────────────────────────────────────────────
 async function saveFormazione() {
     if (!window.__user?.uid || !mdRound) return;
     const warns = validateLineup();
@@ -754,7 +753,6 @@ async function saveFormazione() {
     }
 }
 
-// ─── HELPERS FORMAZIONE ─────────────────────────────────────────────────────
 function parseModule(mod) {
     const parts = mod.split('-').map(Number);
     return { dif: parts[0] ?? 4, cen: parts[1] ?? 3, att: parts[2] ?? 3 };
@@ -794,10 +792,7 @@ function validateLineup() {
     return w;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// CONFRONTO VIEW — formazioni a confronto con voti
-// ═══════════════════════════════════════════════════════════════════════════════
-
+// CONFRONTA FORMAZIONI
 if (!document.getElementById('fm-opacity-styles')) {
     const style = document.createElement('style');
     style.id = 'fm-opacity-styles';
@@ -814,14 +809,12 @@ function renderConfrontoView(res, status) {
     let homeModule = homeData[`module_r${mdRound}`] ?? homeData.module ?? '4-3-3';
     let awayModule = awayData[`module_r${mdRound}`] ?? awayData.module ?? '4-3-3';
     
-    // Se la giornata è già calcolata, usa i dettagli salvati (che includono le sostituzioni)
     if (isCalculated) {
         homeLineup = res.home_detail.slice(0, 11);
         homeBench = res.home_detail.slice(11);
         awayLineup = res.away_detail.slice(0, 11);
         awayBench = res.away_detail.slice(11);
     } else {
-        // Se non è ancora calcolata, usa i dati live/locali
         const homeLineupIds = homeData[`lineup_r${mdRound}`] ?? homeData.lineup ?? [];
         const awayLineupIds = awayData[`lineup_r${mdRound}`] ?? awayData.lineup ?? [];
         const homeRoster = homeData.players ?? [];
@@ -884,7 +877,7 @@ ${!homeLineup.length && !awayLineup.length ? `
 </div>`;
 }
 
-// ─── TABELLA PUNTEGGI FANTACALCIO ────────────────────────────────────────────
+// PUNTEGGI BONUS MALUS
 const SCORE_TABLE = {
     goal: { POR: 5, DIF: 3, CEN: 3, ATT: 3 },
     assist: 1,
@@ -928,7 +921,6 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail, isCalculated
     let subOutMin = stats?.sub_out ?? null;
     let isUsed = true;
 
-    // Se la giornata è calcolata (da Firebase), leggiamo i flag virtuali di admin.js
     if (isCalculated) {
         isUsed = p.is_used !== false; 
         if (p.was_subbed_in) subInMin = 'In';
@@ -948,7 +940,6 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail, isCalculated
         scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
     }
 
-    // Se è calcolato, è tutto definitivo
     if (stats?.is_finished || isCalculated) {
         scoreClass2 += ' score-finished';
     }
@@ -973,7 +964,6 @@ function bonusBreakdownLine(player, stats, totalScore, isCalculated = false) {
     if (!stats) return '';
     let base = stats.rating ?? 0;
     
-    // Supporto per doppia nomenclatura (database vs api live)
     const g = stats.goals ?? 0;
     const a = stats.assists ?? 0;
     const y = stats.yellow_cards ?? stats.yellow ?? 0;
@@ -1032,7 +1022,6 @@ function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench,
             aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
         }
         
-        // Non calcolare i totali live se la giornata è già calcolata ufficialmente!
         if (!isCalculated) {
             if (hScore != null) { homeTotal += hScore; homeCount++; }
             if (aScore != null) { awayTotal += aScore; awayCount++; }
@@ -1057,7 +1046,7 @@ ${renderPlayerCell(a, aStats, aScore, 'away', pending && !isBench, isDetail, isC
     return rows;
 }
 
-// ─── FLAG HELPER ────────────────────────────────────────────────────────────
+// FLAG UTILS
 const COUNTRY_CODES = {
     'Afghanistan': 'af', 'Albania': 'al', 'Algeria': 'dz', 'Andorra': 'ad', 'Angola': 'ao', 'Argentina': 'ar', 'Armenia': 'am', 'Australia': 'au', 'Austria': 'at', 'Azerbaijan': 'az', 'Bahrain': 'bh', 'Bangladesh': 'bd', 'Belarus': 'by', 'Belgium': 'be', 'Benin': 'bj', 'Bolivia': 'bo', 'Bosnia and Herzegovina': 'ba', 'Botswana': 'bw', 'Brazil': 'br', 'Bulgaria': 'bg', 'Burkina Faso': 'bf', 'Burundi': 'bi', 'Cameroon': 'cm', 'Canada': 'ca', 'Cape Verde': 'cv', 'Central African Republic': 'cf', 'Chad': 'td', 'Chile': 'cl', 'China': 'cn', 'Colombia': 'co', 'Comoros': 'km', 'Congo': 'cg', 'Costa Rica': 'cr', 'Croatia': 'hr', 'Cuba': 'cu', 'Curaçao': 'cw', 'Cyprus': 'cy', 'Czech Republic': 'cz', 'Czechia': 'cz', 'DR Congo': 'cd', 'Denmark': 'dk', 'Ecuador': 'ec', 'Egypt': 'eg', 'El Salvador': 'sv', 'England': 'gb-eng', 'Equatorial Guinea': 'gq', 'Eritrea': 'er', 'Estonia': 'ee', 'Ethiopia': 'et', 'Fiji': 'fj', 'Finland': 'fi', 'France': 'fr', 'Gabon': 'ga', 'Gambia': 'gm', 'Georgia': 'ge', 'Germany': 'de', 'Ghana': 'gh', 'Greece': 'gr', 'Grenada': 'gd', 'Guatemala': 'gt', 'Guinea': 'gn', 'Haiti': 'ht', 'Honduras': 'hn', 'Hungary': 'hu', 'Iceland': 'is', 'India': 'in', 'Indonesia': 'id', 'Iran': 'ir', 'Iraq': 'iq', 'Ireland': 'ie', 'Israel': 'il', 'Italy': 'it', 'Ivory Coast': 'ci', 'Cote D\'Ivoire': 'ci', 'Jamaica': 'jm', 'Japan': 'jp', 'Jordan': 'jo', 'Kazakhstan': 'kz', 'Kenya': 'ke', 'Korea Republic': 'kr', 'South Korea': 'kr', 'Kosovo': 'xk', 'Kuwait': 'kw', 'Kyrgyzstan': 'kg', 'Latvia': 'lv', 'Lebanon': 'lb', 'Libya': 'ly', 'Liechtenstein': 'li', 'Lithuania': 'lt', 'Luxembourg': 'lu', 'Madagascar': 'mg', 'Malawi': 'mw', 'Malaysia': 'my', 'Mali': 'ml', 'Malta': 'mt', 'Mauritania': 'mr', 'Mauritius': 'mu', 'Mexico': 'mx', 'Moldova': 'md', 'Monaco': 'mc', 'Montenegro': 'me', 'Morocco': 'ma', 'Mozambique': 'mz', 'Myanmar': 'mm', 'Namibia': 'na', 'Nepal': 'np', 'Netherlands': 'nl', 'New Zealand': 'nz', 'Nicaragua': 'ni', 'Niger': 'ne', 'Nigeria': 'ng', 'North Macedonia': 'mk', 'Northern Ireland': 'gb-nir', 'Norway': 'no', 'Oman': 'om', 'Pakistan': 'pk', 'Palestine': 'ps', 'Panama': 'pa', 'Paraguay': 'py', 'Peru': 'pe', 'Philippines': 'ph', 'Poland': 'pl', 'Portugal': 'pt', 'Puerto Rico': 'pr', 'Qatar': 'qa', 'Romania': 'ro', 'Russia': 'ru', 'Rwanda': 'rw', 'Saudi Arabia': 'sa', 'Scotland': 'gb-sct', 'Senegal': 'sn', 'Serbia': 'rs', 'Sierra Leone': 'sl', 'Singapore': 'sg', 'Slovakia': 'sk', 'Slovenia': 'si', 'Somalia': 'so', 'South Africa': 'za', 'Spain': 'es', 'Sri Lanka': 'lk', 'Sudan': 'sd', 'Suriname': 'sr', 'Sweden': 'se', 'Switzerland': 'ch', 'Syria': 'sy', 'Tanzania': 'tz', 'Thailand': 'th', 'Togo': 'tg', 'Trinidad and Tobago': 'tt', 'Tunisia': 'tn', 'Turkey': 'tr', 'Turkmenistan': 'tm', 'Uganda': 'ug', 'Ukraine': 'ua', 'United Arab Emirates': 'ae', 'United States': 'us', 'USA': 'us', 'Uruguay': 'uy', 'Uzbekistan': 'uz', 'Venezuela': 've', 'Vietnam': 'vn', 'Wales': 'gb-wls', 'Yemen': 'ye', 'Zambia': 'zm', 'Zimbabwe': 'zw', 'American Samoa': 'as', 'Bermuda': 'bm', 'Guam': 'gu', 'US Virgin Islands': 'vi',
 };
@@ -1076,7 +1065,7 @@ function scoreClass(score) {
     return 'score-low';
 }
 
-// ─── LIVE POLLING ───────────────────────────────────────────────────────────
+// LIVE POLLING
 async function fetchLiveScores() {
     try {
         const md = getMatchdayMeta(mdRound);
@@ -1111,9 +1100,7 @@ function stopLivePolling() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN — genera calendario
-// ═══════════════════════════════════════════════════════════════════════════════
+// GENERAZIONE CALENDAR
 const ROUND_LABELS = ['GJ1', 'GJ2', 'GJ3', 'Ottavi', 'Quarti', 'Semifinali', 'Finale'];
 let previewSchedule = [];
 
@@ -1196,7 +1183,7 @@ document.getElementById('btn-reset-calendar')?.addEventListener('click', async (
     finally { btn.disabled = false; }
 });
 
-// ─── ADMIN MODULI ────────────────────────────────────────────────────────────
+// ADMIN MODULES
 export async function loadAdminModules() {
     const snap = await getDoc(doc(db, 'settings', 'modules'));
     const list = snap.exists() ? (snap.data().list ?? []) : [];
