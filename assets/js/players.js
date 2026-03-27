@@ -279,8 +279,7 @@ function attachScrollSentinel(players, currentSlice) {
 export async function loadListone() {
     showSkeletons();
     try {
-        const res  = await fetch('get_api_test.php');
-        //const res  = await fetch('get_api.php'); PRODUZIONE
+        const res  = await fetch('get_api.php'); PRODUZIONE
         const data = await res.json();
         if (data.status !== 'success') throw new Error(data.message);
         allPlayers   = data.data;
