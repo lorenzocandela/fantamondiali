@@ -289,7 +289,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
 
     try {
         // 1. recupera rating giocatori dalla API (o fallback simulato)
-        const scoresRes = await fetch(`get_scores.php?round=${roundNum}`);
+        const scoresRes = await fetch(`get_calcolo_giornata_scores.php?round=${roundNum}`);
         const scoresData = await scoresRes.json();
         if (scoresData.status !== 'success') throw new Error(scoresData.message ?? 'Errore API scores');
 
