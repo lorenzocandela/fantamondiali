@@ -416,9 +416,21 @@ function renderMatchDetail() {
 ${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
 </div>`;
 
+    // 1. GENERIAMO PRIMA IL BODY (così renderConfrontoView calcola i liveTotals aggiornati)
+    let bodyHtml = '';
+    if (mdView === 'formazione' && canEdit) {
+        bodyHtml = renderFormationEditor();
+    } else {
+        bodyHtml = renderConfrontoView(res, status);
+    }
+
+    // 2. ORA PRENDIAMO I TOTALI AGGIORNATI
     const liveHome = liveTotals.home != null ? liveTotals.home.toFixed(1) : null;
     const liveAway = liveTotals.away != null ? liveTotals.away.toFixed(1) : null;
-    const hasLive = status === 'live' && liveHome != null;
+    
+    // Mostriamo i punteggi se siamo live o se la giornata è passata ma non ancora calcolata ufficialmente
+    const hasLive = (status === 'live' || status === 'past') && liveHome != null;
+
     const scoreHtml = `
 <div class="md-score-bar">
 <div class="md-score-team">
@@ -452,12 +464,7 @@ ${played
 </button>
 </div>` : '';
 
-    let bodyHtml = '';
-    if (mdView === 'formazione' && canEdit) {
-        bodyHtml = renderFormationEditor();
-    } else {
-        bodyHtml = renderConfrontoView(res, status);
-    }
+    // 3. INSERIAMO TUTTO NELL'HTML
     content.innerHTML = headerHtml + scoreHtml + switchHtml + `<div id="md-body">${bodyHtml}</div>`;
     
     document.getElementById('md-back')?.addEventListener('click', closeMatchDetail);
