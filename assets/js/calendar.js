@@ -797,31 +797,50 @@ function validateLineup() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFRONTO VIEW — formazioni a confronto con voti
 // ═══════════════════════════════════════════════════════════════════════════════
+
+if (!document.getElementById('fm-opacity-styles')) {
+    const style = document.createElement('style');
+    style.id = 'fm-opacity-styles';
+    style.innerHTML = `.opacity-50 { opacity: 0.4 !important; filter: grayscale(1) !important; }`;
+    document.head.appendChild(style);
+}
+
 function renderConfrontoView(res, status) {
     const homeData = calUsersMap[mdHomeUid] ?? {};
     const awayData = calUsersMap[mdAwayUid] ?? {};
-    if (res?.home_detail && res?.away_detail) { return renderConfrontoFromResults(res); }
+    const isCalculated = !!(res?.home_detail && res?.away_detail);
     
-    const homeLineupIds = homeData[`lineup_r${mdRound}`] ?? homeData.lineup ?? [];
-    const awayLineupIds = awayData[`lineup_r${mdRound}`] ?? awayData.lineup ?? [];
-    const homeRoster = homeData.players ?? [];
-    const awayRoster = awayData.players ?? [];
+    let homeLineup, awayLineup, homeBench, awayBench;
+    let homeModule = homeData[`module_r${mdRound}`] ?? homeData.module ?? '4-3-3';
+    let awayModule = awayData[`module_r${mdRound}`] ?? awayData.module ?? '4-3-3';
     
-    const homeAll = homeLineupIds.map(id => homeRoster.find(p => String(p.id) === String(id))).filter(Boolean);
-    const awayAll = awayLineupIds.map(id => awayRoster.find(p => String(p.id) === String(id))).filter(Boolean);
-    const homeLineup = homeAll.slice(0, 11);
-    const awayLineup = awayAll.slice(0, 11);
-    const homeBench = homeAll.slice(11);
-    const awayBench = awayAll.slice(11);
-    
-    const homeModule = homeData[`module_r${mdRound}`] ?? homeData.module ?? '4-3-3';
-    const awayModule = awayData[`module_r${mdRound}`] ?? awayData.module ?? '4-3-3';
+    // Se la giornata è già calcolata, usa i dettagli salvati (che includono le sostituzioni)
+    if (isCalculated) {
+        homeLineup = res.home_detail.slice(0, 11);
+        homeBench = res.home_detail.slice(11);
+        awayLineup = res.away_detail.slice(0, 11);
+        awayBench = res.away_detail.slice(11);
+    } else {
+        // Se non è ancora calcolata, usa i dati live/locali
+        const homeLineupIds = homeData[`lineup_r${mdRound}`] ?? homeData.lineup ?? [];
+        const awayLineupIds = awayData[`lineup_r${mdRound}`] ?? awayData.lineup ?? [];
+        const homeRoster = homeData.players ?? [];
+        const awayRoster = awayData.players ?? [];
+        
+        const homeAll = homeLineupIds.map(id => homeRoster.find(p => String(p.id) === String(id))).filter(Boolean);
+        const awayAll = awayLineupIds.map(id => awayRoster.find(p => String(p.id) === String(id))).filter(Boolean);
+        homeLineup = homeAll.slice(0, 11);
+        awayLineup = awayAll.slice(0, 11);
+        homeBench = homeAll.slice(11);
+        awayBench = awayAll.slice(11);
+    }
+
     const liveStats = (status === 'live' || status === 'past') ? liveScoresCache : null;
     const homeName = calTeams.find(t => t.uid === mdHomeUid)?.team_name ?? '?';
     const awayName = calTeams.find(t => t.uid === mdAwayUid)?.team_name ?? '?';
     
     const benchMaxLen = Math.max(homeBench.length, awayBench.length);
-    const toggleHtml = status !== 'future' ? `
+    const toggleHtml = (status !== 'future' || isCalculated) ? `
 <div class="confronto-toggle-wrap">
 <button class="confronto-toggle-btn ${confrontoDetail ? 'active' : ''}" id="confronto-toggle">
 <span class="material-symbols-outlined">${confrontoDetail ? 'unfold_less' : 'unfold_more'}</span>
@@ -837,7 +856,7 @@ ${confrontoDetail ? 'Compatto' : 'Bonus'}
 Panchina
 </div>
 <div class="confronto-list bench-list">
-${renderConfrontoRows(homeBench, awayBench, liveStats, status, true)}
+${renderConfrontoRows(homeBench, awayBench, liveStats, status, true, isCalculated)}
 </div>`;
     }
     
@@ -854,7 +873,7 @@ ${toggleHtml}
 <div class="confronto-team-name">${awayName}</div>
 </div>
 <div class="confronto-list">
-${renderConfrontoRows(homeLineup, awayLineup, liveStats, status, false)}
+${renderConfrontoRows(homeLineup, awayLineup, liveStats, status, false, isCalculated)}
 </div>
 ${benchSection}
 ${!homeLineup.length && !awayLineup.length ? `
@@ -862,44 +881,6 @@ ${!homeLineup.length && !awayLineup.length ? `
 <span class="material-symbols-outlined">sports_soccer</span>
 <h3>Formazioni non ancora schierate</h3>
 </div>` : ''}
-</div>`;
-}
-
-function renderConfrontoFromResults(res) {
-    const homeDetail = res.home_detail ?? [];
-    const awayDetail = res.away_detail ?? [];
-    const maxLen = Math.max(homeDetail.length, awayDetail.length);
-    let rows = '';
-    for (let i = 0; i < maxLen; i++) {
-        const h = homeDetail[i];
-        const a = awayDetail[i];
-        rows += `
-<div class="confronto-row">
-<div class="confronto-player home ${h ? '' : 'empty'}">
-${h ? `
-<span class="confronto-score ${scoreClass(h.score)}">${h.score?.toFixed(1) ?? '–'}</span>
-<span class="confronto-pname">${h.name?.split(' ').pop() ?? ''}</span>
-<span class="role-badge badge-${h.role}" style="margin:0;font-size:9px">${h.role}</span>
-` : ''}
-</div>
-<div class="confronto-divider"></div>
-<div class="confronto-player away ${a ? '' : 'empty'}">
-${a ? `
-<span class="role-badge badge-${a.role}" style="margin:0;font-size:9px">${a.role}</span>
-<span class="confronto-pname">${a.name?.split(' ').pop() ?? ''}</span>
-<span class="confronto-score ${scoreClass(a.score)}">${a.score?.toFixed(1) ?? '–'}</span>
-` : ''}
-</div>
-</div>`;
-    }
-    return `
-<div class="confronto-wrap">
-<div class="confronto-list">${rows}</div>
-<div class="confronto-total">
-<span class="confronto-total-val">${res.home_score?.toFixed(1) ?? '–'}</span>
-<span class="confronto-total-label">Totale</span>
-<span class="confronto-total-val">${res.away_score?.toFixed(1) ?? '–'}</span>
-</div>
 </div>`;
 }
 
@@ -920,9 +901,9 @@ function calcLiveScore(player, stats) {
 
     if (base === 0) {
         if (hasBonus && stats.played) {
-            base = 6.0; // Voto d'ufficio se non ha preso rating ma ha bonus/malus
+            base = 6.0;
         } else {
-            return null; // SV
+            return null;
         }
     }
 
@@ -938,14 +919,24 @@ function calcLiveScore(player, stats) {
     return Math.round(score * 100) / 100;
 }
 
-function renderPlayerCell(p, stats, score, side, pending, isDetail) {
+function renderPlayerCell(p, stats, score, side, pending, isDetail, isCalculated = false) {
     if (!p) return `<span class="confronto-empty-slot">—</span>`;
     const flag = flagImg(p.nationality || p.team);
     const name = p.name?.split(' ').pop() ?? '';
-    const subInMin = stats?.sub_in ?? null;
-    const subOutMin = stats?.sub_out ?? null;
-    const subHtml = subOutMin != null ? `<span class="confronto-sub sub-out" title="Uscito ${subOutMin}'"><span class="material-symbols-outlined">arrow_downward</span>${subOutMin}'</span>` 
-                  : subInMin != null ? `<span class="confronto-sub sub-in" title="Entrato ${subInMin}'"><span class="material-symbols-outlined">arrow_upward</span>${subInMin}'</span>` : '';
+    
+    let subInMin = stats?.sub_in ?? null;
+    let subOutMin = stats?.sub_out ?? null;
+    let isUsed = true;
+
+    // Se la giornata è calcolata (da Firebase), leggiamo i flag virtuali di admin.js
+    if (isCalculated) {
+        isUsed = p.is_used !== false; 
+        if (p.was_subbed_in) subInMin = 'In';
+        if (p.was_subbed_out) subOutMin = 'Out';
+    }
+
+    const subHtml = subOutMin != null ? `<span class="confronto-sub sub-out" title="Sostituito"><span class="material-symbols-outlined">arrow_downward</span>${subOutMin === 'Out' ? '' : subOutMin + "'"}</span>` 
+                  : subInMin != null ? `<span class="confronto-sub sub-in" title="Subentrato"><span class="material-symbols-outlined">arrow_upward</span>${subInMin === 'In' ? '' : subInMin + "'"}</span>` : '';
     const roleBadge = `<span class="role-badge badge-${p.role}">${p.role}</span>`;
     
     let scoreLabel, scoreClass2;
@@ -957,37 +948,43 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail) {
         scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
     }
 
-    // Aggiunge la classe grigia se la partita è finita
-    if (stats?.is_finished) {
+    // Se è calcolato, è tutto definitivo
+    if (stats?.is_finished || isCalculated) {
         scoreClass2 += ' score-finished';
     }
+
+    const opacityClass = !isUsed ? ' opacity-50' : '';
 
     const scoreHtml = `<div class="confronto-score-wrap"><span class="confronto-score ${scoreClass2}">${scoreLabel}</span></div>`;
     const metaHtml = side === 'home' ? `<div class="cp-meta">${roleBadge}${flag}${subHtml}</div>` : `<div class="cp-meta away">${subHtml}${flag}${roleBadge}</div>`;
     const infoHtml = `<div class="cp-info ${side}"><div class="confronto-pname">${name}</div>${metaHtml}</div>`;
     
-    let mainRow = side === 'home' ? `<div class="cp-row home">${scoreHtml}${infoHtml}</div>` : `<div class="cp-row away">${infoHtml}${scoreHtml}</div>`;
+    let mainRow = side === 'home' ? `<div class="cp-row home${opacityClass}">${scoreHtml}${infoHtml}</div>` : `<div class="cp-row away${opacityClass}">${infoHtml}${scoreHtml}</div>`;
     
     if (!isDetail) {
         return mainRow;
     } else {
-        const bd = (!pending && score !== null) ? bonusBreakdownLine(p, stats, score) : '';
-        return `<div class="cp-player-wrap detail">${mainRow}${bd}</div>`;
+        const bd = (!pending && score !== null) ? bonusBreakdownLine(p, stats, score, isCalculated) : '';
+        return `<div class="cp-player-wrap detail${opacityClass}">${mainRow}${bd}</div>`;
     }
 }
 
-function bonusBreakdownLine(player, stats, totalScore) {
+function bonusBreakdownLine(player, stats, totalScore, isCalculated = false) {
     if (!stats) return '';
     let base = stats.rating ?? 0;
-    const hasBonus = (stats.goals ?? 0) > 0 || (stats.assists ?? 0) > 0 || (stats.yellow ?? 0) > 0 || (stats.red ?? 0) > 0 || (stats.cs && player.role === 'POR');
-    if (base === 0 && hasBonus && stats.played) base = 6.0;
-
-    const finClass = stats?.is_finished ? ' is-finished' : '';
-    const parts = [`<span class="bd-chip bd-base${finClass}">${base.toFixed(1)}</span>`];
+    
+    // Supporto per doppia nomenclatura (database vs api live)
     const g = stats.goals ?? 0;
     const a = stats.assists ?? 0;
-    const y = stats.yellow ?? 0;
-    const r = stats.red ?? 0;
+    const y = stats.yellow_cards ?? stats.yellow ?? 0;
+    const r = stats.red_cards ?? stats.red ?? 0;
+    const cs = stats.clean_sheet ?? stats.cs ?? false;
+
+    const hasBonus = g > 0 || a > 0 || y > 0 || r > 0 || (cs && player.role === 'POR');
+    if (base === 0 && hasBonus && stats.played) base = 6.0;
+
+    const finClass = (stats?.is_finished || isCalculated) ? ' is-finished' : '';
+    const parts = [`<span class="bd-chip bd-base${finClass}">${base.toFixed(1)}</span>`];
     
     if (g > 0) {
         const val = g * (SCORE_TABLE.goal[player.role] ?? 3);
@@ -1002,44 +999,58 @@ function bonusBreakdownLine(player, stats, totalScore) {
     } else if (y > 0) {
         parts.push(`<span class="bd-chip bd-yellow${finClass}"><span class="material-symbols-outlined">square</span>${SCORE_TABLE.yellow}</span>`);
     }
-    if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
+    if (cs && SCORE_TABLE.clean_sheet[player.role]) {
         parts.push(`<span class="bd-chip bd-cs${finClass}"><span class="material-symbols-outlined">shield</span>+${SCORE_TABLE.clean_sheet[player.role]}</span>`);
     }
     
     return `<div class="bd-line">${parts.join('')}</div>`;
 }
 
-function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench) {
+function renderConfrontoRows(homeLineup, awayLineup, liveStats, status, isBench, isCalculated = false) {
     const maxLen = isBench ? Math.max(homeLineup.length, awayLineup.length) : Math.max(homeLineup.length, awayLineup.length, 11);
     let rows = '';
     let homeTotal = 0, awayTotal = 0;
     let homeCount = 0, awayCount = 0;
-    const pending = status === 'future' || (!liveStats && status !== 'past');
+    const pending = !isCalculated && (status === 'future' || (!liveStats && status !== 'past'));
     const isDetail = confrontoDetail;
     
     for (let i = 0; i < maxLen; i++) {
         const h = homeLineup[i];
         const a = awayLineup[i];
-        const hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
-        const aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
-        const hScore = (h && hStats) ? calcLiveScore(h, hStats) : null;
-        const aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
         
-        if (hScore != null) { homeTotal += hScore; homeCount++; }
-        if (aScore != null) { awayTotal += aScore; awayCount++; }
+        let hStats, aStats, hScore, aScore;
+
+        if (isCalculated) {
+            hStats = h?.stats ?? null;
+            aStats = a?.stats ?? null;
+            hScore = h?.score ?? null;
+            aScore = a?.score ?? null;
+        } else {
+            hStats = h && liveStats ? (liveStats[String(h.id)] ?? null) : null;
+            aStats = a && liveStats ? (liveStats[String(a.id)] ?? null) : null;
+            hScore = (h && hStats) ? calcLiveScore(h, hStats) : null;
+            aScore = (a && aStats) ? calcLiveScore(a, aStats) : null;
+        }
+        
+        // Non calcolare i totali live se la giornata è già calcolata ufficialmente!
+        if (!isCalculated) {
+            if (hScore != null) { homeTotal += hScore; homeCount++; }
+            if (aScore != null) { awayTotal += aScore; awayCount++; }
+        }
         
         rows += `
 <div class="confronto-row ${isDetail ? 'detail' : ''} ${isBench ? 'bench' : ''}">
 <div class="confronto-player home ${h ? '' : 'empty'}">
-${renderPlayerCell(h, hStats, hScore, 'home', pending && !isBench, isDetail)}
+${renderPlayerCell(h, hStats, hScore, 'home', pending && !isBench, isDetail, isCalculated)}
 </div>
 <div class="confronto-divider ${isBench ? 'bench-num' : ''}">|</div>
 <div class="confronto-player away ${a ? '' : 'empty'}">
-${renderPlayerCell(a, aStats, aScore, 'away', pending && !isBench, isDetail)}
+${renderPlayerCell(a, aStats, aScore, 'away', pending && !isBench, isDetail, isCalculated)}
 </div>
 </div>`;
     }
-    if (!isBench) {
+    
+    if (!isBench && !isCalculated) {
         liveTotals.home = homeCount > 0 ? homeTotal : null;
         liveTotals.away = awayCount > 0 ? awayTotal : null;
     }
