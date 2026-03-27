@@ -99,6 +99,7 @@
 .player-nat-flag {
     width: 16px;
     height: auto;
+    display: none;
 }
 .player-nat-text { font-size: 10.5px; color: var(--text-3); font-family: var(--mono); }
 
