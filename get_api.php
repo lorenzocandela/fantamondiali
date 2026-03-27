@@ -1,16 +1,15 @@
 <?php
 header('Content-Type: application/json');
-
-define('API_KEY',      '1a4942a032906326bcdaa564e10dbe65');
+define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
 define('API_BASE_URL', 'https://v3.football.api-sports.io/');
 define('MIN_PRICE', 5);
 define('MAX_PRICE', 60);
 
-// ─── CONFIGURAZIONE TORNEO ──────────────────────────────────────────────────
+// CONFIG CALL
 $LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 10;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevoli
 $SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2026;  // 2024,         2026,         2026
 
-// ─── CACHE PERMANENTE ───────────────────────────────────────────────────────
+// CACHING
 $cacheFile = sys_get_temp_dir() . "/fm_listone_L{$LEAGUE_ID}_S{$SEASON}.json";
 $forceReset = isset($_GET['reset']) && $_GET['reset'] === '1';
 
@@ -21,7 +20,7 @@ if (!$forceReset && file_exists($cacheFile) && filesize($cacheFile) > 0) {
 }
 header('X-Cache: MISS');
 
-// ─── FUNZIONE API HELPER ────────────────────────────────────────────────────
+// API FUNZ
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
@@ -44,15 +43,15 @@ function apiGet(string $endpoint): ?array {
     return $data['response'] ?? null;
 }
 
-// ─── 1. TROVA LE SQUADRE QUALIFICATE ────────────────────────────────────────
+// FIND SQUADRE LEGA
 $teamsResponse = apiGet("teams?league={$LEAGUE_ID}&season={$SEASON}");
 
 if (empty($teamsResponse)) {
-    echo json_encode(['status' => 'error', 'message' => "Nessuna squadra trovata per League {$LEAGUE_ID} Season {$SEASON}"]);
+    echo json_encode(['status' => 'error', 'message' => "Nessuna squadra trovata per L{$LEAGUE_ID} S{$SEASON}"]);
     exit;
 }
 
-// ─── 2. SCARICA LE ROSE (SQUADS) ────────────────────────────────────────────
+// DOWNLOAD ROSE
 $allPlayers = [];
 $roleMap = [
     'Goalkeeper' => 'POR',
@@ -70,8 +69,7 @@ foreach ($teamsResponse as $t) {
     if (!empty($squad) && !empty($squad[0]['players'])) {
         foreach ($squad[0]['players'] as $p) {
             $role  = $roleMap[$p['position'] ?? 'Midfielder'] ?? 'CEN';
-            // L'endpoint squads non restituisce il rating, quindi generiamo un prezzo
-            // randomico o di base. Potrai affinarlo in seguito se serve.
+            // endpoint squads non restituisce il rating, quindi generiamo un prezzo random
             $price = mt_rand(MIN_PRICE, MAX_PRICE); 
 
             $allPlayers[] = [
@@ -80,7 +78,7 @@ foreach ($teamsResponse as $t) {
                 'firstname'   => '',
                 'lastname'    => '',
                 'photo'       => $p['photo'] ?? '',
-                'nationality' => $teamName, // Usiamo il nome della nazionale come nazionalità
+                'nationality' => $teamName,
                 'age'         => $p['age'] ?? null,
                 'role'        => $role,
                 'team'        => $teamName,
@@ -93,11 +91,9 @@ foreach ($teamsResponse as $t) {
             ];
         }
     }
-    // Pausa di 200ms per non superare il rate limit dell'API (circa 5 req/sec)
+    // rate limit api circa 5 req/sec
     usleep(200000); 
 }
-
-// ─── 3. RIMUOVI DUPLICATI E ORDINA ──────────────────────────────────────────
 $seen = [];
 $unique = [];
 foreach ($allPlayers as $p) {
@@ -109,12 +105,12 @@ foreach ($allPlayers as $p) {
 
 usort($unique, fn($a, $b) => $b['price'] <=> $a['price']);
 
-// ─── 4. SALVA E RESTITUISCI ─────────────────────────────────────────────────
+// SAVE E RETURNA
 $output = json_encode([
     'status' => 'success', 
     'total'  => count($unique), 
     'source' => "League {$LEAGUE_ID} - Squads Only",
-    'data'   => $unique
+    'data' => $unique
 ]);
 
 file_put_contents($cacheFile, $output);
