@@ -116,21 +116,41 @@ export async function removePlayer(playerId) {
 }
 
 export async function loadCompetizioni() {
+    // --- 1. Aggiornamento Dinamico Banner ---
+    const badge = document.querySelector('#page-competizione .comp-status-badge');
+    const sub   = document.querySelector('#page-competizione .comp-banner-sub');
+    if (badge) {
+        if (window.__settings?.competition_active) {
+            badge.textContent = 'IN CORSO';
+            badge.style.background = 'var(--green-soft)';
+            badge.style.color = 'var(--green)';
+            if (sub) sub.textContent = 'La competizione ufficiale è attiva';
+        } else {
+            badge.textContent = 'ATTESA';
+            badge.style.background = '';
+            badge.style.color = '';
+            if (sub) sub.textContent = 'La competizione inizierà con i Mondiali';
+        }
+    }
+
     const container = document.getElementById('comp-teams-list');
     if (!container) return;
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 20px"><div class="skel-line" style="width:55%"></div></div>`;
+    
     try {
         const snap  = await getDocs(collection(db, 'users'));
         const teams = [];
         snap.forEach(d => {
             const data = d.data();
             if (data.competition_joined) teams.push({
-                uid: d.id, team_name: data.team_name ?? 'Squadra senza nome',
+                uid: d.id, 
+                team_name: data.team_name ?? 'Squadra senza nome',
                 team_logo: data.team_logo ?? null,
                 credits: data.credits ?? 500,
-                players: (data.players ?? []).length
+                players: data.players ?? [] // Salviamo l'intero array per mostrarlo nella modale
             });
         });
+        
         if (!teams.length) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -140,8 +160,10 @@ export async function loadCompetizioni() {
                 </div>`;
             return;
         }
+
+        // --- 2. Costruzione della Lista Squadre ---
         container.innerHTML = teams.map((t, i) => `
-            <div class="comp-team-row">
+            <div class="comp-team-row clickable-team" data-index="${i}" style="cursor:pointer">
                 <div class="comp-rank">${i + 1}</div>
                 <div class="comp-team-logo-wrap">
                     ${t.team_logo
@@ -150,10 +172,92 @@ export async function loadCompetizioni() {
                 </div>
                 <div class="comp-team-info">
                     <div class="comp-team-name">${t.team_name}</div>
-                    <div class="comp-team-meta">${t.players} giocatori · ${t.credits} cr.</div>
+                    <div class="comp-team-meta">${t.players.length} giocatori · ${t.credits} cr.</div>
                 </div>
+                <span class="material-symbols-outlined" style="color:var(--text-3); font-size: 20px;">chevron_right</span>
             </div>`).join('');
+
+        // --- 3. Aggancio Eventi Modale ---
+        container.querySelectorAll('.clickable-team').forEach(row => {
+            row.addEventListener('click', () => {
+                const teamData = teams[row.dataset.index];
+                showOpponentSquad(teamData);
+            });
+        });
+
     } catch (err) {
         container.innerHTML = `<div class="empty-state"><p>${err.message}</p></div>`;
     }
+}
+
+// --- Funzione per mostrare la rosa dell'avversario usando il bottom sheet esistente ---
+function showOpponentSquad(team) {
+    const overlay = document.getElementById('squad-sheet-overlay');
+    if (!overlay) return;
+
+    // Cambia temporaneamente il titolo del bottom sheet con il nome della squadra avversaria
+    const titleEl = document.querySelector('.squad-sheet-title');
+    if (titleEl) {
+        titleEl.dataset.original = titleEl.dataset.original || titleEl.textContent;
+        titleEl.textContent = team.team_name;
+    }
+
+    const credits = team.credits;
+    const spent = 500 - credits;
+    const players = team.players;
+
+    document.getElementById('sheet-stat-count').textContent = players.length;
+    document.getElementById('sheet-stat-spent').textContent = spent;
+    document.getElementById('sheet-stat-credits').textContent = credits;
+
+    const list = document.getElementById('squad-sheet-list');
+    
+    if (!players.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:40px 20px">
+            <span class="material-symbols-outlined">sports_soccer</span>
+            <h3>Rosa vuota</h3>
+        </div>`;
+    } else {
+        const grouped = { POR: [], DIF: [], CEN: [], ATT: [] };
+        players.forEach(p => (grouped[p.role] ?? grouped.CEN).push(p));
+
+        list.innerHTML = Object.entries(grouped).map(([role, plist]) => {
+            if (!plist.length) return '';
+            return `
+            <div class="squad-sheet-group">
+                <div class="squad-sheet-role">${role} · ${plist.length}</div>
+                ${plist.map(p => `
+                <div class="squad-sheet-row">
+                    <img class="squad-sheet-photo" src="${p.photo ?? ''}" alt="${p.name}"
+                        onerror="this.src='https://placehold.co/38x38/f2f2f7/aeaeb2?text=${encodeURIComponent(p.name?.[0] ?? '?')}'">
+                    <div class="squad-sheet-info">
+                        <div class="squad-sheet-name">${p.name}</div>
+                        <div class="squad-sheet-meta">${p.team ?? ''} · ${p.nationality ?? ''}</div>
+                    </div>
+                    <span class="squad-sheet-price">
+                        <span class="material-symbols-outlined">toll</span>${p.price}
+                    </span>
+                </div>`).join('')}
+            </div>`;
+        }).join('');
+    }
+
+    // Mostra il bottom sheet
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => overlay.classList.add('open'));
+
+    // Ripristina il titolo originale ("La mia rosa") alla chiusura
+    const closeBtn = document.getElementById('btn-close-squad-sheet');
+    const resetTitle = () => {
+        if (titleEl && titleEl.dataset.original) {
+            titleEl.textContent = titleEl.dataset.original;
+        }
+        closeBtn?.removeEventListener('click', resetTitle);
+        overlay.removeEventListener('click', resetTitle);
+    };
+    
+    closeBtn?.addEventListener('click', resetTitle);
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) resetTitle();
+    });
 }
