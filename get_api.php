@@ -7,7 +7,7 @@ define('MIN_PRICE', 5);
 define('MAX_PRICE', 60);
 
 // ─── CONFIGURAZIONE TORNEO ──────────────────────────────────────────────────
-$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 960; // 960 = Playoff UEFA, 1 = World Cup
+$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 32; // 32 = Playoff UEFA, 1 = World Cup
 $SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2024;
 
 // ─── CACHE PERMANENTE ───────────────────────────────────────────────────────
