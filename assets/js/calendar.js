@@ -284,7 +284,7 @@ function renderCalRound() {
         if (played) {
             scoreContent = `<span class="cal-score">${r.home_score}</span><span class="cal-score-sep">–</span><span class="cal-score">${r.away_score}</span>`;
         } else if (status === 'past') {
-            scoreContent = `<span class="material-symbols-outlined" style="color: var(--orange, #ff9500); font-size: 22px;">calculate</span>`;
+            scoreContent = `<span class="material-symbols-outlined" style="color: var(--text-3);; font-size: 22px;">calculate</span>`;
         } else if (status === 'live') {
             scoreContent = `<span class="cal-score-tbd" style="color: var(--blue, #007aff); font-weight: 600;">LIVE</span>`;
         } else {
