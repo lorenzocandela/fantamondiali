@@ -14,8 +14,7 @@ if (!document.getElementById('fm-live-styles')) {
     style.id = 'fm-live-styles';
     style.innerHTML = `
         .score-finished, .bd-chip.is-finished {
-            filter: grayscale(1) !important;
-            opacity: 0.6 !important;
+            filter: grayscale(.7) !important;
         }
     `;
     document.head.appendChild(style);
@@ -440,8 +439,8 @@ ${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
         bodyHtml = renderConfrontoView(res, status);
     }
 
-    const liveHome = liveTotals.home != null ? liveTotals.home.toFixed(1) : null;
-    const liveAway = liveTotals.away != null ? liveTotals.away.toFixed(1) : null;
+    const liveHome = liveTotals.home != null ? Number(liveTotals.home.toFixed(1)) : null;
+    const liveAway = liveTotals.away != null ? Number(liveTotals.away.toFixed(1)) : null;
     
     const hasLive = (status === 'live' || status === 'past') && liveHome != null;
 
@@ -453,9 +452,9 @@ ${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
 </div>
 <div class="md-score-center">
 ${played
-? `<span class="md-score-val">${res?.home_score?.toFixed?.(1) ?? res?.home_score ?? '–'}</span>
+? `<span class="md-score-val">${res?.home_score != null ? Number(res.home_score.toFixed(1)) : '–'}</span>
 <span class="md-score-sep">:</span>
-<span class="md-score-val">${res?.away_score?.toFixed?.(1) ?? res?.away_score ?? '–'}</span>`
+<span class="md-score-val">${res?.away_score != null ? Number(res.away_score.toFixed(1)) : '–'}</span>`
 : hasLive
 ? `<span class="md-score-val ${scoreClass(liveTotals.home)}">${liveHome}</span>
 <span class="md-score-sep">:</span>
@@ -947,7 +946,7 @@ function renderPlayerCell(p, stats, score, side, pending, isDetail, isCalculated
     } else if (score === null) {
         scoreLabel = 'SV'; scoreClass2 = 'sv';
     } else {
-        scoreLabel = score.toFixed(1); scoreClass2 = scoreClass(score);
+        scoreLabel = Number(score.toFixed(1)); scoreClass2 = scoreClass(score);
     }
 
     if (stats?.is_finished || isCalculated) {
@@ -984,7 +983,7 @@ function bonusBreakdownLine(player, stats, totalScore, isCalculated = false) {
     if (base === 0 && hasBonus && stats.played) base = 6.0;
 
     const finClass = (stats?.is_finished || isCalculated) ? ' is-finished' : '';
-    const parts = [`<span class="bd-chip bd-base${finClass}">${base.toFixed(1)}</span>`];
+    const parts = [`<span class="bd-chip bd-base${finClass}">${Number(base.toFixed(1))}</span>`];
     
     if (g > 0) {
         const val = g * (SCORE_TABLE.goal[player.role] ?? 3);
