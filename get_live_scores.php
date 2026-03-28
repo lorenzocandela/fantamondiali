@@ -60,6 +60,7 @@ $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
+    /*
     // per test chiamo direttamente id match -> ref in debug polling
     $candidates = [
         "fixtures?id=1536911", // eng - uru -> test in GJ2
@@ -72,7 +73,24 @@ if ($mode === 'test') {
         }
         usleep(200000);
         if (count($fixtures) >= 6) break;
+    }*/
+
+    $round = $_GET['round'] ?? null;
+    $roundLabels = [
+        1 => 'Group Stage - 1', 2 => 'Group Stage - 2', 3 => 'Group Stage - 3',
+        4 => 'Round of 16', 5 => 'Quarter-finals', 6 => 'Semi-finals', 7 => 'Final',
+    ];
+
+    if ($round && isset($roundLabels[(int)$round])) {
+        $label = $roundLabels[(int)$round];
+        $fixtures = apiGet("fixtures?league=1&season=2026&round=" . urlencode($label)) ?? [];
+    } else {
+        $fixtures = apiGet("fixtures?league=1&season=2026&live=all") ?? [];
+        if (empty($fixtures)) {
+            $fixtures = apiGet("fixtures?league=1&season=2026&date={$today}") ?? [];
+        }
     }
+
 } else {
     $round = $_GET['round'] ?? null;
     $roundLabels = [
