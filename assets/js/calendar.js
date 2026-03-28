@@ -272,10 +272,25 @@ function renderCalRound() {
     const roundNames = ['GJ1', 'GJ2', 'GJ3', 'Ottavi', 'Quarti', 'Semifinali', 'Finale'];
     document.getElementById('cal-round-label').textContent = `G${calRound} — ${roundNames[calRound - 1] ?? ''}`;
     const res = calResults[String(calRound)] ?? {};
+    
+    const status = getRoundStatus(calRound);
+
     document.getElementById('cal-matches-list').innerHTML = rd.matches.map(m => {
         const key = `${m.home}_${m.away}`;
         const r = res[key];
         const played = r?.home_score !== undefined;
+        
+        let scoreContent = '';
+        if (played) {
+            scoreContent = `<span class="cal-score">${r.home_score}</span><span class="cal-score-sep">–</span><span class="cal-score">${r.away_score}</span>`;
+        } else if (status === 'past') {
+            scoreContent = `<span class="material-symbols-outlined" style="color: var(--orange, #ff9500); font-size: 22px;">calculate</span>`;
+        } else if (status === 'live') {
+            scoreContent = `<span class="cal-score-tbd" style="color: var(--blue, #007aff); font-weight: 600;">LIVE</span>`;
+        } else {
+            scoreContent = `<span class="cal-score-tbd">vs</span>`;
+        }
+
         return `
 <div class="cal-match-card clickable ${played ? 'played' : ''}" data-home="${m.home}" data-away="${m.away}" data-round="${calRound}">
 <div class="cal-team home">
@@ -283,9 +298,7 @@ function renderCalRound() {
 <div class="cal-team-name">${m.home_name}</div>
 </div>
 <div class="cal-score-box">
-${played
-? `<span class="cal-score">${r.home_score}</span><span class="cal-score-sep">–</span><span class="cal-score">${r.away_score}</span>`
-: `<span class="cal-score-tbd">vs</span>`}
+${scoreContent}
 </div>
 <div class="cal-team away">
 <div class="cal-team-logo-wrap">${logoHtml(m.away, calTeams)}</div>
