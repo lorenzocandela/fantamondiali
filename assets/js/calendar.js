@@ -424,17 +424,26 @@ function renderMatchDetail() {
     const played = res?.home_score !== undefined;
     const canEdit = status === 'future' && isMine;
 
+    let pillHtml = '';
+        if (played) {
+            pillHtml = '<span class="md-live-pill" style="background: var(--blue, #007aff); color: #fff;">CALCOLATA</span>';
+        } else if (status === 'past') {
+            pillHtml = '<span class="md-live-pill" style="background: var(--orange, #ff9500); color: #fff;">DA CALCOLARE</span>';
+        } else if (status === 'live') {
+            pillHtml = '<span class="md-live-pill">LIVE</span>';
+        }
+
     const headerHtml = `
-<div class="md-header">
-<button class="md-back-btn" id="md-back">
-<span class="material-symbols-outlined">arrow_back</span>
-</button>
-<div class="md-header-info">
-<div class="md-header-round">${md?.short ?? 'G' + mdRound} — ${md?.label ?? ''}</div>
-<div class="md-header-dates">${formatDate(md?.start)} – ${formatDate(md?.end)}</div>
-</div>
-${status === 'live' ? '<span class="md-live-pill">LIVE</span>' : ''}
-</div>`;
+        <div class="md-header">
+        <button class="md-back-btn" id="md-back">
+        <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="md-header-info">
+        <div class="md-header-round">${md?.short ?? 'G' + mdRound} — ${md?.label ?? ''}</div>
+        <div class="md-header-dates">${formatDate(md?.start)} – ${formatDate(md?.end)}</div>
+        </div>
+        ${pillHtml}
+        </div>`;
 
     let bodyHtml = '';
     if (mdView === 'formazione' && canEdit) {
