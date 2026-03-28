@@ -62,7 +62,7 @@ $fixturesMeta = [];
 if ($mode === 'test') {
     // per test chiamo direttamente id match -> ref in debug polling
     $candidates = [
-        "fixtures?id=1502470", // eng - uru -> test in GJ2
+        "fixtures?id=1536911", // eng - uru -> test in GJ2
     ];
 
     foreach ($candidates as $endpoint) {
