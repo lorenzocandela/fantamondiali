@@ -29,8 +29,11 @@ function apiGet(string $endpoint): ?array {
 
 // CACHING
 $today     = $_GET['date'] ?? date('Y-m-d');
-$cacheFile = sys_get_temp_dir() . "/fm_live_{$mode}_{$today}.json";
+$round     = $_GET['round'] ?? null; 
 $cacheTtl  = ($mode === 'test') ? 120 : 300; // test: 2min, prod: 5min
+
+$cacheIdentifier = $round ? "round_{$round}" : $today;
+$cacheFile = sys_get_temp_dir() . "/fm_live_{$mode}_{$cacheIdentifier}.json";
 
 if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
     header('X-Cache: HIT');

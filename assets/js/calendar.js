@@ -1076,12 +1076,13 @@ function scoreClass(score) {
 }
 
 // LIVE POLLING
+// LIVE POLLING
 async function fetchLiveScores() {
     try {
         const md = getMatchdayMeta(mdRound);
         const dateStr = md ? md.start.split('T')[0] : '';
         
-        const res = await fetch(`get_live_scores.php?mode=test&date=${dateStr}`);
+        const res = await fetch(`get_live_scores.php?mode=test&date=${dateStr}&round=${mdRound}`);
         const data = await res.json();
         
         if (data.status === 'success') {
