@@ -1076,7 +1076,6 @@ function scoreClass(score) {
 }
 
 // LIVE POLLING
-// LIVE POLLING
 async function fetchLiveScores() {
     try {
         const md = getMatchdayMeta(mdRound);

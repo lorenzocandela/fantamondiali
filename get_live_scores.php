@@ -63,10 +63,10 @@ $fixtures = [];
 $fixturesMeta = [];
 
 if ($mode === 'test') {
-    /*
-    // per test chiamo direttamente id match -> ref in debug polling
+    // TEST
     $candidates = [
-        "fixtures?id=1536911", // eng - uru -> test in GJ2
+        "fixtures?id=1502470", // eng
+        "fixtures?id=1536911", // arg
     ];
 
     foreach ($candidates as $endpoint) {
@@ -75,26 +75,9 @@ if ($mode === 'test') {
             $fixtures = array_merge($fixtures, $result);
         }
         usleep(200000);
-        if (count($fixtures) >= 6) break;
-    }*/
-
-    $round = $_GET['round'] ?? null;
-    $roundLabels = [
-        1 => 'Group Stage - 1', 2 => 'Group Stage - 2', 3 => 'Group Stage - 3',
-        4 => 'Round of 16', 5 => 'Quarter-finals', 6 => 'Semi-finals', 7 => 'Final',
-    ];
-
-    if ($round && isset($roundLabels[(int)$round])) {
-        $label = $roundLabels[(int)$round];
-        $fixtures = apiGet("fixtures?league=1&season=2026&round=" . urlencode($label)) ?? [];
-    } else {
-        $fixtures = apiGet("fixtures?league=1&season=2026&live=all") ?? [];
-        if (empty($fixtures)) {
-            $fixtures = apiGet("fixtures?league=1&season=2026&date={$today}") ?? [];
-        }
     }
-
 } else {
+    // PROD
     $round = $_GET['round'] ?? null;
     $roundLabels = [
         1 => 'Group Stage - 1', 2 => 'Group Stage - 2', 3 => 'Group Stage - 3',
