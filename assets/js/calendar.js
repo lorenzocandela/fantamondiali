@@ -439,7 +439,7 @@ function renderMatchDetail() {
 
     let pillHtml = '';
         if (played) {
-            pillHtml = '<span class="md-live-pill" style="background: var(--blue, #007aff); color: #fff;">CALCOLATA</span>';
+            pillHtml = '<span class="md-live-pill" style="background: var(--blue-soft); color: var(--blue);">CALCOLATA</span>';
         } else if (status === 'past') {
             pillHtml = '<span class="md-live-pill" style="background: var(--green-soft); color: var(--green);">DA CALCOLARE</span>';
         } else if (status === 'live') {
