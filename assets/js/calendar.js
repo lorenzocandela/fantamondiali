@@ -218,7 +218,7 @@ let activeModule = '4-3-3';
 const DEFAULT_MODULES = [
     '4-3-3','4-4-2',
     '3-5-2','3-4-3','5-3-2','5-4-1',
-    '4-5-1','3-6-1',
+    '4-5-1','3-6-1','4-2-4'
 ];
 let availableModules = [...DEFAULT_MODULES];
 let pickerState = null;
