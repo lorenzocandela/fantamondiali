@@ -441,7 +441,7 @@ function renderMatchDetail() {
         if (played) {
             pillHtml = '<span class="md-live-pill" style="background: var(--blue, #007aff); color: #fff;">CALCOLATA</span>';
         } else if (status === 'past') {
-            pillHtml = '<span class="md-live-pill" style="background: #b0b0b8; color: #fff;">DA CALCOLARE</span>';
+            pillHtml = '<span class="md-live-pill" style="background: var(--green-soft); color: var(--green);">DA CALCOLARE</span>';
         } else if (status === 'live') {
             pillHtml = '<span class="md-live-pill">LIVE</span>';
         }
