@@ -32,7 +32,6 @@
     </div>
 </section>
 
-<!-- picker formazione (riusato da formation.js) -->
 <div id="formation-picker-overlay" class="fpicker-overlay hidden">
     <div id="formation-picker-sheet" class="fpicker-sheet"></div>
 </div>
