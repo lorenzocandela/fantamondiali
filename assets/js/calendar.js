@@ -323,20 +323,62 @@ ${scoreContent}
 function renderCalStandings() {
     const standings = buildStandings(calTeams, calSchedule, calResults);
     const list = document.getElementById('cal-standings-list');
+    
     if (!standings.length) {
         list.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">leaderboard</span><h3>Nessuna squadra</h3></div>`;
         return;
     }
-    list.innerHTML = standings.map((s, i) => `
-<div class="cal-standing-row ${i === 0 ? 'first' : ''}">
-<div class="cal-standing-pos">${i + 1}</div>
-<div class="cal-team-logo-wrap small">${logoHtml(s.uid, calTeams)}</div>
-<div class="cal-standing-info">
-<div class="cal-standing-name">${s.name}</div>
-<div class="cal-standing-meta">${s.w}V ${s.d}P ${s.l}S · ${s.pf} pf</div>
-</div>
-<div class="cal-standing-pts">${s.pts}</div>
-</div>`).join('');
+
+    if (!document.getElementById('fm-standings-styles')) {
+        const style = document.createElement('style');
+        style.id = 'fm-standings-styles';
+        style.innerHTML = `
+            .standings-card { background: var(--bg-1); border-radius: 16px; padding: 12px 0; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid var(--border-color); overflow: hidden; }
+            .st-header { display: flex; align-items: center; padding: 0 16px 10px; font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+            .st-row { display: flex; align-items: center; padding: 12px 16px; transition: background 0.2s; }
+            .st-row:not(:last-child) { border-bottom: 1px solid var(--bg-2); }
+            .st-row:hover { background: var(--bg-2); }
+            .st-pos { width: 24px; font-weight: 800; font-size: 14px; color: var(--text-3); text-align: center; font-family: var(--mono); }
+            .st-row.rank-1 .st-pos { color: #FF9500; } /* Oro */
+            .st-row.rank-2 .st-pos { color: #8E8E93; } /* Argento */
+            .st-row.rank-3 .st-pos { color: #A2845E; } /* Bronzo */
+            .st-team { flex: 1; display: flex; align-items: center; gap: 10px; overflow: hidden; padding-left: 8px; }
+            .st-team-name { font-weight: 600; font-size: 14px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .st-col { width: 28px; text-align: center; font-size: 13px; color: var(--text-2); font-family: var(--mono); }
+            .st-col-pt { width: 36px; text-align: center; font-weight: 800; font-size: 16px; color: var(--blue); font-family: var(--mono); }
+            .st-col-fp { width: 44px; text-align: right; font-size: 12px; color: var(--text-3); font-family: var(--mono); padding-right: 8px;}
+        `;
+        document.head.appendChild(style);
+    }
+
+    const headerHtml = `
+        <div class="st-header">
+            <div class="st-pos">#</div>
+            <div class="st-team" style="padding-left: 14px;">Squadra</div>
+            <div class="st-col" title="Vittorie">V</div>
+            <div class="st-col" title="Pareggi">P</div>
+            <div class="st-col" title="Sconfitte">S</div>
+            <div class="st-col-fp" title="FantaPunti">FP</div>
+            <div class="st-col-pt" title="Punti">PT</div>
+        </div>
+    `;
+
+    const rowsHtml = standings.map((s, i) => `
+        <div class="st-row rank-${i + 1}">
+            <div class="st-pos">${i + 1}</div>
+            <div class="st-team">
+                <div class="cal-team-logo-wrap small" style="width:28px;height:28px;">${logoHtml(s.uid, calTeams)}</div>
+                <div class="st-team-name">${s.name}</div>
+            </div>
+            <div class="st-col">${s.w}</div>
+            <div class="st-col">${s.d}</div>
+            <div class="st-col">${s.l}</div>
+            <div class="st-col-fp">${s.pf.toFixed(1)}</div>
+            <div class="st-col-pt">${s.pts}</div>
+        </div>
+    `).join('');
+
+    list.innerHTML = `<div class="standings-card">${headerHtml}${rowsHtml}</div>`;
 }
 
 // NAV LISTENERS
