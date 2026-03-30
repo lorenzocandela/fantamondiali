@@ -1,26 +1,55 @@
 <?php
 header('Content-Type: application/json');
-define('MIN_PRICE', 5);
-define('MAX_PRICE', 60);
 
-// CONFIG CALL
-$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 1;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevoli
-$SEASON = isset($_GET['season']) ? (int)$_GET['season'] : 2026;    // 2024,         2026,         2026
+// ─── CONFIGURAZIONE DB ──────────────────────────────────────────────────────
+$db_host = '127.0.0.1';
+$db_name = 'fm';
+$db_user = 'root';
+$db_pass = '';
 
-// CACHING
-$cacheFile = sys_get_temp_dir() . "/fm_listone_L{$LEAGUE_ID}_S{$SEASON}.json";
-$forceReset = isset($_GET['reset']) && $_GET['reset'] === '1';
+try {
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e) {
+    die(json_encode(['status' => 'error', 'message' => 'DB error: ' . $e->getMessage()]));
+}
 
-if (!$forceReset && file_exists($cacheFile) && filesize($cacheFile) > 0) {
-    header('X-Cache: HIT-PERMANENT');
-    echo file_get_contents($cacheFile);
+$isSync = isset($_GET['sync']) && $_GET['sync'] === '1';
+
+// ════════════════════════════════════════════════════════════════════════════
+// MODALITÀ LETTURA VELOCE (Default per l'app)
+// ════════════════════════════════════════════════════════════════════════════
+if (!$isSync) {
+    $stmt = $pdo->query("SELECT * FROM player_listone ORDER BY price DESC, rating DESC");
+    $players = $stmt->fetchAll();
+    
+    // Cast dei tipi per far felice il JS
+    foreach ($players as &$p) {
+        $p['id'] = (int)$p['id'];
+        $p['price'] = (int)$p['price'];
+        $p['goals'] = (int)$p['goals'];
+        $p['assists'] = (int)$p['assists'];
+        $p['appearances'] = (int)$p['appearances'];
+        $p['rating'] = (float)$p['rating'];
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'total'  => count($players),
+        'source' => 'MariaDB Locale',
+        'data'   => $players
+    ]);
     exit;
 }
-header('X-Cache: MISS');
 
-// API FUNZ
+// ════════════════════════════════════════════════════════════════════════════
+// MODALITÀ SYNC (Da lanciare a mano: get_api.php?sync=1)
+// ════════════════════════════════════════════════════════════════════════════
 define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
 define('API_BASE_URL', 'https://v3.football.api-sports.io/');
+
 function apiGet(string $endpoint): ?array {
     $url = API_BASE_URL . $endpoint;
     $ch  = curl_init();
@@ -40,19 +69,17 @@ function apiGet(string $endpoint): ?array {
     if ($code !== 200 || !$resp) return null;
     $data = json_decode($resp, true);
     if (!empty($data['errors'])) return null;
-    return $data['response'] ?? null;
+    return $data ?? null;
 }
 
-// FIND SQUADRE LEGA
+$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 32; // Es. 32 Qualificazioni
+$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2024;
+
 $teamsResponse = apiGet("teams?league={$LEAGUE_ID}&season={$SEASON}");
-
-if (empty($teamsResponse)) {
-    echo json_encode(['status' => 'error', 'message' => "Nessuna squadra trovata per L{$LEAGUE_ID} S{$SEASON}"]);
-    exit;
+if (empty($teamsResponse['response'])) {
+    die(json_encode(['status' => 'error', 'message' => "Nessuna squadra trovata per L{$LEAGUE_ID} S{$SEASON}"]));
 }
 
-// DOWNLOAD ROSE
-$allPlayers = [];
 $roleMap = [
     'Goalkeeper' => 'POR',
     'Defender'   => 'DIF',
@@ -60,58 +87,80 @@ $roleMap = [
     'Attacker'   => 'ATT',
 ];
 
-foreach ($teamsResponse as $t) {
+$syncedCount = 0;
+
+// Prepariamo la query di inserimento
+$stmt = $pdo->prepare("
+    INSERT INTO player_listone (id, name, photo, nationality, role, team, team_logo, rating, price, goals, assists, appearances)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+    photo=VALUES(photo), role=VALUES(role), team=VALUES(team), team_logo=VALUES(team_logo),
+    rating=VALUES(rating), price=VALUES(price), goals=VALUES(goals), assists=VALUES(assists), appearances=VALUES(appearances)
+");
+
+foreach ($teamsResponse['response'] as $t) {
     $teamId   = $t['team']['id'];
     $teamName = $t['team']['name'];
+    $teamLogo = $t['team']['logo'];
     
-    $squad = apiGet("players/squads?team={$teamId}");
-    
-    if (!empty($squad) && !empty($squad[0]['players'])) {
-        foreach ($squad[0]['players'] as $p) {
-            $role  = $roleMap[$p['position'] ?? 'Midfielder'] ?? 'CEN';
-            // endpoint squads non restituisce il rating, quindi generiamo un prezzo random
-            $price = mt_rand(MIN_PRICE, MAX_PRICE); 
+    // Per le statistiche usiamo l'endpoint players (non squads) che supporta l'impaginazione
+    $page = 1;
+    $totalPages = 1;
 
-            $allPlayers[] = [
-                'id'          => $p['id'],
-                'name'        => $p['name'] ?? '',
-                'firstname'   => '',
-                'lastname'    => '',
-                'photo'       => $p['photo'] ?? '',
-                'nationality' => $teamName,
-                'age'         => $p['age'] ?? null,
-                'role'        => $role,
-                'team'        => $teamName,
-                'team_logo'   => $t['team']['logo'] ?? '',
-                'rating'      => 6.5,
-                'price'       => $price,
-                'goals'       => 0,
-                'assists'     => 0,
-                'appearances' => 0,
-            ];
+    while ($page <= $totalPages) {
+        $playersData = apiGet("players?team={$teamId}&season={$SEASON}&page={$page}");
+        
+        if (empty($playersData['response'])) break;
+        
+        $totalPages = $playersData['paging']['total'] ?? 1;
+
+        foreach ($playersData['response'] as $item) {
+            $p = $item['player'];
+            $stats = $item['statistics'][0] ?? []; // Prendiamo le stats della lega principale
+
+            $role   = $roleMap[$stats['games']['position'] ?? 'Midfielder'] ?? 'CEN';
+            $apps   = (int)($stats['games']['appearences'] ?? 0);
+            $goals  = (int)($stats['goals']['total'] ?? 0);
+            $assists= (int)($stats['goals']['assists'] ?? 0);
+            $rating = (float)($stats['games']['rating'] ?? 6.0);
+
+            // ─── CALCOLO DEL PREZZO DINAMICO ───
+            $basePrice = 5;
+            $ratingBonus = max(0, ($rating - 6.0) * 8); // +8 cr per ogni punto rating sopra il 6
+            $appBonus = $apps * 0.5; // +0.5 cr per presenza
+            
+            // Peso gol/assist diverso per ruolo
+            if ($role === 'ATT') {
+                $goalBonus = $goals * 3; $assistBonus = $assists * 1;
+            } elseif ($role === 'CEN') {
+                $goalBonus = $goals * 4; $assistBonus = $assists * 2;
+            } elseif ($role === 'DIF') {
+                $goalBonus = $goals * 5; $assistBonus = $assists * 2;
+            } else {
+                $goalBonus = $goals * 10; $assistBonus = $assists * 5; // Portieri col vizio
+            }
+
+            $calculatedPrice = round($basePrice + $ratingBonus + $appBonus + $goalBonus + $assistBonus);
+            
+            // Limitiamo il prezzo tra 5 e 60 (o quanto vuoi tu)
+            $finalPrice = min(60, max(5, $calculatedPrice));
+
+            // Salviamo a DB (utf8 safe)
+            $cleanName = mb_convert_encoding($p['name'], 'UTF-8', 'UTF-8');
+            $nat = mb_convert_encoding($p['nationality'] ?? $teamName, 'UTF-8', 'UTF-8');
+
+            $stmt->execute([
+                $p['id'], $cleanName, $p['photo'], $nat, $role, $teamName, $teamLogo,
+                $rating, $finalPrice, $goals, $assists, $apps
+            ]);
+            $syncedCount++;
         }
-    }
-    // rate limit api circa 5 req/sec
-    usleep(200000); 
-}
-$seen = [];
-$unique = [];
-foreach ($allPlayers as $p) {
-    if (!isset($seen[$p['id']])) {
-        $seen[$p['id']] = true;
-        $unique[] = $p;
+        $page++;
+        usleep(250000); // Rispetta il Rate Limit API (4-5 req/sec)
     }
 }
 
-usort($unique, fn($a, $b) => $b['price'] <=> $a['price']);
-
-// SAVE E RETURNA
-$output = json_encode([
-    'status' => 'success', 
-    'total'  => count($unique), 
-    'source' => "League {$LEAGUE_ID} - Squads Only",
-    'data' => $unique
+echo json_encode([
+    'status' => 'success',
+    'message' => "Sincronizzazione completata. $syncedCount giocatori aggiornati a DB."
 ]);
-
-file_put_contents($cacheFile, $output);
-echo $output;
