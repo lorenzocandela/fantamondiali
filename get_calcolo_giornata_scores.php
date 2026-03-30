@@ -50,29 +50,37 @@ $league = $_GET['league'] ?? 32;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevo
 $season = $_GET['season'] ?? 2024;  // 2024,         2026,         2026
 $force  = isset($_GET['force']) ? (int)$_GET['force'] : 1; // Messo a 1 di default per i tuoi test
 
-// CHECK PARTITE DATA RANGE
+// CHECK PARTITE NEL DB PER DATA RANGE
+$stmt = $pdo->prepare("
+    SELECT DISTINCT fixture_id 
+    FROM player_match_stats 
+    WHERE status IN ('FT', 'AET', 'PEN')
+");
+$stmt->execute();
+$dbFixtureIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+if (empty($dbFixtureIds)) {
+    echo json_encode(['status' => 'error', 'message' => 'Nessuna partita terminata trovata nel DB. Esegui prima il cron di sync.']);
+    exit;
+}
+
 $endpoint = "fixtures?league={$league}&season={$season}&from={$from}&to={$to}";
 $fixtures = apiGet($endpoint) ?? [];
 
-if (empty($fixtures)) {
-    echo json_encode(['status' => 'error', 'message' => "Nessuna partita reale trovata nel periodo $from al $to."]);
-    exit;
-}
-
 $fixtureIds = [];
-$finishedStatuses = ['FT', 'AET', 'PEN'];
-$allFinished = true;
-
-foreach ($fixtures as $f) {
-    $fixtureIds[] = $f['fixture']['id'];
-    if (!in_array($f['fixture']['status']['short'], $finishedStatuses)) {
-        $allFinished = false;
+if (!empty($fixtures)) {
+    foreach ($fixtures as $f) {
+        $fid = $f['fixture']['id'];
+        if (in_array($fid, $dbFixtureIds)) {
+            $fixtureIds[] = $fid;
+        }
     }
+} else {
+    $fixtureIds = $dbFixtureIds;
 }
 
-if (!$allFinished && !$force) {
-    echo json_encode(['status' => 'error', 'message' => "Ci sono ancora partite non terminate in questa giornata. Attendi o usa force=1."]);
-    exit;
+if (empty($fixtureIds)) {
+    $fixtureIds = $dbFixtureIds;
 }
 
 // DB READ
