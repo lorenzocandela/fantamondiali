@@ -361,8 +361,8 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
             const awayUser = usersMap[m.away];
             if (!homeUser || !awayUser) return;
 
-            const homeData = calcTeamWithSubs(homeUser.lineup ?? [], homeUser.players ?? [], playerStats);
-            const awayData = calcTeamWithSubs(awayUser.lineup ?? [], awayUser.players ?? [], playerStats);
+            const homeData = calcTeamWithSubs(homeUser[`lineup_r${roundNum}`] ?? homeUser.lineup ?? [], homeUser.players ?? [], playerStats);
+            const awayData = calcTeamWithSubs(awayUser[`lineup_r${roundNum}`] ?? awayUser.lineup ?? [], awayUser.players ?? [], playerStats);
 
             roundResults[`${m.home}_${m.away}`] = {
                 home_score:  homeData.total,

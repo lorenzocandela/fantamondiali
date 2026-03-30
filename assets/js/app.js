@@ -4,7 +4,7 @@ import { toast } from './utils.js';
 import { showPage, initTabPill, updateTopbarAvatar, loadProfilo, saveProfilo, toggleJoinCompetition, handleAvatarUpload, handleLogoUpload } from './ui.js';
 import { loadListone } from './players.js';
 import { addPlayer, loadSquadra, loadCompetizioni } from './squad.js';
-import { loadCalendario, renderMatchdayAdmin, loadAdminModules } from './calendar.js';
+import { loadCalendario, renderMatchdayAdmin, loadAdminModules, stopLivePolling } from './calendar.js';
 import { loadAdminStats, loadSystemSettings, syncAdminUI } from './admin.js';
 import { initNotifications, requestNotificationPermission, areNotificationsEnabled, askForNotificationPermission } from './notifications.js';
 
@@ -51,16 +51,18 @@ document.getElementById('btn-install-pwa-auth')?.addEventListener('click', handl
 
 initTabPill();
 
-document.getElementById('nav-listone')?.addEventListener('click', () => showPage('listone'));
+document.getElementById('nav-listone')?.addEventListener('click', () => { stopLivePolling(); showPage('listone'); });
 document.getElementById('nav-calendario')?.addEventListener('click', () => { 
     showPage('calendario'); 
     loadCalendario();
 });
 document.getElementById('nav-competizione')?.addEventListener('click', () => { 
+    stopLivePolling();
     showPage('competizione');
     loadCompetizioni(); 
 });
 document.getElementById('nav-admin')?.addEventListener('click', () => {
+    stopLivePolling();
     showPage('admin');
     loadAdminStats();
     syncAdminUI();
@@ -68,14 +70,14 @@ document.getElementById('nav-admin')?.addEventListener('click', () => {
     loadAdminModules();
 });
 
-// avatar → profilo
 document.getElementById('btn-profile-avatar')?.addEventListener('click', () => {
+    stopLivePolling();
     showPage('profilo');
     loadProfilo();
 });
 
-// topbar team logo → squadra
 document.getElementById('btn-topbar-logo')?.addEventListener('click', () => {
+    stopLivePolling();
     showPage('squadra');
     loadSquadra();
 });

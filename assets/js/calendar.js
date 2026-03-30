@@ -1128,7 +1128,7 @@ function startLivePolling() {
     liveRefreshTimer = setInterval(fetchLiveScores, 60000); // ogni 60s
 }
 
-function stopLivePolling() {
+export function stopLivePolling() {
     if (liveRefreshTimer) {
         clearInterval(liveRefreshTimer);
         liveRefreshTimer = null;

@@ -1,17 +1,7 @@
 import { db } from './firebase-init.js';
 import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, formatDate } from './utils.js';
-import { getCurrentMatchday } from './calendar.js';
-
-const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Fase a gironi – GJ 1', short: 'GJ1', start: '2026-06-11', end: '2026-06-14' },
-    { round: 2, label: 'Fase a gironi – GJ 2', short: 'GJ2', start: '2026-06-15', end: '2026-06-19' },
-    { round: 3, label: 'Fase a gironi – GJ 3', short: 'GJ3', start: '2026-06-20', end: '2026-06-25' },
-    { round: 4, label: 'Ottavi di finale',      short: 'R16', start: '2026-06-27', end: '2026-07-03' },
-    { round: 5, label: 'Quarti di finale',      short: 'QF',  start: '2026-07-04', end: '2026-07-05' },
-    { round: 6, label: 'Semifinali',            short: 'SF',  start: '2026-07-07', end: '2026-07-08' },
-    { round: 7, label: 'Finale',                short: 'F',   start: '2026-07-11', end: '2026-07-19' },
-];
+import { getCurrentMatchday, MATCHDAY_SCHEDULE } from './calendar.js';
 
 const DEFAULT_MODULES = [
     '4-3-3','4-4-2',
@@ -448,48 +438,3 @@ function validateLineup() {
     if (tot < 11)   w.push({ icon: 'info',    text: `${tot}/11 titolari schierati`,                              level: 'info'  });
     return w;
 }
-
-// ─── admin moduli ─────────────────────────────────────────────────────────────
-
-export async function loadAdminModules() {
-    const snap = await getDoc(doc(db, 'settings', 'modules'));
-    const list = snap.exists() ? (snap.data().list ?? []) : [];
-    renderAdminModules(list);
-}
-
-function renderAdminModules(list) {
-    const container = document.getElementById('admin-modules-list');
-    if (!container) return;
-    container.innerHTML = list.length
-        ? list.map(m => `
-            <div class="admin-module-row">
-                <span class="admin-module-name">${m}</span>
-                <button class="admin-module-del" data-module="${m}">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>`).join('')
-        : `<div style="font-size:12px;color:var(--text-3)">Nessun modulo custom aggiunto</div>`;
-    container.querySelectorAll('.admin-module-del').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const updated = list.filter(m => m !== btn.dataset.module);
-            await setDoc(doc(db, 'settings', 'modules'), { list: updated }, { merge: true });
-            toast('Modulo rimosso');
-            renderAdminModules(updated);
-        });
-    });
-}
-
-document.getElementById('btn-add-module')?.addEventListener('click', async () => {
-    const input = document.getElementById('admin-module-input');
-    const val   = input?.value.trim();
-    if (!val) return;
-    if (!/^\d+-\d+-\d+(-\d+)?$/.test(val)) { toast('Formato non valido — es. 4-3-3', 'error'); return; }
-    const snap    = await getDoc(doc(db, 'settings', 'modules'));
-    const list    = snap.exists() ? (snap.data().list ?? []) : [];
-    if (list.includes(val)) { toast('Modulo già presente', 'error'); return; }
-    const updated = [...list, val];
-    await setDoc(doc(db, 'settings', 'modules'), { list: updated }, { merge: true });
-    if (input) input.value = '';
-    toast(`Modulo ${val} aggiunto`);
-    renderAdminModules(updated);
-});
