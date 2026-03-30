@@ -137,9 +137,32 @@ export async function loadCompetizioni() {
     if (!container) return;
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 20px"><div class="skel-line" style="width:55%"></div></div>`;
     
+    // --- 1.5 Stili CSS Dinamici per la UI Migliorata ---
+    if (!document.getElementById('fm-comp-styles')) {
+        const style = document.createElement('style');
+        style.id = 'fm-comp-styles';
+        style.innerHTML = `
+            .comp-list-card { background: var(--bg-1); border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid var(--border-color); overflow: hidden; margin: 0 16px 20px; }
+            .comp-team-row { display: flex; align-items: center; padding: 14px 16px; transition: background 0.2s; cursor: pointer; }
+            .comp-team-row:not(:last-child) { border-bottom: 1px solid var(--bg-2); }
+            .comp-team-row:hover { background: var(--bg-2); }
+            .comp-index { width: 24px; font-weight: 700; font-size: 13px; color: var(--text-3); font-family: var(--mono); text-align: left; }
+            .comp-team-logo-wrap { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin-right: 14px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border-color); }
+            .comp-team-logo { width: 100%; height: 100%; object-fit: cover; }
+            .comp-team-logo-placeholder { font-weight: 700; color: var(--text-2); font-size: 16px; }
+            .comp-team-info { flex: 1; overflow: hidden; }
+            .comp-team-name { font-weight: 600; font-size: 15px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+            .comp-team-meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-3); font-family: var(--mono); }
+            .comp-meta-item { display: flex; align-items: center; gap: 4px; }
+            .comp-meta-icon { font-size: 15px !important; color: var(--text-3); }
+            .comp-chevron { color: var(--text-4); font-size: 22px !important; margin-left: 8px; }
+        `;
+        document.head.appendChild(style);
+    }
+
     try {
         const snap  = await getDocs(collection(db, 'users'));
-        const teams = [];
+        let teams = [];
         snap.forEach(d => {
             const data = d.data();
             if (data.competition_joined) teams.push({
@@ -147,7 +170,7 @@ export async function loadCompetizioni() {
                 team_name: data.team_name ?? 'Squadra senza nome',
                 team_logo: data.team_logo ?? null,
                 credits: data.credits ?? 500,
-                players: data.players ?? [] // Salviamo l'intero array per mostrarlo nella modale
+                players: data.players ?? []
             });
         });
         
@@ -161,27 +184,44 @@ export async function loadCompetizioni() {
             return;
         }
 
-        // --- 2. Costruzione della Lista Squadre ---
-        container.innerHTML = teams.map((t, i) => `
-            <div class="comp-team-row clickable-team" data-index="${i}" style="cursor:pointer">
-                <div class="comp-rank">${i + 1}</div>
-                <div class="comp-team-logo-wrap">
-                    ${t.team_logo
-                        ? `<img src="${t.team_logo}" class="comp-team-logo" onerror="this.style.display='none'">`
-                        : `<div class="comp-team-logo-placeholder">${t.team_name[0].toUpperCase()}</div>`}
-                </div>
-                <div class="comp-team-info">
-                    <div class="comp-team-name">${t.team_name}</div>
-                    <div class="comp-team-meta">${t.players.length} giocatori · ${t.credits} cr.</div>
-                </div>
-                <span class="material-symbols-outlined" style="color:var(--text-3); font-size: 20px;">chevron_right</span>
-            </div>`).join('');
+        // Ordina le squadre alfabeticamente
+        teams.sort((a, b) => a.team_name.localeCompare(b.team_name));
 
-        // --- 3. Aggancio Eventi Modale ---
+        // --- 2. Costruzione della Lista Squadre ---
+        container.innerHTML = `
+            <div class="comp-list-card">
+                ${teams.map((t, i) => `
+                    <div class="comp-team-row clickable-team" data-index="${i}">
+                        <div class="comp-index">${i + 1}</div>
+                        <div class="comp-team-logo-wrap">
+                            ${t.team_logo
+                                ? `<img src="${t.team_logo}" class="comp-team-logo" onerror="this.style.display='none'">`
+                                : `<div class="comp-team-logo-placeholder">${t.team_name[0].toUpperCase()}</div>`}
+                        </div>
+                        <div class="comp-team-info">
+                            <div class="comp-team-name">${t.team_name}</div>
+                            <div class="comp-team-meta">
+                                <div class="comp-meta-item" title="Giocatori in rosa">
+                                    <span class="material-symbols-outlined comp-meta-icon">group</span>
+                                    ${t.players.length}
+                                </div>
+                                <div class="comp-meta-item" title="Crediti residui">
+                                    <span class="material-symbols-outlined comp-meta-icon">toll</span>
+                                    ${t.credits}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined comp-chevron">chevron_right</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // --- 3. Aggancio Eventi Modale (Rimane identico) ---
         container.querySelectorAll('.clickable-team').forEach(row => {
             row.addEventListener('click', () => {
                 const teamData = teams[row.dataset.index];
-                showOpponentSquad(teamData);
+                showOpponentSquad(teamData); // Richiama la funzione esistente per il bottom sheet
             });
         });
 
