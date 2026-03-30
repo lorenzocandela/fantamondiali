@@ -54,13 +54,14 @@ $force  = isset($_GET['force']) ? (int)$_GET['force'] : 1; // Messo a 1 di defau
 $stmt = $pdo->prepare("
     SELECT DISTINCT fixture_id 
     FROM player_match_stats 
-    WHERE status IN ('FT', 'AET', 'PEN')
+    WHERE match_date BETWEEN ? AND ?
+    AND status IN ('FT', 'AET', 'PEN')
 ");
-$stmt->execute();
-$dbFixtureIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$stmt->execute([$from, $to]);
+$fixtureIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-if (empty($dbFixtureIds)) {
-    echo json_encode(['status' => 'error', 'message' => 'Nessuna partita terminata trovata nel DB. Esegui prima il cron di sync.']);
+if (empty($fixtureIds)) {
+    echo json_encode(['status' => 'error', 'message' => "Nessuna partita trovata nel DB per il periodo $from al $to."]);
     exit;
 }
 

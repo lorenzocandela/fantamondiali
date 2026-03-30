@@ -329,7 +329,7 @@ document.getElementById('btn-calc-scores')?.addEventListener('click', async () =
 
     try {
         // 1. Recupera rating dalla API PHP passandogli le date
-        const scoresRes = await fetch(`get_calcolo_giornata_scores.php?from=${fromDate}&to=${toDate}&league=32&season=2024&force=1`);
+        const scoresRes = await fetch(`get_calcolo_giornata_scores.php?from=${fromDate}&to=${toDate}&league=1&season=2026&force=1`);
         const scoresData = await scoresRes.json();
         if (scoresData.status !== 'success') throw new Error(scoresData.message ?? 'Errore API scores');
 

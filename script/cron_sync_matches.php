@@ -147,9 +147,11 @@ foreach ($fixtures as $f) {
 
             // salva db
             try {
+                $matchDate = substr($f['fixture']['date'] ?? date('Y-m-d'), 0, 10);
+
                 $stmt = $pdo->prepare("INSERT INTO player_match_stats 
-                    (fixture_id, player_id, player_name, role, rating, minutes_played, goals, assists, yellow_cards, red_cards, clean_sheet, status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (fixture_id, player_id, player_name, role, rating, minutes_played, goals, assists, yellow_cards, red_cards, clean_sheet, status, match_date) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE 
                     rating = VALUES(rating),
                     minutes_played = VALUES(minutes_played),
@@ -158,12 +160,13 @@ foreach ($fixtures as $f) {
                     yellow_cards = VALUES(yellow_cards),
                     red_cards = VALUES(red_cards),
                     clean_sheet = VALUES(clean_sheet),
-                    status = VALUES(status)
+                    status = VALUES(status),
+                    match_date = VALUES(match_date)
                 ");
 
                 $stmt->execute([
                     $fixtureId, $pid, $pname, $role, $rating, $minutes, 
-                    $goals, $assists, $yellow, $red, $cs, $status
+                    $goals, $assists, $yellow, $red, $cs, $status, $matchDate
                 ]);
             } catch (PDOException $e) {
                 writeLog("  -> ERR DB su inserimento pid {$pid}: " . $e->getMessage());
