@@ -65,7 +65,7 @@
         <div class="profilo-section-title">Regole di Gioco</div>
         <p class="profilo-section-desc">Consulta il regolamento ufficiale del torneo, i punteggi e i bonus/malus.</p>
         <button id="btn-open-rules" class="btn-join">
-            Leggi Regolamento
+            Regolamento
         </button>
     </div>
 
