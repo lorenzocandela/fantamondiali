@@ -91,14 +91,17 @@ $syncedCount = 0;
 
 // Prepariamo la query di inserimento
 $stmt = $pdo->prepare("
-    INSERT INTO player_listone (id, name, photo, nationality, role, team, team_logo, rating, price, goals, assists, appearances)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO player_listone (id, name, photo, nationality, role, team, team_logo, rating, price, goals, assists, appearances, own_goals, pen_saved)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
     photo=VALUES(photo), role=VALUES(role), team=VALUES(team), team_logo=VALUES(team_logo),
-    rating=VALUES(rating), price=VALUES(price), goals=VALUES(goals), assists=VALUES(assists), appearances=VALUES(appearances)
+    rating=VALUES(rating), price=VALUES(price), goals=VALUES(goals), assists=VALUES(assists), 
+    appearances=VALUES(appearances), own_goals=VALUES(own_goals), pen_saved=VALUES(pen_saved)
 ");
 
 foreach ($teamsResponse['response'] as $t) {
+    $og = (int)($stats['goals']['owngoals'] ?? 0);
+    $ps = (int)($stats['penalty']['saved'] ?? 0);
     $teamId   = $t['team']['id'];
     $teamName = $t['team']['name'];
     $teamLogo = $t['team']['logo'];

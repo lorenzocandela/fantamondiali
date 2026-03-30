@@ -115,6 +115,23 @@ if (btnNotif) {
     }
 }
 
+document.getElementById('btn-open-rules')?.addEventListener('click', () => {
+    const rulesOverlay = document.getElementById('rules-overlay');
+    rulesOverlay.classList.remove('hidden');
+    rulesOverlay.style.transform = 'translateY(100%)';
+    requestAnimationFrame(() => {
+        rulesOverlay.style.transform = 'translateY(0)';
+    });
+});
+
+document.getElementById('btn-close-rules')?.addEventListener('click', () => {
+    const rulesOverlay = document.getElementById('rules-overlay');
+    rulesOverlay.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+        rulesOverlay.classList.add('hidden');
+    }, 300);
+});
+
 document.getElementById('avatar-upload')?.addEventListener('change', handleAvatarUpload);
 
 document.getElementById('avatar-upload')?.addEventListener('change', handleAvatarUpload);

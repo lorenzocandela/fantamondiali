@@ -51,11 +51,22 @@
         </button>
     </div>
 
+    <!-- notifiche -->
     <div class="profilo-section" id="notifications-section">
         <div class="profilo-section-title">Notifiche</div>
         <p class="profilo-section-desc">Attiva le notifiche per sapere in tempo reale se ci sono aggiornamenti in app riguardo la competizione.</p>
         <button id="btn-enable-notifications" class="btn-join" style="background:var(--green-soft);color:var(--green)">
             Attiva notifiche
+        </button>
+    </div>
+
+    <!-- regolamento -->
+    <div class="profilo-section">
+        <div class="profilo-section-title">Regole di Gioco</div>
+        <p class="profilo-section-desc">Consulta il regolamento ufficiale del torneo, i punteggi e i bonus/malus.</p>
+        <button id="btn-open-rules" class="btn-join" style="background:var(--bg-2);color:var(--text-1)">
+            <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px; font-size: 18px;">menu_book</span>
+            Leggi Regolamento
         </button>
     </div>
 

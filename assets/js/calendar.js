@@ -960,6 +960,8 @@ const SCORE_TABLE = {
     assist: 1,
     yellow: -0.5,
     red: -2,
+    own_goal: -2,
+    pen_saved: 3,
     clean_sheet: { POR: 1 },
 };
 
@@ -967,7 +969,10 @@ function calcLiveScore(player, stats) {
     if (!stats) return null;
 
     let base = stats.rating ?? 0;
-    const hasBonus = (stats.goals ?? 0) > 0 || (stats.assists ?? 0) > 0 || (stats.yellow ?? 0) > 0 || (stats.red ?? 0) > 0 || (stats.cs && player.role === 'POR');
+    const hasBonus = (stats.goals ?? 0) > 0 || (stats.assists ?? 0) > 0 || 
+                    (stats.yellow ?? 0) > 0 || (stats.red ?? 0) > 0 || 
+                    (stats.og ?? 0) > 0 || (stats.ps ?? 0) > 0 || 
+                    (stats.cs && player.role === 'POR');
 
     if (base === 0) {
         if (hasBonus && stats.played) {
@@ -982,6 +987,9 @@ function calcLiveScore(player, stats) {
     score += (stats.assists ?? 0) * SCORE_TABLE.assist;
     score += (stats.yellow ?? 0) * SCORE_TABLE.yellow;
     score += (stats.red ?? 0) * SCORE_TABLE.red;
+    score += (stats.og ?? 0) * SCORE_TABLE.own_goal;
+    score += (stats.ps ?? 0) * SCORE_TABLE.pen_saved;
+    
     if (stats.cs && SCORE_TABLE.clean_sheet[player.role]) {
         score += SCORE_TABLE.clean_sheet[player.role];
     }
