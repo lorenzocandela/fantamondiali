@@ -117,19 +117,19 @@ if (btnNotif) {
 
 document.getElementById('btn-open-rules')?.addEventListener('click', () => {
     const rulesOverlay = document.getElementById('rules-overlay');
+    if (!rulesOverlay) return;
     rulesOverlay.classList.remove('hidden');
-    rulesOverlay.style.transform = 'translateY(100%)';
-    requestAnimationFrame(() => {
-        rulesOverlay.style.transform = 'translateY(0)';
-    });
+    void rulesOverlay.offsetWidth;
+    rulesOverlay.style.transform = 'translateY(0)';
 });
 
 document.getElementById('btn-close-rules')?.addEventListener('click', () => {
     const rulesOverlay = document.getElementById('rules-overlay');
+    if (!rulesOverlay) return;
     rulesOverlay.style.transform = 'translateY(100%)';
-    setTimeout(() => {
+    rulesOverlay.addEventListener('transitionend', () => {
         rulesOverlay.classList.add('hidden');
-    }, 300);
+    }, { once: true });
 });
 
 document.getElementById('avatar-upload')?.addEventListener('change', handleAvatarUpload);
