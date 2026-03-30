@@ -33,6 +33,9 @@ if (!$isSync) {
         $p['assists'] = (int)$p['assists'];
         $p['appearances'] = (int)$p['appearances'];
         $p['rating'] = (float)$p['rating'];
+        // I nuovi campi
+        $p['own_goals'] = isset($p['own_goals']) ? (int)$p['own_goals'] : 0;
+        $p['pen_saved'] = isset($p['pen_saved']) ? (int)$p['pen_saved'] : 0;
     }
 
     echo json_encode([
@@ -89,7 +92,7 @@ $roleMap = [
 
 $syncedCount = 0;
 
-// Prepariamo la query di inserimento
+// Prepariamo la query di inserimento (aggiornata con own_goals e pen_saved)
 $stmt = $pdo->prepare("
     INSERT INTO player_listone (id, name, photo, nationality, role, team, team_logo, rating, price, goals, assists, appearances, own_goals, pen_saved)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -100,8 +103,6 @@ $stmt = $pdo->prepare("
 ");
 
 foreach ($teamsResponse['response'] as $t) {
-    $og = (int)($stats['goals']['owngoals'] ?? 0);
-    $ps = (int)($stats['penalty']['saved'] ?? 0);
     $teamId   = $t['team']['id'];
     $teamName = $t['team']['name'];
     $teamLogo = $t['team']['logo'];
@@ -126,6 +127,10 @@ foreach ($teamsResponse['response'] as $t) {
             $goals  = (int)($stats['goals']['total'] ?? 0);
             $assists= (int)($stats['goals']['assists'] ?? 0);
             $rating = (float)($stats['games']['rating'] ?? 6.0);
+            
+            // Nuove statistiche recuperate QUI (dentro il ciclo del giocatore)
+            $og = (int)($stats['goals']['owngoals'] ?? 0);
+            $ps = (int)($stats['penalty']['saved'] ?? 0);
 
             // ─── CALCOLO DEL PREZZO DINAMICO ───
             $basePrice = 5;
@@ -143,7 +148,10 @@ foreach ($teamsResponse['response'] as $t) {
                 $goalBonus = $goals * 10; $assistBonus = $assists * 5; // Portieri col vizio
             }
 
-            $calculatedPrice = round($basePrice + $ratingBonus + $appBonus + $goalBonus + $assistBonus);
+            // Aggiungiamo il peso di autogol e rigori parati al prezzo
+            $ogMalus = $og * 2;
+            $psBonus = $ps * 3;
+            $calculatedPrice = round($basePrice + $ratingBonus + $appBonus + $goalBonus + $assistBonus - $ogMalus + $psBonus);
             
             // Limitiamo il prezzo tra 5 e 60 (o quanto vuoi tu)
             $finalPrice = min(60, max(5, $calculatedPrice));
@@ -154,7 +162,7 @@ foreach ($teamsResponse['response'] as $t) {
 
             $stmt->execute([
                 $p['id'], $cleanName, $p['photo'], $nat, $role, $teamName, $teamLogo,
-                $rating, $finalPrice, $goals, $assists, $apps
+                $rating, $finalPrice, $goals, $assists, $apps, $og, $ps
             ]);
             $syncedCount++;
         }
