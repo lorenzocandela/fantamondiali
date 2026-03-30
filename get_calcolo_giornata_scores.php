@@ -1,6 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 // CONFIG
@@ -19,40 +17,12 @@ try {
     exit;
 }
 
-
-// API FUNZ
-define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
-define('API_BASE_URL', 'https://v3.football.api-sports.io/');
-function apiGet(string $endpoint): ?array {
-    $url = API_BASE_URL . $endpoint;
-    $ch  = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL            => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 15,
-        CURLOPT_HTTPHEADER     => [
-            'x-apisports-key: ' . API_KEY,
-            'Accept: application/json',
-        ],
-    ]);
-    $resp = curl_exec($ch);
-    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($code !== 200 || !$resp) return null;
-    $data = json_decode($resp, true);
-    if (!empty($data['errors']) || empty($data['response'])) return null;
-    return $data['response'];
-}
-
 // INPUT
-$from = $_GET['from'] ?? date('Y-m-d');
-$to = $_GET['to'] ?? date('Y-m-d');
-$league = $_GET['league'] ?? 32;    // 32 = Playoff, 1 = Mondiali, 10 = Amichevoli
-$season = $_GET['season'] ?? 2024;  // 2024,         2026,         2026
-$force  = isset($_GET['force']) ? (int)$_GET['force'] : 1; // Messo a 1 di default per i tuoi test
+$from  = $_GET['from']  ?? date('Y-m-d');
+$to    = $_GET['to']    ?? date('Y-m-d');
+$force = isset($_GET['force']) ? (int)$_GET['force'] : 1;
 
-// CHECK PARTITE NEL DB PER DATA RANGE
+// leggi fixture nel range date dal DB
 $stmt = $pdo->prepare("
     SELECT DISTINCT fixture_id 
     FROM player_match_stats 
@@ -67,26 +37,7 @@ if (empty($fixtureIds)) {
     exit;
 }
 
-$endpoint = "fixtures?league={$league}&season={$season}&from={$from}&to={$to}";
-$fixtures = apiGet($endpoint) ?? [];
-
-$fixtureIds = [];
-if (!empty($fixtures)) {
-    foreach ($fixtures as $f) {
-        $fid = $f['fixture']['id'];
-        if (in_array($fid, $dbFixtureIds)) {
-            $fixtureIds[] = $fid;
-        }
-    }
-} else {
-    $fixtureIds = $dbFixtureIds;
-}
-
-if (empty($fixtureIds)) {
-    $fixtureIds = $dbFixtureIds;
-}
-
-// DB READ
+// leggi stats dal DB
 $inQuery = implode(',', array_fill(0, count($fixtureIds), '?'));
 $stmt = $pdo->prepare("SELECT * FROM player_match_stats WHERE fixture_id IN ($inQuery)");
 $stmt->execute($fixtureIds);
