@@ -278,6 +278,8 @@ function calcTeamWithSubs(lineupIds, roster, playerStats) {
             id: p.id,
             name: p.name,
             role: p.role,
+            nationality: p.nationality ?? null,
+            team: p.team ?? null,
             score: calcPlayerScoreReal(p, stats),
             stats: stats,
             is_used: false,
