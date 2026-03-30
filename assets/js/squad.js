@@ -116,7 +116,6 @@ export async function removePlayer(playerId) {
 }
 
 export async function loadCompetizioni() {
-    // --- 1. Aggiornamento Dinamico Banner ---
     const badge = document.querySelector('#page-competizione .comp-status-badge');
     const sub   = document.querySelector('#page-competizione .comp-banner-sub');
     if (badge) {
@@ -124,12 +123,12 @@ export async function loadCompetizioni() {
             badge.textContent = 'IN CORSO';
             badge.style.background = 'var(--green-soft)';
             badge.style.color = 'var(--green)';
-            if (sub) sub.textContent = 'La competizione ufficiale è attiva';
+            if (sub) sub.textContent = 'La competizione ufficiale è iniziata!';
         } else {
             badge.textContent = 'ATTESA';
             badge.style.background = '';
             badge.style.color = '';
-            if (sub) sub.textContent = 'La competizione inizierà con i Mondiali';
+            if (sub) sub.textContent = 'La competizione inizierà con i Mondiali!';
         }
     }
 
@@ -137,7 +136,6 @@ export async function loadCompetizioni() {
     if (!container) return;
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 20px"><div class="skel-line" style="width:55%"></div></div>`;
     
-    // --- 1.5 Stili CSS Dinamici per la UI Migliorata ---
     if (!document.getElementById('fm-comp-styles')) {
         const style = document.createElement('style');
         style.id = 'fm-comp-styles';
@@ -184,10 +182,8 @@ export async function loadCompetizioni() {
             return;
         }
 
-        // Ordina le squadre alfabeticamente
         teams.sort((a, b) => a.team_name.localeCompare(b.team_name));
 
-        // --- 2. Costruzione della Lista Squadre ---
         container.innerHTML = `
             <div class="comp-list-card">
                 ${teams.map((t, i) => `
@@ -217,11 +213,10 @@ export async function loadCompetizioni() {
             </div>
         `;
 
-        // --- 3. Aggancio Eventi Modale (Rimane identico) ---
         container.querySelectorAll('.clickable-team').forEach(row => {
             row.addEventListener('click', () => {
                 const teamData = teams[row.dataset.index];
-                showOpponentSquad(teamData); // Richiama la funzione esistente per il bottom sheet
+                showOpponentSquad(teamData);
             });
         });
 
@@ -230,12 +225,10 @@ export async function loadCompetizioni() {
     }
 }
 
-// --- Funzione per mostrare la rosa dell'avversario usando il bottom sheet esistente ---
 function showOpponentSquad(team) {
     const overlay = document.getElementById('squad-sheet-overlay');
     if (!overlay) return;
 
-    // Cambia temporaneamente il titolo del bottom sheet con il nome della squadra avversaria
     const titleEl = document.querySelector('.squad-sheet-title');
     if (titleEl) {
         titleEl.dataset.original = titleEl.dataset.original || titleEl.textContent;
@@ -282,11 +275,9 @@ function showOpponentSquad(team) {
         }).join('');
     }
 
-    // Mostra il bottom sheet
     overlay.classList.remove('hidden');
     requestAnimationFrame(() => overlay.classList.add('open'));
 
-    // Ripristina il titolo originale ("La mia rosa") alla chiusura
     const closeBtn = document.getElementById('btn-close-squad-sheet');
     const resetTitle = () => {
         if (titleEl && titleEl.dataset.original) {
