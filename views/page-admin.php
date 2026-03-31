@@ -86,7 +86,7 @@
             <div class="admin-control-desc">Round-robin su 7 giornate basato sugli iscritti alla competizione.</div>
         </div>
         <div id="admin-cal-preview" class="admin-cal-preview hidden"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;flex-direction: column;">
             <button class="admin-action-btn" id="btn-preview-calendar" style="flex:1">
                 <span class="material-symbols-outlined">preview</span>
                 Anteprima
