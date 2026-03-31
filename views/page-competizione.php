@@ -1,10 +1,8 @@
 <section id="page-competizione" class="page">
-    <div class="content-header" style="background: var(--bg-1); position: sticky; top: 0; z-index: 10;">
-        <div class="cal-seg-wrap" style="padding: 10px 16px; border-bottom: 1px solid var(--border-color);">
-            <div class="cal-seg">
-                <button class="cal-seg-btn comp-seg-btn active" data-view="squadre">Competizione</button>
-                <button class="cal-seg-btn comp-seg-btn" data-view="mondiali">Mondiali</button>
-            </div>
+    <div class="cal-seg-wrap">
+        <div class="cal-seg">
+            <button class="cal-seg-btn comp-seg-btn active" data-view="squadre">Competizione</button>
+            <button class="cal-seg-btn comp-seg-btn" data-view="mondiali">Mondiali</button>
         </div>
     </div>
 
