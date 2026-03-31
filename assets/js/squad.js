@@ -5,6 +5,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, bumpCredits } from './utils.js';
 import { renderPlayers, getFiltered, displayCount, isOwned, closeModal, loadGlobalOwnership } from './players.js';
+import { MATCHDAY_SCHEDULE } from './calendar.js';
 
 const squadList = document.getElementById('squad-list');
 
@@ -291,4 +292,100 @@ function showOpponentSquad(team) {
     overlay.addEventListener('click', e => {
         if (e.target === overlay) resetTitle();
     });
+}
+
+document.querySelectorAll('.comp-seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.comp-seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const v = btn.dataset.view;
+        document.getElementById('comp-view-squadre').classList.toggle('hidden', v !== 'squadre');
+        document.getElementById('comp-view-mondiali').classList.toggle('hidden', v !== 'mondiali');
+        
+        if (v === 'mondiali') {
+            loadMondialiSchedule();
+        }
+    });
+});
+
+async function loadMondialiSchedule() {
+    const container = document.getElementById('mondiali-matches-list');
+    
+    if (container.innerHTML.trim() !== '') return;
+
+    container.innerHTML = `<div class="skel-card skeleton" style="margin:0 16px; height: 120px;"></div>`;
+
+    try {
+        const res = await fetch('get_mondiali_schedule.php');
+        const data = await res.json();
+
+        if (data.status !== 'success') throw new Error(data.message);
+
+        const fixtures = data.data;
+        let html = '';
+
+        MATCHDAY_SCHEDULE.forEach(md => {
+            const mdStart = new Date(md.start).getTime();
+            const mdEnd = new Date(md.end).getTime();
+
+            const roundFixtures = fixtures.filter(f => {
+                const fTime = new Date(f.fixture.date).getTime();
+                return fTime >= mdStart && fTime <= mdEnd;
+            });
+
+            if (roundFixtures.length > 0) {
+                html += `
+                    <div style="margin: 24px 16px 10px; font-weight: 800; font-size: 14px; color: var(--text-3); text-transform: uppercase;">
+                        Giornata ${md.round} <span style="font-weight:400; font-family:var(--mono);">· ${md.label}</span>
+                    </div>
+                    <div class="comp-list-card" style="margin-bottom: 0;">
+                `;
+
+                roundFixtures.forEach((f, idx) => {
+                    const date = new Date(f.fixture.date);
+                    const timeStr = date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+                    
+                    const isFinished = f.fixture.status.short === 'FT' || f.fixture.status.short === 'AET' || f.fixture.status.short === 'PEN';
+                    const isLive = f.fixture.status.short === '1H' || f.fixture.status.short === '2H' || f.fixture.status.short === 'HT';
+
+                    let scoreHtml = `<div style="font-size:12px; color:var(--text-3); font-weight:500;">${dateStr} <br> ${timeStr}</div>`;
+                    
+                    if (isFinished) {
+                        scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--text-1);">${f.goals.home} - ${f.goals.away}</div><div style="font-size:10px; color:var(--text-3);">FIN</h4>`;
+                    } else if (isLive) {
+                        scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--blue);">${f.goals.home} - ${f.goals.away}</div><div style="font-size:10px; color:var(--blue); font-weight:700;">LIVE ${f.fixture.status.elapsed}'</h4>`;
+                    }
+
+                    const borderBottom = idx < roundFixtures.length - 1 ? 'border-bottom: 1px solid var(--bg-2);' : '';
+
+                    html += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; ${borderBottom}">
+                            <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px;">
+                                <span style="font-weight:600; font-size:14px; color:var(--text-1);">${f.teams.home.name}</span>
+                                <img src="${f.teams.home.logo}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);">
+                            </div>
+                            
+                            <div style="width: 70px; text-align: center; font-family: var(--mono);">
+                                ${scoreHtml}
+                            </div>
+                            
+                            <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px;">
+                                <img src="${f.teams.away.logo}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);">
+                                <span style="font-weight:600; font-size:14px; color:var(--text-1);">${f.teams.away.name}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+        });
+
+        if (!html) html = `<div class="empty-state">Nessuna partita programmata trovata.</div>`;
+        container.innerHTML = html;
+
+    } catch (err) {
+        container.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><p>Errore: ${err.message}</p></div>`;
+    }
 }
