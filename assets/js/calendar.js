@@ -89,7 +89,7 @@ ${isCurrent ? '<span class="md-row-badge">corrente</span>' : ''}
 
 // UTILS
 function logoHtml(uid, teams) {
-    if (uid.startsWith('TBD')) return `<div class="cal-team-logo-placeholder" style="background:var(--bg-2);"><span class="material-symbols-outlined" style="font-size:16px;">help</span></div>`;
+    if (uid.startsWith('TBD')) return `<div class="cal-team-logo-placeholder" style="background:var(--bg-2);"><span class="material-symbols-outlined" style="font-size: 34px;background: #e1e1e1;border-radius: 100px;color: transparent;">help</span></div>`;
     const t = teams.find(t => t.uid === uid);
     if (t?.team_logo) return `<img src="${t.team_logo}" class="cal-team-logo" alt="${t.team_name}" onerror="this.style.display='none'">`;
     const initial = (t?.team_name ?? '?')[0].toUpperCase();
