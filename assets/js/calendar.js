@@ -22,7 +22,7 @@ if (!document.getElementById('fm-live-styles')) {
 
 // SCHEDULE - da controllare orari
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' },
+    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-03-25T00:00:00', end: '2026-03-28T23:59:59' },
     { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-15T00:00:00', end: '2026-06-19T23:59:59' },
     { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-20T00:00:00', end: '2026-06-25T23:59:59' },
     { round: 4, label: 'Sedicesimi', short: 'R32', start: '2026-06-26T00:00:00', end: '2026-06-29T23:59:59' },
