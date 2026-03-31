@@ -1160,7 +1160,14 @@ let previewSchedule = [];
 
 function buildFullSchedule(teams) {
     const base = generateRoundRobin(teams);
-    const full = base.slice(0, 7).map((rd, i) => ({ ...rd, round: i + 1 }));
+    const full = [];
+    
+    let r = 0;
+    while (full.length < 7) {
+        const src = base[r % base.length]; // Riprende dall'inizio se il girone è finito
+        full.push({ round: full.length + 1, matches: src.matches });
+        r++;
+    }
     
     full.push({
         round: 8,
@@ -1171,6 +1178,7 @@ function buildFullSchedule(teams) {
             { home: 'TBD_7', away: 'TBD_8', home_name: '7° Classificata', away_name: '8° Classificata' }
         ]
     });
+    
     return full;
 }
 
