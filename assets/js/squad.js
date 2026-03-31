@@ -5,7 +5,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js';
 import { toast, bumpCredits } from './utils.js';
 import { renderPlayers, getFiltered, displayCount, isOwned, closeModal, loadGlobalOwnership } from './players.js';
-import { MATCHDAY_SCHEDULE } from './calendar.js';
+import { MATCHDAY_SCHEDULE, COUNTRY_CODES } from './calendar.js';   
 
 const squadList = document.getElementById('squad-list');
 
@@ -342,13 +342,19 @@ async function loadMondialiSchedule() {
                         scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--blue);">${f.goals.home ?? 0} - ${f.goals.away ?? 0}</div><div style="font-size:10px; color:var(--blue); font-weight:700;">LIVE ${f.fixture.status.elapsed}'</div>`;
                     }
 
+                    const homeCode = COUNTRY_CODES[f.teams.home.name];
+                    const awayCode = COUNTRY_CODES[f.teams.away.name];
+                    
+                    const homeLogoSrc = homeCode ? `assets/flags/${homeCode}.svg` : f.teams.home.logo;
+                    const awayLogoSrc = awayCode ? `assets/flags/${awayCode}.svg` : f.teams.away.logo;
+
                     const borderBottom = idx < roundFixtures.length - 1 ? 'border-bottom: 1px solid var(--bg-2);' : '';
 
                     html += `
                         <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; ${borderBottom}">
                             <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px;">
                                 <span style="font-weight:600; font-size:14px; color:var(--text-1); text-align:right;">${f.teams.home.name}</span>
-                                <img src="${f.teams.home.logo}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);">
+                                <img src="${homeLogoSrc}" onerror="this.src='${f.teams.home.logo}'" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color); object-fit: cover;">
                             </div>
                             
                             <div style="width: 70px; text-align: center; font-family: var(--mono);">
@@ -356,7 +362,7 @@ async function loadMondialiSchedule() {
                             </div>
                             
                             <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px;">
-                                <img src="${f.teams.away.logo}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);">
+                                <img src="${awayLogoSrc}" onerror="this.src='${f.teams.away.logo}'" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color); object-fit: cover;">
                                 <span style="font-weight:600; font-size:14px; color:var(--text-1); text-align:left;">${f.teams.away.name}</span>
                             </div>
                         </div>
