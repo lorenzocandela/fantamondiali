@@ -102,7 +102,7 @@
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
                 <div style="background: var(--green-soft); padding: 12px; border-radius: var(--r-sm); border: 1px solid rgba(40,180,99,0.15);">
                     <div style="font-weight: 700; font-size: 12px; color: var(--green); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; font-family: var(--mono); text-transform: uppercase;"><span class="material-symbols-outlined" style="font-size:14px;">add_circle</span> Bonus</div>
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Gol segnato<span style="font-family: var(--mono); font-weight: 700;">+3</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Gol segnato</span><span style="font-family: var(--mono); font-weight: 700;">+3</span></div>
                     <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Assist</span><span style="font-family: var(--mono); font-weight: 700;">+1</span></div>
                     <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Rigore parato</span><span style="font-family: var(--mono); font-weight: 700;">+3</span></div>
                     <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text);"><span>Rete inviolata</span><span style="font-family: var(--mono); font-weight: 700;">+1</span></div>
