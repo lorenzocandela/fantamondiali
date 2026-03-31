@@ -55,7 +55,6 @@
     
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 26px 20px 14px; position: sticky; top: 0; background: rgba(247, 247, 248, 0.88); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); border-bottom: 1px solid var(--border); z-index: 100;">
         <div style="display:flex; align-items:center; gap:8px;">
-            <span class="material-symbols-outlined" style="color:var(--text);">menu_book</span>
             <div class="page-title" style="font-size: 22px; margin:0;">Regolamento</div>
         </div>
         <button id="btn-close-rules" class="icon-btn" style="padding: 6px; border-radius: 50%; border: none; box-shadow: none;">
