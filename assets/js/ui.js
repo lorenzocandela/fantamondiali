@@ -41,25 +41,26 @@ export function initTabPill() {
 
 export function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'page-enter'));
-    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-
     const page = document.getElementById(`page-${name}`);
-    const tab  = document.getElementById(`nav-${name}`);
-
+    
     if (!page) return;
     page.classList.add('active', 'page-enter');
     page.addEventListener('animationend', () => page.classList.remove('page-enter'), { once: true });
 
-    if (tab) tab.classList.add('active');
+    const tab = document.getElementById(`nav-${name}`);
+    if (tab) {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
 
-    const bar  = document.querySelector('.tab-bar');
-    const pill = bar?.querySelector('.tab-pill');
-    if (pill && tab && !tab.classList.contains('hidden')) {
-        const br = bar.getBoundingClientRect();
-        const tr = tab.getBoundingClientRect();
-        pill.style.left   = (tr.left - br.left) + 'px';
-        pill.style.width  = tr.width + 'px';
-        pill.style.height = tr.height + 'px';
+        const bar  = document.querySelector('.tab-bar');
+        const pill = bar?.querySelector('.tab-pill');
+        if (pill && !tab.classList.contains('hidden')) {
+            const br = bar.getBoundingClientRect();
+            const tr = tab.getBoundingClientRect();
+            pill.style.left   = (tr.left - br.left) + 'px';
+            pill.style.width  = tr.width + 'px';
+            pill.style.height = tr.height + 'px';
+        }
     }
 }
 
