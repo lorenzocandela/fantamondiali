@@ -44,7 +44,7 @@
 
 /* --- ai beta test --- */
 .btn-ai-recap {
-    background: var(--bg-2);
+    background: #72727a2e;
     color: var(--text-2);
     border: 1px solid var(--border-color);
     border-radius: 16px;

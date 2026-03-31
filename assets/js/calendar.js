@@ -592,7 +592,7 @@ ${played
             toast('Errore IA: ' + err.message, 'error');
         } finally {
             btn.classList.remove('loading');
-            btn.innerHTML = `<span class="material-symbols-outlined">psychology</span> BETA`;
+            btn.innerHTML = `RECAP AI`;
         }
     });
 }
@@ -1373,7 +1373,6 @@ function showGeneratedRecap(imageUrl) {
                 <span class="material-symbols-outlined">close</span>
             </button>
             <img src="${imageUrl}" class="ai-recap-image" alt="Ricostruzione epica IA">
-            <div class="ai-recap-hint">Ricostruzione artistica basata su voti e avatar reali. BETA.</div>
         </div>
     `;
     document.body.appendChild(overlay);
