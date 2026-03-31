@@ -51,118 +51,98 @@
 
 
 <!-- REGOLAMENTO -->
-<style id="fm-rules-styles">
-    #rules-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: var(--bg-1, #ffffff); 
-        z-index: 999999; overflow-y: auto; transform: translateY(100%); 
-        transition: transform 0.4s cubic-bezier(0.1, 0, 0.1, 1);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+<div id="rules-overlay" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:999999; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s var(--ease);">
     
-    /* Header leggermente trasparente per un effetto fluido allo scroll */
-    .r-header {
-        position: sticky; top: 0; background: rgba(255, 255, 255, 0.85); 
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; 
-        border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100;
-    }
-    .r-title { font-weight: 800; font-size: 22px; color: var(--text-1, #000); letter-spacing: -0.5px; }
-    .r-close { background: var(--bg-2, #f2f2f7); color: var(--text-1); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    
-    .r-content { padding: 10px 20px 80px; }
-    
-    /* Sezioni separate solo da respiro (margin), niente bordi duri */
-    .r-section { margin-top: 32px; margin-bottom: 16px; }
-    .r-h3 { font-weight: 800; font-size: 17px; color: var(--text-1); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; letter-spacing: -0.3px; }
-    .r-h3 .material-symbols-outlined { color: var(--blue, #007aff); font-size: 22px !important; font-variation-settings: 'FILL' 1; }
-    
-    .r-p { font-size: 15px; color: var(--text-2, #3a3a3c); line-height: 1.4; margin: 0 0 12px 0; }
-    .r-strong { color: var(--text-1); font-weight: 700; }
-    
-    /* Liste super pulite */
-    .r-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .r-li { font-size: 15px; color: var(--text-2); display: flex; align-items: center; gap: 10px; line-height: 1.3;}
-    
-    /* Pillole di ruolo dai colori pastello morbidissimi */
-    .r-pill { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 12px; font-family: var(--mono, monospace); }
-    .r-pill.por { background: #fff0e0; color: #ff9500; }
-    .r-pill.dif { background: #e8f8ec; color: #34c759; }
-    .r-pill.cen { background: #e5f1ff; color: #007aff; }
-    .r-pill.att { background: #ffebeb; color: #ff3b30; }
-
-    /* Tabella bonus malus minimalista (stile scontrino Apple Pay) */
-    .r-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-    .r-table td { padding: 12px 0; border-bottom: 1px solid var(--bg-2, #f2f2f7); font-size: 15px; color: var(--text-1); }
-    .r-table td:last-child { text-align: right; font-weight: 800; font-family: var(--mono, monospace); font-size: 16px; }
-    .r-table tr:last-child td { border-bottom: none; }
-    .r-val-plus { color: var(--green, #34c759); }
-    .r-val-minus { color: var(--red, #ff3b30); }
-    .r-sub { font-size: 12px; color: var(--text-3); font-weight: 400; display: block; margin-top: 2px;}
-</style>
-
-<div id="rules-overlay" class="hidden">
-    
-    <div class="r-header">
-        <div class="r-title">Regolamento</div>
-        <button id="btn-close-rules" class="r-close">
-            <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+    <div class="content-header" style="position: sticky; top: 0; background: rgba(247, 247, 248, 0.88); backdrop-filter: blur(24px) saturate(1.6); border-bottom: 1px solid var(--border); z-index: 100; justify-content: space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined" style="color:var(--text);">menu_book</span>
+            <div class="page-title" style="font-size: 22px;">Regolamento</div>
+        </div>
+        <button id="btn-close-rules" class="icon-btn" style="padding: 6px; border-radius: 50%; border: none; box-shadow: none;">
+            <span class="material-symbols-outlined">close</span>
         </button>
     </div>
     
-    <div class="r-content">
+    <div style="padding: 16px 0 80px;">
         
-        <div class="r-section" style="margin-top: 16px;">
-            <h3 class="r-h3"><span class="material-symbols-outlined">hub</span> Il Torneo</h3>
-            <p class="r-p">Sviluppo su <strong>8 Giornate</strong> parallele al Mondiale reale.</p>
-            <ul class="r-list">
-                <li class="r-li"><span class="r-strong">G1 - G7:</span> Campionato (Tutti contro Tutti).</li>
-                <li class="r-li"><span class="r-strong">G8:</span> Finali dirette in base alla classifica.</li>
-            </ul>
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">hub</span> 1. Struttura del Torneo</div>
+            <div style="font-size: 13.5px; color: var(--text-2); line-height: 1.5;">Il Fantamondiali 2026 si svolge parallelamente al Mondiale reale ed è diviso in 8 giornate.<br>I partecipanti sono 8. Il torneo segue una formula campionato tutti-contro-tutti per 7 giornate, seguite da una <strong>Giornata 8 di Finali</strong> dirette in base alla classifica.</div>
         </div>
 
-        <div class="r-section">
-            <h3 class="r-h3"><span class="material-symbols-outlined">groups</span> La Rosa (29)</h3>
-            <ul class="r-list">
-                <li class="r-li"><span class="r-pill por">POR</span> 4 Portieri</li>
-                <li class="r-li"><span class="r-pill dif">DIF</span> 9 Difensori</li>
-                <li class="r-li"><span class="r-pill cen">CEN</span> 9 Centrocampisti</li>
-                <li class="r-li"><span class="r-pill att">ATT</span> 7 Attaccanti</li>
-            </ul>
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">groups</span> 2. La Rosa</div>
+            <div style="font-size: 13.5px; color: var(--text-2); line-height: 1.5;">Ogni partecipante dovrà creare una rosa composta da <strong>29 giocatori</strong>, selezionabili tra tutte le nazionali partecipanti:</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px;"><span class="role-badge badge-POR" style="margin: 0;">POR</span> <span style="font-size: 13.5px; color: var(--text-2);">4 Portieri</span></div>
+                <div style="display: flex; align-items: center; gap: 8px;"><span class="role-badge badge-DIF" style="margin: 0;">DIF</span> <span style="font-size: 13.5px; color: var(--text-2);">9 Difensori</span></div>
+                <div style="display: flex; align-items: center; gap: 8px;"><span class="role-badge badge-CEN" style="margin: 0;">CEN</span> <span style="font-size: 13.5px; color: var(--text-2);">9 Centrocampisti</span></div>
+                <div style="display: flex; align-items: center; gap: 8px;"><span class="role-badge badge-ATT" style="margin: 0;">ATT</span> <span style="font-size: 13.5px; color: var(--text-2);">7 Attaccanti</span></div>
+            </div>
         </div>
 
-        <div class="r-section">
-            <h3 class="r-h3"><span class="material-symbols-outlined">strategy</span> Formazione e Cambi</h3>
-            <p class="r-p">Schiera 11 titolari (Minimo 1 POR, 3 DIF, 3 CEN, 1 ATT).</p>
-            <ul class="r-list">
-                <li class="r-li"><span class="r-strong">Cambi:</span> Max 5 sostituzioni. Entra il primo con ruolo compatibile al modulo.</li>
-                <li class="r-li"><span class="r-strong">Voto base:</span> Chi scende in campo parte sempre da 6.</li>
-            </ul>
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">strategy</span> 3. Formazione e Moduli</div>
+            <div style="font-size: 13.5px; color: var(--text-2); line-height: 1.5;">Per ogni giornata schiererai 11 titolari con modulo libero, rispettando però questi minimi:</div>
+            <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-2);"><span class="material-symbols-outlined" style="font-size: 16px; color: var(--blue);">check_circle</span> 1 Portiere</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-2);"><span class="material-symbols-outlined" style="font-size: 16px; color: var(--blue);">check_circle</span> Almeno 3 Difensori</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-2);"><span class="material-symbols-outlined" style="font-size: 16px; color: var(--blue);">check_circle</span> Almeno 3 Centrocampisti</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-2);"><span class="material-symbols-outlined" style="font-size: 16px; color: var(--blue);">check_circle</span> Almeno 1 Attaccante</div>
+            </div>
         </div>
 
-        <div class="r-section">
-            <h3 class="r-h3"><span class="material-symbols-outlined">exposure</span> Bonus e Malus</h3>
-            <table class="r-table">
-                <tr><td>Gol segnato <span class="r-sub">Portiere: +5</span></td><td class="r-val-plus">+3</td></tr>
-                <tr><td>Assist</td><td class="r-val-plus">+1</td></tr>
-                <tr><td>Rigore parato</td><td class="r-val-plus">+3</td></tr>
-                <tr><td>Clean Sheet <span class="r-sub">Solo Portiere</span></td><td class="r-val-plus">+1</td></tr>
-                <tr><td>Ammonizione</td><td class="r-val-minus">-0.5</td></tr>
-                <tr><td>Espulsione / Autogol</td><td class="r-val-minus">-2</td></tr>
-                <tr><td>Rigore sbagliato</td><td class="r-val-minus">-3</td></tr>
-                <tr><td>Gol subito <span class="r-sub">Solo Portiere</span></td><td class="r-val-minus">-1</td></tr>
-            </table>
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">airline_seat_recline_normal</span> 4. Panchina e Sostituzioni</div>
+            <div style="font-size: 13.5px; color: var(--text-2); line-height: 1.5;">La panchina è libera (max 18 giocatori). Sono consentite un <strong>massimo di 5 sostituzioni</strong> per giornata.<br><br>Se un titolare non va a voto, entrerà il primo panchinaro disponibile con ruolo compatibile al modulo. Il voto base di partenza per chi scende in campo è sempre <strong>6</strong>.</div>
         </div>
 
-        <div class="r-section">
-            <h3 class="r-h3"><span class="material-symbols-outlined">lock_clock</span> Classifica e Mercato</h3>
-            <ul class="r-list">
-                <li class="r-li"><span class="r-strong">Esito:</span> Vittoria 3pt &nbsp;•&nbsp; Pari 1pt &nbsp;•&nbsp; Persa 0pt</li>
-                <li class="r-li"><span class="r-strong">Parità:</span> Ha la meglio chi ha più FantaPunti totali.</li>
-                <li class="r-li"><span class="r-strong">Consegna:</span> Entro l'inizio della prima partita utile.</li>
-                <li class="r-li"><span class="r-strong">Mercato:</span> Chiuso a torneo in corso.</li>
-            </ul>
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">calculate</span> 5. Bonus e Malus</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                <div style="background: var(--green-soft); padding: 12px; border-radius: var(--r-sm); border: 1px solid rgba(40,180,99,0.15);">
+                    <div style="font-weight: 700; font-size: 12px; color: var(--green); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; font-family: var(--mono); text-transform: uppercase;"><span class="material-symbols-outlined" style="font-size:14px;">add_circle</span> Bonus</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Gol segnato <span style="font-size:10px; color:var(--text-2);">(+5 per Portiere)</span></span><span style="font-family: var(--mono); font-weight: 700;">+3</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Assist</span><span style="font-family: var(--mono); font-weight: 700;">+1</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Rigore parato</span><span style="font-family: var(--mono); font-weight: 700;">+3</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text);"><span>Clean Sheet <span style="font-size:10px; color:var(--text-2);">(Portiere)</span></span><span style="font-family: var(--mono); font-weight: 700;">+1</span></div>
+                </div>
+                
+                <div style="background: var(--red-soft); padding: 12px; border-radius: var(--r-sm); border: 1px solid rgba(232,57,42,0.15);">
+                    <div style="font-weight: 700; font-size: 12px; color: var(--red); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; font-family: var(--mono); text-transform: uppercase;"><span class="material-symbols-outlined" style="font-size:14px;">do_not_disturb_on</span> Malus</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Ammonizione</span><span style="font-family: var(--mono); font-weight: 700;">-0.5</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Espulsione / Autogol</span><span style="font-family: var(--mono); font-weight: 700;">-2</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text); margin-bottom: 4px;"><span>Rigore sbagliato</span><span style="font-family: var(--mono); font-weight: 700;">-3</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text);"><span>Gol subito <span style="font-size:10px; color:var(--text-2);">(Portiere)</span></span><span style="font-family: var(--mono); font-weight: 700;">-1</span></div>
+                </div>
+            </div>
         </div>
-        
+
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">sports_score</span> 6. Esito e Classifica</div>
+            <div style="font-size: 13.5px; color: var(--text-2); line-height: 1.5;">Vince la sfida chi ottiene il punteggio totale più alto (senza soglie gol).<br><br><strong style="color: var(--text);">Punti:</strong> Vittoria 3pt, Pareggio 1pt, Sconfitta 0pt.<br><br><strong style="color: var(--text);">Criteri Parità:</strong><br>1. Punti<br>2. FantaPunti totali<br>3. Numero Vittorie<br>4. Sorteggio</div>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title" style="display: flex; align-items: center; gap: 6px;"><span class="material-symbols-outlined" style="font-size: 16px;">event</span> 7. Calendario e Consegna</div>
+            <div style="font-size: 13.5px; color: var(--text-2); line-height: 1.5;">
+                <strong style="color: var(--text);">Formazione:</strong> Inserita prima dell'inizio della prima partita utile. In caso di dimenticanza, vale l'ultima schierata.<br><br>
+                <strong style="color: var(--text);">Mercato:</strong> Chiuso a torneo in corso.
+            </div>
+            
+            <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 12px; margin-top: 12px;">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-3); margin-bottom: 6px; text-transform: uppercase; font-family: var(--mono);">Campionato (Tutti vs Tutti)</div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text); margin-bottom: 4px;"><span>G1 - G3</span><span style="font-family: var(--mono);">Fase a Gironi</span></div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text); margin-bottom: 4px;"><span>G4</span><span style="font-family: var(--mono);">Sedicesimi</span></div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text); margin-bottom: 4px;"><span>G5</span><span style="font-family: var(--mono);">Ottavi</span></div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text); margin-bottom: 4px;"><span>G6</span><span style="font-family: var(--mono);">Quarti</span></div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text); margin-bottom: 8px;"><span>G7</span><span style="font-family: var(--mono);">Semifinali</span></div>
+                
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-3); margin-bottom: 6px; padding-top: 8px; border-top: 1px solid var(--border); text-transform: uppercase; font-family: var(--mono);">Fase Finale</div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: var(--blue); font-weight: 700;"><span>G8</span><span style="font-family: var(--mono);">Finali Dirette</span></div>
+            </div>
+        </div>
+
     </div>
 </div>
