@@ -142,28 +142,6 @@ export async function loadCompetizioni() {
     const container = document.getElementById('comp-teams-list');
     if (!container) return;
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 20px"><div class="skel-line" style="width:55%"></div></div>`;
-    
-    if (!document.getElementById('fm-comp-styles')) {
-        const style = document.createElement('style');
-        style.id = 'fm-comp-styles';
-        style.innerHTML = `
-            .comp-list-card { background: var(--bg-1); border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); border: 1px solid var(--border-color); overflow: hidden; margin: 0 16px 20px; }
-            .comp-team-row { display: flex; align-items: center; padding: 14px 16px; transition: background 0.2s; cursor: pointer; }
-            .comp-team-row:not(:last-child) { border-bottom: 1px solid var(--bg-2); }
-            .comp-team-row:hover { background: var(--bg-2); }
-            .comp-index { width: 24px; font-weight: 700; font-size: 13px; color: var(--text-3); font-family: var(--mono); text-align: left; }
-            .comp-team-logo-wrap { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; margin-right: 14px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--border-color); }
-            .comp-team-logo { width: 100%; height: 100%; object-fit: cover; }
-            .comp-team-logo-placeholder { font-weight: 700; color: var(--text-2); font-size: 16px; }
-            .comp-team-info { flex: 1; overflow: hidden; }
-            .comp-team-name { font-weight: 600; font-size: 15px; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-            .comp-team-meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-3); font-family: var(--mono); }
-            .comp-meta-item { display: flex; align-items: center; gap: 4px; }
-            .comp-meta-icon { font-size: 15px !important; color: var(--text-3); }
-            .comp-chevron { color: var(--text-4); font-size: 22px !important; margin-left: 8px; }
-        `;
-        document.head.appendChild(style);
-    }
 
     try {
         const snap  = await getDocs(collection(db, 'users'));
