@@ -58,8 +58,7 @@
     transition: all 0.2s;
     font-family: var(--mono);
 }
-.btn-ai-recap:hover { background: var(--bg-3); border-color: var(--text-4); }
-.btn-ai-recap.loading { opacity: 0.7; cursor: wait; }
+.btn-ai-recap.loading { opacity: 0.7; cursor: wait; background-color: none; border: none;}
 
 .rotating { animation: rotate 1.5s linear infinite; }
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
