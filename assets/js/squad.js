@@ -323,7 +323,7 @@ async function loadMondialiSchedule() {
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 16px; height: 120px;"></div>`;
 
     try {
-        const res = await fetch('get_mondiali_schedule.php?t=' + Date.now());
+        const res = await fetch('script/get_mondiali_schedule.php?t=' + Date.now());
         const data = await res.json();
 
         if (data.status !== 'success') throw new Error(data.message);
