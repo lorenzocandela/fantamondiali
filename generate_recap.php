@@ -27,6 +27,16 @@ $loserIdx  = ($scoreH >= $scoreA) ? 'second' : 'first';
 
 $prompt = "A high-end, dynamic {$randomStyle} showing a dramatic reconstruction of a football match between '{$home}' and '{$away}'. The final score '{$scoreH} - {$scoreA}' is displayed giant on a broken stadium scoreboard. The {$winnerIdx} person is celebrating wildly wearing a gold medal, while the {$loserIdx} person looks devastated on the muddy pitch. Keep the facial features of both people strictly faithful to the input photos. Background has heavy atmosphere, screaming fans, pouring rain, 8k resolution, photorealistic but stylized.";
 
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        [$key, $value] = explode('=', $line, 2);
+        putenv(trim($key) . '=' . trim($value));
+    }
+}
+
 $apiKey = getenv('XAI_API_KEY');
 
 if (!$apiKey) {
