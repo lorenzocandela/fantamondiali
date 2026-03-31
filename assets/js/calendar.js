@@ -540,11 +540,24 @@ ${played
         const btn = document.getElementById('btn-generate-recap');
         if (btn.classList.contains('loading')) return;
 
-        btn.classList.add('loading');
-        btn.innerHTML = `<span class="material-symbols-outlined rotating">progress_activity</span>`;
+        const uid = window.__user?.uid;
+        if (!uid) { toast('Devi essere loggato', 'error'); return; }
+
+        const recapKey = `recap_r${mdRound}_${mdHomeUid}_${mdAwayUid}`;
+        const userRef = doc(db, 'users', uid);
 
         try {
-            // Recuperiamo i dati necessari
+            const snap = await getDoc(userRef);
+            const recaps = snap.exists() ? (snap.data().generated_recaps ?? {}) : {};
+
+            if (recaps[recapKey]) {
+                showGeneratedRecap(recaps[recapKey]);
+                return;
+            }
+
+            btn.classList.add('loading');
+            btn.innerHTML = `<span class="material-symbols-outlined rotating">progress_activity</span>`;
+
             const home = calTeams.find(t => t.uid === mdHomeUid);
             const away = calTeams.find(t => t.uid === mdAwayUid);
             const res = calResults[String(mdRound)]?.[`${mdHomeUid}_${mdAwayUid}`];
@@ -556,7 +569,7 @@ ${played
                     round: mdRound,
                     home_name: home?.team_name ?? 'Home',
                     away_name: away?.team_name ?? 'Away',
-                    home_photo: home?.team_logo ?? '', // Usiamo il logo squadra o foto profilo
+                    home_photo: home?.team_logo ?? '',
                     away_photo: away?.team_logo ?? '',
                     home_score: res?.home_score ?? 0,
                     away_score: res?.away_score ?? 0
@@ -566,7 +579,10 @@ ${played
             const data = await response.json();
 
             if (data.status === 'success' && data.image_url) {
-                // Mostriamo l'immagine in un overlay
+                await setDoc(userRef, {
+                    generated_recaps: { ...recaps, [recapKey]: data.image_url }
+                }, { merge: true });
+
                 showGeneratedRecap(data.image_url);
             } else {
                 throw new Error(data.message || 'Errore generazione');
