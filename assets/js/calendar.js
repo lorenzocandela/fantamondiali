@@ -357,13 +357,16 @@ document.getElementById('cal-round-prev')?.addEventListener('click', () => {
 document.getElementById('cal-round-next')?.addEventListener('click', () => {
     if (calRound < calSchedule.length) { calRound++; renderCalRound(); }
 });
-document.querySelectorAll('.cal-seg-btn').forEach(btn => {
+
+document.querySelectorAll('#page-calendario .cal-seg-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.cal-seg-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#page-calendario .cal-seg-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        
         const v = btn.dataset.view;
         document.getElementById('cal-view-scontri').classList.toggle('hidden', v !== 'scontri');
         document.getElementById('cal-view-classifica').classList.toggle('hidden', v !== 'classifica');
+        
         if (v === 'classifica') renderCalStandings();
     });
 });
