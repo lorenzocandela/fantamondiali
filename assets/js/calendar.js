@@ -452,19 +452,20 @@ function renderMatchDetail() {
     const canEdit = status === 'future' && isMine;
 
     let pillHtml = '';
-        if (played) {
-            pillHtml = `
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span class="md-live-pill" style="background: var(--blue-soft); color: var(--blue);">CALCOLATA</span>
-                <button id="btn-generate-recap" class="btn-ai-recap">
-                    RECAP AI
-                </button>
-            </div>`;
-        } else if (status === 'past') {
-            pillHtml = '<span class="md-live-pill" style="background: var(--green-soft); color: var(--green);">DA CALCOLARE</span>';
-        } else if (status === 'live') {
-            pillHtml = '<span class="md-live-pill">LIVE</span>';
-        }
+    if (played) {
+        const showRecap = isMyMatch(mdHomeUid, mdAwayUid);
+        pillHtml = `
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="md-live-pill" style="background: var(--blue-soft); color: var(--blue);">CALCOLATA</span>
+            ${showRecap ? `<button id="btn-generate-recap" class="btn-ai-recap">
+                RECAP AI
+            </button>` : ''}
+        </div>`;
+    } else if (status === 'past') {
+        pillHtml = '<span class="md-live-pill" style="background: var(--green-soft); color: var(--green);">DA CALCOLARE</span>';
+    } else if (status === 'live') {
+        pillHtml = '<span class="md-live-pill">LIVE</span>';
+    }
 
     const headerHtml = `
         <div class="md-header">

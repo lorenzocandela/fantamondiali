@@ -67,17 +67,32 @@ $style = $styles[array_rand($styles)];
 
 $prompt = "{$scene} The match is '{$home}' vs '{$away}', final score '{$scoreH} - {$scoreA}' visible on a scoreboard. Keep faces strictly faithful to input photos. Style: {$style}.";
 
-$payload = [
-    'model'  => 'grok-imagine-image',
-    'prompt' => $prompt,
-    'n'      => 1,
-    'images' => [
-        ['type' => 'image_url', 'url' => $photoH],
-        ['type' => 'image_url', 'url' => $photoA]
-    ]
-];
+$images = [];
+if (!empty($photoH) && filter_var($photoH, FILTER_VALIDATE_URL)) {
+    $images[] = ['type' => 'image_url', 'url' => $photoH];
+}
+if (!empty($photoA) && filter_var($photoA, FILTER_VALIDATE_URL)) {
+    $images[] = ['type' => 'image_url', 'url' => $photoA];
+}
 
-$ch = curl_init('https://api.x.ai/v1/images/edits');
+if (count($images) > 0) {
+    $payload = [
+        'model'  => 'grok-imagine-image',
+        'prompt' => $prompt,
+        'n'      => 1,
+        'images' => $images
+    ];
+    $endpoint = 'https://api.x.ai/v1/images/edits';
+} else {
+    $payload = [
+        'model'  => 'grok-imagine-image',
+        'prompt' => $prompt,
+        'n'      => 1,
+    ];
+    $endpoint = 'https://api.x.ai/v1/images/generations';
+}
+
+$ch = curl_init($endpoint);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
