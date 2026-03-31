@@ -260,7 +260,9 @@ export async function toggleJoinCompetition() {
         window.__user.competition_joined = joined;
         document.getElementById('profilo-joined-status').className = joined ? 'joined-badge active' : 'joined-badge';
         document.getElementById('profilo-joined-status').textContent = joined ? 'Iscritto alla competizione' : 'Non iscritto';
-        document.getElementById('btn-join-comp').textContent = joined ? 'Ritira iscrizione' : 'Iscriviti alla competizione';
+        const btnJoinComp = document.getElementById('btn-join-comp');
+        btnJoinComp.textContent = joined ? 'Ritira iscrizione' : 'Iscriviti alla competizione';
+        btnJoinComp.className = joined ? 'btn-logoout-full' : '';
         renderProfiloHero();
         toast(joined ? 'Iscrizione completata' : 'Iscrizione ritirata');
     } catch { toast('Errore di connessione a Firebase', 'error'); }
