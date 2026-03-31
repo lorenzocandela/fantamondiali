@@ -312,12 +312,12 @@ document.querySelectorAll('.comp-seg-btn').forEach(btn => {
 async function loadMondialiSchedule() {
     const container = document.getElementById('mondiali-matches-list');
     
-    if (container.innerHTML.trim() !== '') return;
+    if (container.querySelector('.comp-list-card')) return;
 
     container.innerHTML = `<div class="skel-card skeleton" style="margin:0 16px; height: 120px;"></div>`;
 
     try {
-        const res = await fetch('get_mondiali_schedule.php');
+        const res = await fetch('get_mondiali_schedule.php?t=' + Date.now());
         const data = await res.json();
 
         if (data.status !== 'success') throw new Error(data.message);
@@ -353,9 +353,9 @@ async function loadMondialiSchedule() {
                     let scoreHtml = `<div style="font-size:12px; color:var(--text-3); font-weight:500;">${dateStr} <br> ${timeStr}</div>`;
                     
                     if (isFinished) {
-                        scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--text-1);">${f.goals.home} - ${f.goals.away}</div><div style="font-size:10px; color:var(--text-3);">FIN</h4>`;
+                        scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--text-1);">${f.goals.home ?? 0} - ${f.goals.away ?? 0}</div><div style="font-size:10px; color:var(--text-3);">FIN</div>`;
                     } else if (isLive) {
-                        scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--blue);">${f.goals.home} - ${f.goals.away}</div><div style="font-size:10px; color:var(--blue); font-weight:700;">LIVE ${f.fixture.status.elapsed}'</h4>`;
+                        scoreHtml = `<div style="font-size:16px; font-weight:800; color:var(--blue);">${f.goals.home ?? 0} - ${f.goals.away ?? 0}</div><div style="font-size:10px; color:var(--blue); font-weight:700;">LIVE ${f.fixture.status.elapsed}'</div>`;
                     }
 
                     const borderBottom = idx < roundFixtures.length - 1 ? 'border-bottom: 1px solid var(--bg-2);' : '';
@@ -363,7 +363,7 @@ async function loadMondialiSchedule() {
                     html += `
                         <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; ${borderBottom}">
                             <div style="flex:1; display:flex; align-items:center; justify-content:flex-end; gap:10px;">
-                                <span style="font-weight:600; font-size:14px; color:var(--text-1);">${f.teams.home.name}</span>
+                                <span style="font-weight:600; font-size:14px; color:var(--text-1); text-align:right;">${f.teams.home.name}</span>
                                 <img src="${f.teams.home.logo}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);">
                             </div>
                             
@@ -373,7 +373,7 @@ async function loadMondialiSchedule() {
                             
                             <div style="flex:1; display:flex; align-items:center; justify-content:flex-start; gap:10px;">
                                 <img src="${f.teams.away.logo}" style="width:28px; height:28px; border-radius:50%; border:1px solid var(--border-color);">
-                                <span style="font-weight:600; font-size:14px; color:var(--text-1);">${f.teams.away.name}</span>
+                                <span style="font-weight:600; font-size:14px; color:var(--text-1); text-align:left;">${f.teams.away.name}</span>
                             </div>
                         </div>
                     `;
@@ -386,6 +386,6 @@ async function loadMondialiSchedule() {
         container.innerHTML = html;
 
     } catch (err) {
-        container.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><p>Errore: ${err.message}</p></div>`;
+        container.innerHTML = `<div class="empty-state"><span class="material-symbols-outlined">wifi_off</span><p>Errore di connessione: ${err.message}</p></div>`;
     }
 }
