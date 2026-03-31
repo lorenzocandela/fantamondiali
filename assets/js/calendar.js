@@ -456,9 +456,8 @@ function renderMatchDetail() {
             pillHtml = `
             <div style="display:flex; align-items:center; gap:8px;">
                 <span class="md-live-pill" style="background: var(--blue-soft); color: var(--blue);">CALCOLATA</span>
-                <button id="btn-generate-recap" class="btn-ai-recap" title="Genera ricostruzione epica con IA">
-                    <span class="material-symbols-outlined">psychology</span>
-                    BETA
+                <button id="btn-generate-recap" class="btn-ai-recap">
+                    RECAP AI
                 </button>
             </div>`;
         } else if (status === 'past') {
