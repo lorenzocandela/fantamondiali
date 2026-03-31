@@ -105,12 +105,11 @@ export function getFiltered() {
     const q = searchIn.value.trim().toLowerCase();
     return allPlayers.filter(p => {
         const matchRole   = activeRole === 'ALL' || p.role === activeRole;
-        const matchNation = activeNations.length === 0 || activeNations.includes(p.nationality);
-        const matchQ      = !q || p.name.toLowerCase().includes(q) || p.nationality.toLowerCase().includes(q);
+        const matchNation = activeNations.length === 0 || activeNations.includes(p.team);
+        const matchQ      = !q || p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q);
         return matchRole && matchNation && matchQ;
     });
 }
-
 export function buildSubtitle() {
     const parts = [];
     if (allPlayers.length) parts.push(`${allPlayers.length} giocatori`);
@@ -118,7 +117,7 @@ export function buildSubtitle() {
 
 export function populateNationFilter(players) {
     const container = document.getElementById('nation-filter-row');
-    const nations   = [...new Set(players.map(p => p.nationality))].filter(Boolean).sort();
+    const nations   = [...new Set(players.map(p => p.team))].filter(Boolean).sort();
 
     container.innerHTML = `
         <button class="chip active" data-nation="ALL">Tutte</button>
@@ -203,7 +202,7 @@ export function renderPlayers(players, slice) {
                 </div>
                 <div class="role-badge badge-${p.role}">${p.role}</div>
                 <div class="player-name">${p.name}</div>
-                <div class="player-nat">${natFlag(p.nationality)}</div>
+                <div class="player-nat">${natFlag(p.team)}</div>
                 <div class="price-row"><span class="material-symbols-outlined">toll</span>${p.price}</div>
                 <button class="btn-add ${locked ? 'locked' : owned ? 'owned' : taken ? 'taken' : ''}" data-id="${p.id}">
                     <span class="material-symbols-outlined">${locked ? 'lock' : owned ? 'check' : taken ? 'block' : 'add'}</span>
@@ -471,7 +470,7 @@ export function openModal(player) {
     document.getElementById('modal-photo').src          = player.photo;
     document.getElementById('modal-photo').alt          = player.name;
     document.getElementById('modal-name').textContent   = player.name;
-    document.getElementById('modal-meta').textContent   = `${player.nationality} · ${player.team} · ${player.role}`;
+    document.getElementById('modal-meta').textContent   = `${player.team} · ${player.role}`;
     document.getElementById('modal-goals').textContent  = player.goals   ?? 0;
     document.getElementById('modal-assists').textContent = player.assists ?? 0;
     document.getElementById('modal-rating').textContent = player.rating ? Number(player.rating).toFixed(1) : '-';
