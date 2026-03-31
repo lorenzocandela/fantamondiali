@@ -1172,10 +1172,10 @@ function buildFullSchedule(teams) {
     full.push({
         round: 8,
         matches: [
-            { home: 'TBD_1', away: 'TBD_2', home_name: '1° Classificata', away_name: '2° Classificata' },
-            { home: 'TBD_3', away: 'TBD_4', home_name: '3° Classificata', away_name: '4° Classificata' },
-            { home: 'TBD_5', away: 'TBD_6', home_name: '5° Classificata', away_name: '6° Classificata' },
-            { home: 'TBD_7', away: 'TBD_8', home_name: '7° Classificata', away_name: '8° Classificata' }
+            { home: 'TBD_1', away: 'TBD_2', home_name: '1°', away_name: '2°' },
+            { home: 'TBD_3', away: 'TBD_4', home_name: '3°', away_name: '4°' },
+            { home: 'TBD_5', away: 'TBD_6', home_name: '5°', away_name: '6°' },
+            { home: 'TBD_7', away: 'TBD_8', home_name: '7°', away_name: '8°' }
         ]
     });
     
