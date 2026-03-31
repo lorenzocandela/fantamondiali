@@ -453,7 +453,14 @@ function renderMatchDetail() {
 
     let pillHtml = '';
         if (played) {
-            pillHtml = '<span class="md-live-pill" style="background: var(--blue-soft); color: var(--blue);">CALCOLATA</span>';
+            pillHtml = `
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="md-live-pill" style="background: var(--blue-soft); color: var(--blue);">CALCOLATA</span>
+                <button id="btn-generate-recap" class="btn-ai-recap" title="Genera ricostruzione epica con IA">
+                    <span class="material-symbols-outlined">psychology</span>
+                    BETA
+                </button>
+            </div>`;
         } else if (status === 'past') {
             pillHtml = '<span class="md-live-pill" style="background: var(--green-soft); color: var(--green);">DA CALCOLARE</span>';
         } else if (status === 'live') {
@@ -529,6 +536,49 @@ ${played
     if (mdView === 'formazione' && canEdit) {
         attachFormationEvents();
     }
+    document.getElementById('btn-generate-recap')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btn-generate-recap');
+        if (btn.classList.contains('loading')) return;
+
+        btn.classList.add('loading');
+        btn.innerHTML = `<span class="material-symbols-outlined rotating">progress_activity</span>`;
+
+        try {
+            // Recuperiamo i dati necessari
+            const home = calTeams.find(t => t.uid === mdHomeUid);
+            const away = calTeams.find(t => t.uid === mdAwayUid);
+            const res = calResults[String(mdRound)]?.[`${mdHomeUid}_${mdAwayUid}`];
+
+            const response = await fetch('generate_recap.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    round: mdRound,
+                    home_name: home?.team_name ?? 'Home',
+                    away_name: away?.team_name ?? 'Away',
+                    home_photo: home?.team_logo ?? '', // Usiamo il logo squadra o foto profilo
+                    away_photo: away?.team_logo ?? '',
+                    home_score: res?.home_score ?? 0,
+                    away_score: res?.away_score ?? 0
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success' && data.image_url) {
+                // Mostriamo l'immagine in un overlay
+                showGeneratedRecap(data.image_url);
+            } else {
+                throw new Error(data.message || 'Errore generazione');
+            }
+
+        } catch (err) {
+            toast('Errore IA: ' + err.message, 'error');
+        } finally {
+            btn.classList.remove('loading');
+            btn.innerHTML = `<span class="material-symbols-outlined">psychology</span> BETA`;
+        }
+    });
 }
 
 document.getElementById('cal-match-detail')?.addEventListener('click', (e) => {
@@ -1293,3 +1343,26 @@ document.getElementById('btn-add-module')?.addEventListener('click', async () =>
     toast(`Modulo ${val} aggiunto`);
     renderAdminModules(updated);
 });
+
+
+function showGeneratedRecap(imageUrl) {
+    document.getElementById('ai-recap-overlay')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ai-recap-overlay';
+    overlay.className = 'ai-recap-overlay';
+    overlay.innerHTML = `
+        <div class="ai-recap-content">
+            <button class="ai-recap-close" onclick="this.closest('#ai-recap-overlay').remove()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <img src="${imageUrl}" class="ai-recap-image" alt="Ricostruzione epica IA">
+            <div class="ai-recap-hint">Ricostruzione artistica basata su voti e avatar reali. BETA.</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+    });
+}

@@ -37,3 +37,68 @@
     z-index: 9999;
     animation: confettiFall var(--dur, 0.8s) var(--ease) forwards;
 }
+
+
+
+
+
+/* --- ai beta test --- */
+.btn-ai-recap {
+    background: var(--bg-2);
+    color: var(--text-2);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--mono);
+}
+.btn-ai-recap:hover { background: var(--bg-3); border-color: var(--text-4); }
+.btn-ai-recap.loading { opacity: 0.7; cursor: wait; }
+
+.rotating { animation: rotate 1.5s linear infinite; }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.ai-recap-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    padding: 20px;
+}
+.ai-recap-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.ai-recap-close {
+    position: absolute;
+    top: -40px; right: -10px;
+    background: none; border: none;
+    color: white; cursor: pointer;
+}
+.ai-recap-image {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    border: 3px solid rgba(255,255,255,0.1);
+}
+.ai-recap-hint {
+    color: rgba(255,255,255,0.6);
+    font-size: 10px;
+    margin-top: 12px;
+    font-family: var(--mono);
+}
