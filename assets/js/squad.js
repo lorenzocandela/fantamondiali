@@ -117,6 +117,12 @@ export async function removePlayer(playerId) {
 }
 
 export async function loadCompetizioni() {
+    const header = document.querySelector('#page-competizione .content-header');
+    if (header) {
+        header.classList.remove('hidden');
+        header.style.display = 'block'; // Fallback just in case
+    }
+
     const badge = document.querySelector('#page-competizione .comp-status-badge');
     const sub   = document.querySelector('#page-competizione .comp-banner-sub');
     if (badge) {
