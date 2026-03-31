@@ -53,13 +53,13 @@
 <!-- REGOLAMENTO -->
 <div id="rules-overlay" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:999999; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s var(--ease);">
     
-    <div class="content-header" style="position: sticky; top: 0; background: rgba(247, 247, 248, 0.88); backdrop-filter: blur(24px) saturate(1.6); border-bottom: 1px solid var(--border); z-index: 100; justify-content: space-between;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 26px 20px 14px; position: sticky; top: 0; background: rgba(247, 247, 248, 0.88); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); border-bottom: 1px solid var(--border); z-index: 100;">
         <div style="display:flex; align-items:center; gap:8px;">
             <span class="material-symbols-outlined" style="color:var(--text);">menu_book</span>
-            <div class="page-title" style="font-size: 22px;">Regolamento</div>
+            <div class="page-title" style="font-size: 22px; margin:0;">Regolamento</div>
         </div>
         <button id="btn-close-rules" class="icon-btn" style="padding: 6px; border-radius: 50%; border: none; box-shadow: none;">
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined" style="font-size: 22px;">close</span>
         </button>
     </div>
     
