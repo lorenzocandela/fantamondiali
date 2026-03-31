@@ -46,7 +46,7 @@
 .btn-ai-recap {
     background: #72727a2e;
     color: var(--text-2);
-    border: 1px solid var(--border-color);
+    border: 1px solid #00000021;
     border-radius: 16px;
     padding: 4px 10px;
     font-size: 11px;
