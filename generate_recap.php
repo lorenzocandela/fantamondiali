@@ -25,47 +25,63 @@ $scoreA = $requestData['away_score'];
 $photoH = $requestData['home_photo'];
 $photoA = $requestData['away_photo'];
 
-$winnerIdx = ($scoreH >= $scoreA) ? 'first' : 'second';
-$loserIdx  = ($scoreH >= $scoreA) ? 'second' : 'first';
+$isDraw  = ($scoreH == $scoreA);
+$winSide = ($scoreH >= $scoreA) ? 'home' : 'away';
 
-$scenes = [
-    "The {$winnerIdx} person just scored the winning goal and is sliding on their knees across the wet grass, arms wide open, screaming with joy. The {$loserIdx} person is in the background, hands on head in disbelief.",
-    "Both people are in a tense penalty shootout moment. The {$winnerIdx} person is celebrating after scoring, while the {$loserIdx} person is the goalkeeper diving the wrong way.",
-    "The {$winnerIdx} person is being lifted on teammates' shoulders holding a golden trophy, confetti everywhere. The {$loserIdx} person sits alone on the bench, head down.",
-    "An intense aerial duel for the ball between both people, caught mid-air in a dramatic freeze frame. Stadium packed, flashlights going off.",
-    "The {$winnerIdx} person is doing an iconic celebration (backflip, shirt over head, finger to lips), while the {$loserIdx} person argues with the referee in the background.",
-    "A dramatic tunnel walk scene: both people walking out side by side from a dark stadium tunnel into blinding floodlights, intense stare-down, about to compete.",
-    "The {$winnerIdx} person scores a bicycle kick goal in slow motion, ball hitting the net. The {$loserIdx} person watches helplessly from behind.",
-    "Post-match scene: the {$winnerIdx} person sprays champagne in a locker room celebration. The {$loserIdx} person is shown in a split-screen sitting alone in a dark locker room.",
-    "A muddy, rainy pitch. The {$winnerIdx} person slides through puddles to score. The {$loserIdx} person slips trying to defend.",
-    "Video game victory screen style: the {$winnerIdx} person in a winner pose with stats floating around them, the {$loserIdx} person shown as defeated character with a 'GAME OVER' sign.",
-    "Comic book panel style: the {$winnerIdx} person punches the air with a 'GOOOL!' speech bubble. The {$loserIdx} person has a '...' thought bubble.",
-    "The two people are arm wrestling on the center circle of a football pitch, with the scoreboard glowing behind them.",
-    "A Rocky-style movie poster: the {$winnerIdx} person stands triumphant at the top of stadium steps, fist raised. The {$loserIdx} person is at the bottom looking up.",
-    "Both people as fantasy warriors on a football pitch: the {$winnerIdx} person wielding a golden boot like a sword, the {$loserIdx} person with a broken shield.",
-    "An overhead drone shot of the pitch with both people standing at opposite ends, dramatic shadows, the score burnt into the grass.",
-    "The {$winnerIdx} person does a Cristiano Ronaldo 'SIUU' celebration. The {$loserIdx} person is on their knees behind them.",
-    "Wrestling-style promo poster: both people face to face, nose to nose, with fire effects and the score in giant neon letters between them.",
-    "Anime style: the {$winnerIdx} person has a power-up aura glowing around them scoring a goal. The {$loserIdx} person is blown back by the energy.",
-];
+$winName  = ($winSide === 'home') ? $home : $away;
+$loseName = ($winSide === 'home') ? $away : $home;
+$winRef   = ($winSide === 'home') ? 'first' : 'second';
+$loseRef  = ($winSide === 'home') ? 'second' : 'first';
+
+$hasTwo = (!empty($photoH) && filter_var($photoH, FILTER_VALIDATE_URL))
+       && (!empty($photoA) && filter_var($photoA, FILTER_VALIDATE_URL));
+
+if ($isDraw) {
+    $scenes = [
+        "Both people standing shoulder to shoulder at the center circle, arms crossed, staring intensely into the camera. Equal rivals. Stadium lights behind them casting long shadows on the pitch.",
+        "Split composition: left half shows the {$winRef} person mid-celebration fist pump, right half shows the {$loseRef} person with the exact same pose mirrored. Perfect symmetry. Neither won.",
+        "Both people sitting on the pitch grass back to back, exhausted after a grueling match. Sweat dripping, jerseys dirty, mutual respect. Golden hour light flooding the empty stadium.",
+        "Close-up portrait of both people face to face, foreheads almost touching, intense eye contact, breath visible in cold stadium air. A draw but the rivalry burns.",
+        "Both people walking off the pitch together in the rain, side by side, each holding one half of a broken trophy. Bittersweet draw.",
+        "Dramatic low-angle shot of both people shaking hands at center field, grip tight, competitive stare, stadium towering behind them. Respect between equals.",
+    ];
+} else {
+    $scenes = [
+        "The {$winRef} person in a powerful knee-slide celebration towards the camera, face screaming with raw emotion, rain drops frozen mid-air. The {$loseRef} person is blurred in the background, head down, walking away.",
+        "Close-up portrait: the {$winRef} person lifting a golden trophy above their head, confetti falling, face lit with pure joy and stadium floodlights. The {$loseRef} person visible behind, applauding with a forced smile.",
+        "The {$winRef} person standing on top of the stadium dugout, arms raised like a champion, fans reaching up. The {$loseRef} person sits on the bench below, towel over head.",
+        "Cinematic shot of the {$winRef} person doing the Cristiano Ronaldo SIUUU celebration, jumping and turning mid-air. The {$loseRef} person is on their knees in the penalty area, devastated.",
+        "The {$winRef} person kissing the badge on their jersey, eyes closed, emotional moment. In the background the {$loseRef} person is arguing with the referee, hands spread in frustration.",
+        "Dramatic portrait of the {$winRef} person holding a flare, red smoke swirling around them, victorious smirk. The {$loseRef} person walks through the tunnel in the background, alone.",
+        "The {$winRef} person scoring a bicycle kick, captured in freeze-frame mid-air, face determined and focused. The {$loseRef} person is the goalkeeper, diving hopelessly in the wrong direction.",
+        "Movie poster composition: the {$winRef} person in the foreground, heroic pose, golden light. The {$loseRef} person faded in the background like a fallen antagonist. Score displayed like a movie title.",
+        "The {$winRef} person pouring water over their own head in slow-motion celebration, droplets catching the light, euphoric expression. The {$loseRef} person sits on the grass pulling their socks down, dejected.",
+        "The {$winRef} person sprinting towards the corner flag to celebrate, shirt off, athletic physique, face full of adrenaline. The {$loseRef} person stands at the halfway line, hands on hips, staring at the ground.",
+        "Boxing-style face-off poster: the {$winRef} person on the left looking confident with a slight grin, the {$loseRef} person on the right looking bruised and defeated. Score in giant metallic numbers between them.",
+        "The {$winRef} person standing in the center of the pitch under a single spotlight beam, holding the match ball, looking directly at the camera. The {$loseRef} person is a silhouette walking away into darkness.",
+        "Renaissance painting composition: the {$winRef} person crowned with a laurel wreath, draped in light, triumphant. The {$loseRef} person kneeling, head bowed, dramatic fabric and shadows.",
+        "The {$winRef} person mid-roar, veins visible, face close-up filling half the frame. The other half shows the {$loseRef} person with eyes closed, a single tear, cinematic depth of field.",
+        "Overhead drone shot: the {$winRef} person lying spread-eagle on the pitch in joy, making a star shape. The {$loseRef} person curled up in fetal position nearby. Score carved into the pitch like crop circles.",
+    ];
+}
 
 $styles = [
-    "cinematic sports photography, dramatic stadium lighting, 8k",
-    "epic video game cutscene, unreal engine 5, volumetric fog",
-    "renaissance oil painting, dramatic chiaroscuro lighting",
-    "cyberpunk neon aesthetic, rain-soaked futuristic stadium",
-    "comic book illustration, bold outlines, halftone dots",
-    "anime style, dynamic action lines, vibrant colors",
-    "movie poster composition, dramatic color grading",
-    "hyperrealistic digital art, golden hour lighting",
-    "gritty sports documentary photography, high contrast black and white with selective color",
-    "retro pixel art style, 16-bit aesthetic with modern detail",
+    "shot on Sony A7IV, 85mm f/1.4, shallow depth of field, cinematic color grading, stadium floodlights",
+    "shot on Canon R5, 70-200mm f/2.8, dramatic rim lighting, volumetric fog, photojournalism style",
+    "Hasselblad medium format look, rich tonal range, natural skin tones, editorial sports photography",
+    "IMAX film still aesthetic, anamorphic lens flare, teal and orange color grade, epic scale",
+    "dark moody sports portrait, single key light, deep shadows, magazine cover quality",
+    "golden hour natural light, warm tones, sweat and rain detail visible on skin, intimate close-up feel",
+    "high-speed flash photography, frozen motion, crisp detail, black background isolation",
+    "drone perspective mixed with portrait, dramatic wide-angle distortion, HDR stadium lights",
 ];
 
 $scene = $scenes[array_rand($scenes)];
 $style = $styles[array_rand($styles)];
 
-$prompt = "{$scene} The match is '{$home}' vs '{$away}', final score '{$scoreH} - {$scoreA}' visible on a scoreboard. Keep faces strictly faithful to input photos. Style: {$style}.";
+$corePrompt = "VERTICAL portrait orientation (9:16 aspect ratio). Photorealistic, NOT illustration, NOT cartoon. Show clear recognizable faces with natural skin texture and detail.";
+
+$prompt = "{$corePrompt} {$scene} The match is '{$home}' vs '{$away}', final score '{$scoreH} - {$scoreA}' displayed on a stadium LED scoreboard in the background. Both people wear professional football kits. {$style}.";
 
 $images = [];
 if (!empty($photoH) && filter_var($photoH, FILTER_VALIDATE_URL)) {
@@ -77,17 +93,19 @@ if (!empty($photoA) && filter_var($photoA, FILTER_VALIDATE_URL)) {
 
 if (count($images) > 0) {
     $payload = [
-        'model'  => 'grok-imagine-image',
-        'prompt' => $prompt,
-        'n'      => 1,
-        'images' => $images
+        'model'        => 'grok-imagine-image',
+        'prompt'       => $prompt,
+        'n'            => 1,
+        'aspect_ratio' => '9:16',
+        'images'       => $images
     ];
     $endpoint = 'https://api.x.ai/v1/images/edits';
 } else {
     $payload = [
-        'model'  => 'grok-imagine-image',
-        'prompt' => $prompt,
-        'n'      => 1,
+        'model'        => 'grok-imagine-image',
+        'prompt'       => $prompt,
+        'n'            => 1,
+        'aspect_ratio' => '9:16',
     ];
     $endpoint = 'https://api.x.ai/v1/images/generations';
 }

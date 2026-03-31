@@ -49,78 +49,181 @@
 
 <div id="toast-wrap" class="toast-wrap"></div>
 
-<div id="rules-overlay" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-1, #ffffff); z-index:999999; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.1, 0, 0.1, 1);">
+<style id="fm-rules-styles">
+    #rules-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: var(--bg-2, #f2f2f7);
+        z-index: 999999; overflow-y: auto; transform: translateY(100%); 
+        transition: transform 0.3s cubic-bezier(0.1, 0, 0.1, 1);
+    }
+    .rules-header-sticky {
+        position: sticky; top: 0; background: var(--bg-1, #ffffff); padding: 16px 20px; 
+        display: flex; align-items: center; justify-content: space-between; 
+        border-bottom: 1px solid var(--border-color, #e5e5ea); z-index: 100;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .rules-content { padding: 20px 16px 80px; }
     
-    <div style="position:sticky; top:0; background:var(--bg-1, #ffffff); padding: 16px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom: 1px solid var(--border-color, #e5e5ea); z-index:100;">
-        <div style="font-weight:800; font-size:18px; color:var(--text-1, #000);">Regolamento</div>
-        <button id="btn-close-rules" style="background:var(--bg-2, #f2f2f7); color:var(--text-1, #000); border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+    .rule-card {
+        background: var(--bg-1, #ffffff); border: 1px solid var(--border-color, #e5e5ea); 
+        border-radius: 16px; padding: 16px; margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .rule-header {
+        display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+        padding-bottom: 10px; border-bottom: 1px solid var(--bg-2, #f2f2f7);
+    }
+    .rule-icon { color: var(--blue, #007aff); font-size: 22px !important; }
+    .rule-title { font-weight: 800; font-size: 16px; color: var(--text-1, #000); margin: 0; }
+    .rule-text { font-size: 14px; color: var(--text-2, #3a3a3c); line-height: 1.5; margin: 0; }
+    
+    .rule-list { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .rule-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--text-2); line-height: 1.4; }
+    .rule-bullet { color: var(--blue); font-size: 16px !important; margin-top: 2px; }
+    
+    .bm-container { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .bm-box { padding: 12px; border-radius: 12px; }
+    .bm-bonus { background: var(--green-soft, #e8f5e9); border: 1px solid rgba(52, 199, 89, 0.2); }
+    .bm-malus { background: var(--red-soft, #ffebee); border: 1px solid rgba(255, 59, 48, 0.2); }
+    .bm-title { font-weight: 800; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .bm-bonus .bm-title { color: var(--green, #34c759); }
+    .bm-malus .bm-title { color: var(--red, #ff3b30); }
+    .bm-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; color: var(--text-1); }
+    .bm-val { font-family: var(--mono); font-weight: 700; }
+    
+    /* Piccoli badge di ruolo inline */
+    .rp-inline { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; color: white; margin-right: 4px; font-family: var(--mono); }
+    .rp-por { background: #ff9500; }
+    .rp-dif { background: #34c759; }
+    .rp-cen { background: #007aff; }
+    .rp-att { background: #ff3b30; }
+</style>
+
+<div id="rules-overlay" class="hidden">
+    
+    <div class="rules-header-sticky">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined" style="color:var(--text-1);">menu_book</span>
+            <div style="font-weight:800; font-size:18px; color:var(--text-1);">Regolamento</div>
+        </div>
+        <button id="btn-close-rules" style="background:var(--bg-2); color:var(--text-1); border:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
             <span class="material-symbols-outlined" style="font-size:20px;">close</span>
         </button>
     </div>
     
-    <div style="padding: 24px 20px 80px; color: var(--text-2, #3a3a3c); font-size: 14px; line-height: 1.6;">
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">1. Struttura</h3>
-        <p style="margin-bottom: 20px;">Il Fantamondiali 2026 si svolge parallelamente al Mondiale reale ed è diviso in giornate, sulla base del calendario ufficiale delle partite.<br>I partecipanti minimi sono 8 e il torneo segue una formula semplice stile campionato tutti contro tutti. Per ogni giornata, ogni fantallenatore sfida un altro fantallenatore secondo il calendario stabilito prima dell’inizio del torneo.</p>
-
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">2. Rosa</h3>
-        <p style="margin-bottom: 20px;">Ogni partecipante dovrà creare una rosa composta da 29 giocatori così suddivisi:<br>
-        • 4 portieri<br>• 9 difensori<br>• 9 centrocampisti<br>• 7 attaccanti<br>
-        I giocatori possono essere scelti tra tutte le nazionali partecipanti al Mondiale 2026.</p>
-
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">3. Formazione</h3>
-        <p style="margin-bottom: 20px;">Per ogni giornata ogni partecipante dovrà schierare una formazione titolare composta da 11 giocatori, con modulo libero tra quelli consentiti dal fantacalcio classico, purché venga rispettato il seguente assetto minimo:<br>
-        • 1 portiere<br>• almeno 3 difensori<br>• almeno 3 centrocampisti<br>• almeno 1 attaccante<br>
-        Saranno inoltre indicati i giocatori in panchina, utilizzabili per eventuali sostituzioni.</p>
-
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">4. Panchina e sostituzioni</h3>
-        <p style="margin-bottom: 20px;">La panchina sarà libera (max 18). In caso di calciatore titolare senza voto, entrerà il primo panchinaro disponibile dello stesso ruolo o comunque compatibile con il modulo, secondo l’ordine inserito in panchina.<br>Le sostituzioni massime consentite per giornata sono 5, in linea generale, il voto base di partenza per chi gioca è 6, mentre il calciatore senza minuti effettivi resta senza voto.</p>
-
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">5. Fonte dati e voti</h3>
-        <p style="margin-bottom: 20px;">Per statistiche, eventi e dati ufficiali si utilizzerà API-Football come fonte unica di riferimento.<br>Il sistema di calcolo parte da un voto base pari a 6 per ogni calciatore sceso in campo, al quale verranno sommati bonus e malus in base alle statistiche registrate.</p>
-
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">6. Bonus e malus</h3>
-        <p style="margin-bottom: 8px;">I punteggi sono calcolati automaticamente in base alle prestazioni reali:</p>
-        <div style="background:var(--bg-2, #f2f2f7); padding:12px; border-radius:8px; margin-bottom:20px;">
-            <strong>Bonus</strong><br>
-            • Gol segnato: +3 <i>(+5 per i Portieri)</i><br>
-            • Assist: +1<br>
-            • Rigore parato: +3<br>
-            • Porta inviolata (Clean Sheet): +1<br><br>
-            <strong>Malus</strong><br>
-            • Ammonizione: -0,5<br>
-            • Espulsione: -2<br>
-            • Autogol: -2<br>
-            • Rigore sbagliato: -3<br>
-            • Gol subito dal portiere: -1 per ogni gol
+    <div class="rules-content">
+        
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">hub</span>
+                <h3 class="rule-title">1. Struttura del Torneo</h3>
+            </div>
+            <p class="rule-text">Il Fantamondiali 2026 si svolge parallelamente al Mondiale reale ed è diviso in 8 giornate.<br>I partecipanti sono 8. Il torneo segue una formula campionato tutti-contro-tutti per 7 giornate, seguite da una <strong>Giornata 8 di Finali</strong> dirette in base alla classifica.</p>
         </div>
 
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">7. Esito della sfida</h3>
-        <p style="margin-bottom: 20px;">Ogni giornata mette di fronte due squadre, vince chi ottiene il punteggio totale più alto (no soglie gol).<br>Assegnazione punti in classifica:<br>• Vittoria: 3 punti<br>• Pareggio: 1 punto<br>• Sconfitta: 0 punti</p>
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">groups</span>
+                <h3 class="rule-title">2. La Rosa</h3>
+            </div>
+            <p class="rule-text">Ogni partecipante dovrà creare una rosa composta da <strong>29 giocatori</strong>, selezionabili tra tutte le nazionali partecipanti:</p>
+            <ul class="rule-list" style="margin-top: 12px;">
+                <li><span class="rp-inline rp-por">POR</span> 4 Portieri</li>
+                <li><span class="rp-inline rp-dif">DIF</span> 9 Difensori</li>
+                <li><span class="rp-inline rp-cen">CEN</span> 9 Centrocampisti</li>
+                <li><span class="rp-inline rp-att">ATT</span> 7 Attaccanti</li>
+            </ul>
+        </div>
 
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">8. Classifica finale</h3>
-        <p style="margin-bottom: 20px;">La classifica sarà determinata nell’ordine da:<br>1. Punti in classifica<br>2. Punteggio totale complessivo<br>3. Numero di vittorie<br>4. Sorteggio, come ultima soluzione</p>
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">strategy</span>
+                <h3 class="rule-title">3. Formazione e Moduli</h3>
+            </div>
+            <p class="rule-text">Per ogni giornata schiererai 11 titolari con modulo libero, rispettando però questi minimi:</p>
+            <ul class="rule-list">
+                <li><span class="material-symbols-outlined rule-bullet">check_circle</span> 1 Portiere</li>
+                <li><span class="material-symbols-outlined rule-bullet">check_circle</span> Almeno 3 Difensori</li>
+                <li><span class="material-symbols-outlined rule-bullet">check_circle</span> Almeno 3 Centrocampisti</li>
+                <li><span class="material-symbols-outlined rule-bullet">check_circle</span> Almeno 1 Attaccante</li>
+            </ul>
+        </div>
 
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">9. Consegna formazione</h3>
-        <p style="margin-bottom: 20px;">La formazione deve essere inserita prima dell’inizio della prima partita utile della giornata. Una volta iniziata la giornata, la formazione non potrà più essere modificata.<br>In caso di mancata consegna, verrà considerata valida l’ultima formazione schierata disponibile.</p>
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">airline_seat_recline_normal</span>
+                <h3 class="rule-title">4. Panchina e Sostituzioni</h3>
+            </div>
+            <p class="rule-text">La panchina è libera (max 18 giocatori). Sono consentite un <strong>massimo di 5 sostituzioni</strong> per giornata.<br><br>Se un titolare non va a voto, entrerà il primo panchinaro disponibile con ruolo compatibile al modulo. Il voto base di partenza per chi scende in campo è sempre <strong>6</strong>.</p>
+        </div>
 
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">10. Mercato</h3>
-        <p style="margin-bottom: 20px;">Il mercato si svolge solo prima dell’inizio del torneo, salvo eventuali finestre straordinarie decise dall’organizzatore.</p>
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">calculate</span>
+                <h3 class="rule-title">5. Bonus e Malus</h3>
+            </div>
+            <p class="rule-text">I punteggi si basano sui dati ufficiali di API-Football e vengono sommati al voto base (6):</p>
+            
+            <div class="bm-container">
+                <div class="bm-box bm-bonus">
+                    <div class="bm-title"><span class="material-symbols-outlined" style="font-size:16px;">add_circle</span> Bonus</div>
+                    <div class="bm-row"><span>Gol segnato</span><span class="bm-val">+3</span></div>
+                    <div class="bm-row"><span style="color:var(--text-3); font-size:11px;">(Gol del Portiere)</span><span class="bm-val" style="color:var(--text-3);">+5</span></div>
+                    <div class="bm-row"><span>Assist</span><span class="bm-val">+1</span></div>
+                    <div class="bm-row"><span>Rigore parato</span><span class="bm-val">+3</span></div>
+                    <div class="bm-row"><span>Porta inviolata <span style="font-size:10px">(Clean Sheet)</span></span><span class="bm-val">+1</span></div>
+                </div>
+                
+                <div class="bm-box bm-malus">
+                    <div class="bm-title"><span class="material-symbols-outlined" style="font-size:16px;">do_not_disturb_on</span> Malus</div>
+                    <div class="bm-row"><span>Ammonizione</span><span class="bm-val">-0.5</span></div>
+                    <div class="bm-row"><span>Espulsione</span><span class="bm-val">-2</span></div>
+                    <div class="bm-row"><span>Autogol</span><span class="bm-val">-2</span></div>
+                    <div class="bm-row"><span>Rigore sbagliato</span><span class="bm-val">-3</span></div>
+                    <div class="bm-row"><span>Gol subito <span style="font-size:10px">(Portiere)</span></span><span class="bm-val">-1</span></div>
+                </div>
+            </div>
+        </div>
 
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">11. Calendario</h3>
-        <p style="margin-bottom: 8px;">Il calendario segue le 8 fasi del Mondiale 2026, suddivise in 8 giornate fantacalcistiche:</p>
-        <ul style="margin: 0 0 12px; padding-left:20px;">
-            <li>G1: Fase a gironi (1° turno)</li>
-            <li>G2: Fase a gironi (2° turno)</li>
-            <li>G3: Fase a gironi (3° turno)</li>
-            <li>G4: Sedicesimi di finale</li>
-            <li>G5: Ottavi di finale</li>
-            <li>G6: Quarti di finale</li>
-            <li>G7: Semifinali</li>
-            <li>G8: Finali (1°/2° posto e 3°/4° posto)</li>
-        </ul>
-        <p style="margin-bottom: 20px;"><strong>Sviluppo del Torneo (Campionato + Finali):</strong><br>Dato il numero di 8 partecipanti, il torneo si divide in due fasi:<br>• <strong>Fase a Campionato (Giornate 1-7):</strong> Girone all'italiana, ogni fantallenatore sfiderà tutti gli altri partecipanti.<br>• <strong>Fase Finale (Giornata 8):</strong> La classifica decreterà gli accoppiamenti per l'ultima giornata. Il 1° sfiderà il 2° in una finale secca, il 3° sfiderà il 4°, e così via.</p>
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">sports_score</span>
+                <h3 class="rule-title">6. Esito e Classifica</h3>
+            </div>
+            <p class="rule-text">Vince la sfida chi ottiene il punteggio fanta-totale più alto (senza soglie gol).<br><br><strong>Punti Campionato:</strong> Vittoria 3pt, Pareggio 1pt, Sconfitta 0pt.<br><br><strong>Criteri Classifica:</strong><br>1. Punti<br>2. FantaPunti totali<br>3. Numero Vittorie<br>4. Sorteggio</p>
+        </div>
 
-        <h3 style="color:var(--text-1, #000); margin: 0 0 8px;">12. Regola finale</h3>
-        <p style="margin-bottom: 20px;">Per qualsiasi caso non previsto dal presente regolamento decide l’organizzatore insieme a <strong>Samuele Formigaro</strong>, cercando di mantenere il gioco semplice, equilibrato e coerente con lo spirito del fantacalcio classico.</p>
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">lock_clock</span>
+                <h3 class="rule-title">7. Consegna e Mercato</h3>
+            </div>
+            <ul class="rule-list">
+                <li><span class="material-symbols-outlined rule-bullet">edit_calendar</span> <strong>Formazione:</strong> Inserita prima della prima partita utile. Se dimenticata, vale l'ultima salvata.</li>
+                <li><span class="material-symbols-outlined rule-bullet">shopping_cart</span> <strong>Mercato:</strong> Attivo solo prima dell'inizio del torneo (salvo finestre decise dall'Admin).</li>
+            </ul>
+        </div>
+
+        <div class="rule-card">
+            <div class="rule-header">
+                <span class="material-symbols-outlined rule-icon">event</span>
+                <h3 class="rule-title">8. Il Calendario</h3>
+            </div>
+            <div style="background:var(--bg-2); border-radius:8px; padding:12px; margin-top:8px;">
+                <div style="font-size:12px; font-weight:700; color:var(--text-3); margin-bottom:6px; text-transform:uppercase;">Campionato (Tutti vs Tutti)</div>
+                <div class="bm-row"><span>G1 - G3</span><span style="font-family:var(--mono);">Fase a Gironi</span></div>
+                <div class="bm-row"><span>G4</span><span style="font-family:var(--mono);">Sedicesimi</span></div>
+                <div class="bm-row"><span>G5</span><span style="font-family:var(--mono);">Ottavi</span></div>
+                <div class="bm-row"><span>G6</span><span style="font-family:var(--mono);">Quarti</span></div>
+                <div class="bm-row"><span>G7</span><span style="font-family:var(--mono);">Semifinali</span></div>
+                <hr style="border:none; border-top:1px solid var(--border-color); margin:8px 0;">
+                <div style="font-size:12px; font-weight:700; color:var(--text-3); margin-bottom:6px; text-transform:uppercase;">Fase Finale</div>
+                <div class="bm-row" style="color:var(--blue); font-weight:700;"><span>G8</span><span style="font-family:var(--mono);">Finali Dirette</span></div>
+            </div>
+        </div>
+
+        <div style="text-align:center; padding: 20px 0; color:var(--text-3); font-size:12px;">
+            In caso di casistiche non previste, decide l'Admin <strong>Samuele Formigaro</strong>.
+        </div>
     </div>
 </div>
