@@ -22,67 +22,14 @@ if (!document.getElementById('fm-live-styles')) {
 
 // SCHEDULE - da controllare orari
 const MATCHDAY_SCHEDULE = [
-    {
-        round: 1,
-        label: 'Gironi',
-        short: 'GJ1',
-        start: '2026-03-26T19:00:00',
-        end: '2026-03-26T23:59:59'
-    },
-    {
-        round: 2,
-        label: 'Gironi',
-        short: 'GJ2',
-        start: '2026-03-27T19:00:00',
-        end: '2026-03-28T08:59:59'
-    }, // INIZIA VENERDI SERA FINISCE SABATO MATTINA TEST INGHILTERRA ARGENTINA DUE LIVE SU DUE GIORNI
-
-    /*{
-        round: 1,
-        label: 'Gironi',
-        short: 'GJ1',
-        start: '2026-06-11T00:00:00',
-        end: '2026-06-14T23:59:59'
-    }, // PROD */
-    /*{
-        round: 2,
-        label: 'Gironi',
-        short: 'GJ2',
-        start: '2026-06-15T00:00:00',
-        end: '2026-06-19T23:59:59'
-    }, // PROD */
-    {
-        round: 3,
-        label: 'Gironi',
-        short: 'GJ3',
-        start: '2026-06-20T00:00:00',
-        end: '2026-06-25T23:59:59'
-    }, 
-    {
-        round: 4,
-        label: 'Ottavi',
-        short: 'R16',
-        start: '2026-06-27T00:00:00',
-        end: '2026-07-03T23:59:59'
-    }, {
-        round: 5,
-        label: 'Quarti',
-        short: 'QF',
-        start: '2026-07-04T00:00:00',
-        end: '2026-07-05T23:59:59'
-    }, {
-        round: 6,
-        label: 'Semifinali',
-        short: 'SF',
-        start: '2026-07-07T00:00:00',
-        end: '2026-07-08T23:59:59'
-    }, {
-        round: 7,
-        label: 'Finali',
-        short: 'F',
-        start: '2026-07-11T00:00:00',
-        end: '2026-07-19T23:59:59'
-    },
+    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-14T23:59:59' },
+    { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-15T00:00:00', end: '2026-06-19T23:59:59' },
+    { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-20T00:00:00', end: '2026-06-25T23:59:59' },
+    { round: 4, label: 'Sedicesimi', short: 'R32', start: '2026-06-26T00:00:00', end: '2026-06-29T23:59:59' },
+    { round: 5, label: 'Ottavi', short: 'R16', start: '2026-06-30T00:00:00', end: '2026-07-03T23:59:59' },
+    { round: 6, label: 'Quarti', short: 'QF', start: '2026-07-04T00:00:00', end: '2026-07-05T23:59:59' },
+    { round: 7, label: 'Semifinali', short: 'SF', start: '2026-07-07T00:00:00', end: '2026-07-08T23:59:59' },
+    { round: 8, label: 'Finali', short: 'F', start: '2026-07-11T00:00:00', end: '2026-07-19T23:59:59' },
 ];
 export { MATCHDAY_SCHEDULE };
 
@@ -142,6 +89,7 @@ ${isCurrent ? '<span class="md-row-badge">corrente</span>' : ''}
 
 // UTILS
 function logoHtml(uid, teams) {
+    if (uid.startsWith('TBD')) return `<div class="cal-team-logo-placeholder" style="background:var(--bg-2);"><span class="material-symbols-outlined" style="font-size:16px;">help</span></div>`;
     const t = teams.find(t => t.uid === uid);
     if (t?.team_logo) return `<img src="${t.team_logo}" class="cal-team-logo" alt="${t.team_name}" onerror="this.style.display='none'">`;
     const initial = (t?.team_name ?? '?')[0].toUpperCase();
@@ -248,15 +196,32 @@ export async function loadCalendario() {
         });
         if (!calSnap.exists() || !calSnap.data().schedule) {
             document.getElementById('cal-matches-list').innerHTML = `
-<div class="empty-state">
-<span class="material-symbols-outlined">calendar_month</span>
-<h3>Calendario non ancora generato</h3>
-<p>L'admin deve generarlo dalla dashboard</p>
-</div>`;
+                <div class="empty-state">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <h3>Calendario non ancora generato</h3>
+                <p>L'admin deve generarlo dalla dashboard</p>
+                </div>`;
             return;
         }
         calSchedule = calSnap.data().schedule ?? [];
         calResults = calSnap.data().results ?? {};
+
+        if (calSchedule.length === 8 && calSchedule[7].matches[0].home === 'TBD_1') {
+            const res7 = calResults["7"];
+            if (res7 && Object.keys(res7).length === calSchedule[6].matches.length) {
+                const finalStandings = buildStandings(calTeams, calSchedule.slice(0, 7), calResults);
+                if (finalStandings.length >= 8) {
+                    calSchedule[7].matches[0] = { home: finalStandings[0].uid, away: finalStandings[1].uid, home_name: finalStandings[0].name, away_name: finalStandings[1].name };
+                    calSchedule[7].matches[1] = { home: finalStandings[2].uid, away: finalStandings[3].uid, home_name: finalStandings[2].name, away_name: finalStandings[3].name };
+                    calSchedule[7].matches[2] = { home: finalStandings[4].uid, away: finalStandings[5].uid, home_name: finalStandings[4].name, away_name: finalStandings[5].name };
+                    calSchedule[7].matches[3] = { home: finalStandings[6].uid, away: finalStandings[7].uid, home_name: finalStandings[6].name, away_name: finalStandings[7].name };
+
+                    await setDoc(doc(db, 'settings', 'calendar'), { schedule: calSchedule }, { merge: true });
+                    toast("Finali generate automaticamente in base alla classifica!");
+                }
+            }
+        }
+
         calRound = getCurrentMatchday().round;
         if (calRound > calSchedule.length) calRound = calSchedule.length;
         renderCalRound();
@@ -267,9 +232,9 @@ export async function loadCalendario() {
 
 // RENDER GIORNATA
 function renderCalRound() {
-    const rd = calSchedule[calRound - 1];
+const rd = calSchedule[calRound - 1];
     if (!rd) return;
-    const roundNames = ['GJ1', 'GJ2', 'GJ3', 'Ottavi', 'Quarti', 'Semifinali', 'Finale'];
+    const roundNames = ['GJ1', 'GJ2', 'GJ3', 'Sedicesimi', 'Ottavi', 'Quarti', 'Semifinali', 'Finali'];
     document.getElementById('cal-round-label').textContent = `G${calRound} — ${roundNames[calRound - 1] ?? ''}`;
     const res = calResults[String(calRound)] ?? {};
     
@@ -292,26 +257,30 @@ function renderCalRound() {
         }
 
         return `
-<div class="cal-match-card clickable ${played ? 'played' : ''}" data-home="${m.home}" data-away="${m.away}" data-round="${calRound}">
-<div class="cal-team home">
-<div class="cal-team-logo-wrap">${logoHtml(m.home, calTeams)}</div>
-<div class="cal-team-name">${m.home_name}</div>
-</div>
-<div class="cal-score-box">
-${scoreContent}
-</div>
-<div class="cal-team away">
-<div class="cal-team-logo-wrap">${logoHtml(m.away, calTeams)}</div>
-<div class="cal-team-name">${m.away_name}</div>
-</div>
-<div class="cal-match-tap-hint">
-<span class="material-symbols-outlined">chevron_right</span>
-</div>
-</div>`;
+            <div class="cal-match-card clickable ${played ? 'played' : ''}" data-home="${m.home}" data-away="${m.away}" data-round="${calRound}">
+            <div class="cal-team home">
+            <div class="cal-team-logo-wrap">${logoHtml(m.home, calTeams)}</div>
+            <div class="cal-team-name">${m.home_name}</div>
+            </div>
+            <div class="cal-score-box">
+            ${scoreContent}
+            </div>
+            <div class="cal-team away">
+            <div class="cal-team-logo-wrap">${logoHtml(m.away, calTeams)}</div>
+            <div class="cal-team-name">${m.away_name}</div>
+            </div>
+            <div class="cal-match-tap-hint">
+            <span class="material-symbols-outlined">chevron_right</span>
+            </div>
+            </div>`;
     }).join('');
     
     document.querySelectorAll('.cal-match-card.clickable').forEach(card => {
         card.addEventListener('click', () => {
+            if (card.dataset.home.startsWith('TBD')) {
+                toast("Le squadre per questa finale non sono ancora decise!", "info");
+                return;
+            }
             openMatchDetail(card.dataset.home, card.dataset.away, parseInt(card.dataset.round));
         });
     });
@@ -1186,19 +1155,22 @@ export function stopLivePolling() {
 }
 
 // GENERAZIONE CALENDAR
-const ROUND_LABELS = ['GJ1', 'GJ2', 'GJ3', 'Ottavi', 'Quarti', 'Semifinali', 'Finale'];
+const ROUND_LABELS = ['GJ1', 'GJ2', 'GJ3', 'Sedicesimi', 'Ottavi', 'Quarti', 'Semifinali', 'Finali'];
 let previewSchedule = [];
 
 function buildFullSchedule(teams) {
     const base = generateRoundRobin(teams);
-    if (base.length >= 7) return base.slice(0, 7).map((rd, i) => ({ ...rd, round: i + 1 }));
-    const full = [];
-    let r = 0;
-    while (full.length < 7) {
-        const src = base[r % base.length];
-        full.push({ round: full.length + 1, matches: src.matches });
-        r++;
-    }
+    const full = base.slice(0, 7).map((rd, i) => ({ ...rd, round: i + 1 }));
+    
+    full.push({
+        round: 8,
+        matches: [
+            { home: 'TBD_1', away: 'TBD_2', home_name: '1° Classificata', away_name: '2° Classificata' },
+            { home: 'TBD_3', away: 'TBD_4', home_name: '3° Classificata', away_name: '4° Classificata' },
+            { home: 'TBD_5', away: 'TBD_6', home_name: '5° Classificata', away_name: '6° Classificata' },
+            { home: 'TBD_7', away: 'TBD_8', home_name: '7° Classificata', away_name: '8° Classificata' }
+        ]
+    });
     return full;
 }
 
