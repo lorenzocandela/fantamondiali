@@ -470,11 +470,12 @@
 .profilo-hero-logo-img {
     width: 56px;
     height: 56px;
-    border-radius: var(--r-lg);
+    border-radius: 60px;
     object-fit: cover;
     border: 1.5px solid var(--border-md);
     box-shadow: var(--sh-sm);
     flex-shrink: 0;
+    display: none;
 }
 
 .profilo-hero-logo-placeholder {
