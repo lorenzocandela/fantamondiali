@@ -110,7 +110,7 @@
     background: var(--blue);
     color: #fff;
     border: none;
-    border-radius: 60px;
+    border-radius: var(--r-sm);
     padding: 13px 16px;
     font-weight: 600;
     font-size: 14.5px;
