@@ -75,8 +75,8 @@ function apiGet(string $endpoint): ?array {
     return $data ?? null;
 }
 
-$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 32; // Es. 32 Qualificazioni
-$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2024;
+$LEAGUE_ID = isset($_GET['league']) ? (int)$_GET['league'] : 1; // Es. 32 Qualificazioni
+$SEASON    = isset($_GET['season']) ? (int)$_GET['season'] : 2026;
 
 $teamsResponse = apiGet("teams?league={$LEAGUE_ID}&season={$SEASON}");
 if (empty($teamsResponse['response'])) {

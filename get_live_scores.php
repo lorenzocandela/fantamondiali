@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-$mode = $_GET['mode'] ?? 'test';
+$mode = $_GET['mode'] ?? 'prod';
 
 // API FUNZ
 define('API_KEY', '1a4942a032906326bcdaa564e10dbe65');
