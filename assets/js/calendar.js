@@ -22,14 +22,14 @@ if (!document.getElementById('fm-live-styles')) {
 
 // SCHEDULE - da controllare orari
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-03-25T00:00:00', end: '2026-03-28T23:59:59' },
-    { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-15T00:00:00', end: '2026-06-19T23:59:59' },
-    { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-20T00:00:00', end: '2026-06-25T23:59:59' },
-    { round: 4, label: 'Sedicesimi', short: 'R32', start: '2026-06-26T00:00:00', end: '2026-06-29T23:59:59' },
-    { round: 5, label: 'Ottavi', short: 'R16', start: '2026-06-30T00:00:00', end: '2026-07-03T23:59:59' },
-    { round: 6, label: 'Quarti', short: 'QF', start: '2026-07-04T00:00:00', end: '2026-07-05T23:59:59' },
-    { round: 7, label: 'Semifinali', short: 'SF', start: '2026-07-07T00:00:00', end: '2026-07-08T23:59:59' },
-    { round: 8, label: 'Finali', short: 'F', start: '2026-07-11T00:00:00', end: '2026-07-19T23:59:59' },
+    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-16T23:59:59' },
+    { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-17T00:00:00', end: '2026-06-22T23:59:59' },
+    { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-23T00:00:00', end: '2026-06-27T23:59:59' },
+    { round: 4, label: 'Sedicesimi', short: 'R32', start: '2026-06-28T00:00:00', end: '2026-07-03T23:59:59' },
+    { round: 5, label: 'Ottavi', short: 'R16', start: '2026-07-04T00:00:00', end: '2026-07-07T23:59:59' },
+    { round: 6, label: 'Quarti', short: 'QF', start: '2026-07-08T00:00:00', end: '2026-07-11T23:59:59' },
+    { round: 7, label: 'Semifinali', short: 'SF', start: '2026-07-12T00:00:00', end: '2026-07-15T23:59:59' },
+    { round: 8, label: 'Finali', short: 'F', start: '2026-07-16T00:00:00', end: '2026-07-19T23:59:59' },
 ];
 export { MATCHDAY_SCHEDULE };
 
@@ -238,7 +238,14 @@ export async function loadCalendario() {
             }
         }
 
-        calRound = getCurrentMatchday().round;
+        const currentMD = getCurrentMatchday();
+        
+        if (currentMD.status === 'upcoming') {
+            calRound = 1;
+        } else {
+            calRound = currentMD.round;
+        }
+        
         if (calRound > calSchedule.length) calRound = calSchedule.length;
         renderCalRound();
     } catch (err) {
