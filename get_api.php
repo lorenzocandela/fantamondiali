@@ -84,10 +84,12 @@ if (empty($teamsResponse['response'])) {
 }
 
 $roleMap = [
-    'Goalkeeper' => 'POR',
-    'Defender'   => 'DIF',
-    'Midfielder' => 'CEN',
-    'Attacker'   => 'ATT',
+    'Goalkeeper'     => 'POR',
+    'Defender'       => 'DIF',
+    'Midfielder'     => 'CEN',
+    'Attacker'       => 'ATT',
+    'Forward'        => 'ATT',
+    'Centre-Forward' => 'ATT'
 ];
 
 $syncedCount = 0;
