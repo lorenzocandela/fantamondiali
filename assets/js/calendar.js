@@ -181,8 +181,8 @@ export async function loadCalendario() {
     document.getElementById('cal-main-view')?.classList.remove('hidden');
     document.getElementById('cal-match-detail')?.classList.add('hidden');
     
-    const navBar = document.querySelector('.cal-round-nav');
-    const segWrap = document.querySelector('.cal-seg-wrap');
+    const navBar = document.querySelector('#page-calendario .cal-round-nav');
+    const segWrap = document.querySelector('#page-calendario .cal-seg-wrap');
 
     try {
         const [calSnap, usersSnap] = await Promise.all([
