@@ -180,11 +180,16 @@ export async function loadCalendario() {
     document.querySelector('#page-calendario .content-header')?.classList.remove('hidden');
     document.getElementById('cal-main-view')?.classList.remove('hidden');
     document.getElementById('cal-match-detail')?.classList.add('hidden');
+    
+    const navBar = document.querySelector('.cal-round-nav');
+    const segWrap = document.querySelector('.cal-seg-wrap');
+
     try {
         const [calSnap, usersSnap] = await Promise.all([
             getDoc(doc(db, 'settings', 'calendar')),
             getDocs(collection(db, 'users')),
         ]);
+        
         calTeams = [];
         calUsersMap = {};
         usersSnap.forEach(d => {
@@ -194,16 +199,27 @@ export async function loadCalendario() {
                 uid: d.id, team_name: data.team_name ?? 'Squadra', team_logo: data.team_logo ?? null, players: data.players ?? []
             });
         });
-        if (!calSnap.exists() || !calSnap.data().schedule) {
+
+        // CONTROLLO CALENDARIO VUOTO
+        const scheduleData = calSnap.exists() ? calSnap.data().schedule : null;
+        
+        if (!scheduleData || scheduleData.length === 0) {
+            if (navBar) navBar.classList.add('hidden');
+            if (segWrap) segWrap.classList.add('hidden');
+
             document.getElementById('cal-matches-list').innerHTML = `
-                <div class="empty-state">
-                <span class="material-symbols-outlined">calendar_month</span>
-                <h3>Calendario non ancora generato</h3>
-                <p>L'admin deve generarlo dalla dashboard</p>
+                <div class="empty-state" style="margin-top: 60px;">
+                    <span class="material-symbols-outlined" style="font-size: 54px; color: var(--blue); margin-bottom: 16px; display: block; opacity: 0.8;">event_upcoming</span>
+                    <h3 style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px;">Competizione in attesa</h3>
+                    <p style="color: var(--text-2); font-size: 14px; line-height: 1.5;">Il calendario non è ancora stato generato dall'Admin.<br>La competizione deve ancora iniziare!</p>
                 </div>`;
             return;
         }
-        calSchedule = calSnap.data().schedule ?? [];
+
+        if (navBar) navBar.classList.remove('hidden');
+        if (segWrap) segWrap.classList.remove('hidden');
+
+        calSchedule = scheduleData;
         calResults = calSnap.data().results ?? {};
 
         if (calSchedule.length === 8 && calSchedule[7].matches[0].home === 'TBD_1') {
@@ -235,7 +251,19 @@ function renderCalRound() {
 const rd = calSchedule[calRound - 1];
     if (!rd) return;
     const roundNames = ['GJ1', 'GJ2', 'GJ3', 'Sedicesimi', 'Ottavi', 'Quarti', 'Semifinali', 'Finali'];
-    document.getElementById('cal-round-label').textContent = `G${calRound} — ${roundNames[calRound - 1] ?? ''}`;
+    
+    const mdMeta = MATCHDAY_SCHEDULE.find(m => m.round === calRound);
+    let dateHtml = '';
+    if (mdMeta) {
+        dateHtml = `<div style="font-size: 11px; color: var(--text-2); font-family: var(--mono); font-weight: 500; margin-top: 3px; text-transform: lowercase;">
+                        ${formatDate(mdMeta.start)} – ${formatDate(mdMeta.end)}
+                    </div>`;
+    }
+
+    document.getElementById('cal-round-label').innerHTML = `
+        <div style="line-height: 1.1;">G${calRound} — ${roundNames[calRound - 1] ?? ''}</div>
+        ${dateHtml}
+    `;
     const res = calResults[String(calRound)] ?? {};
     
     const status = getRoundStatus(calRound);
