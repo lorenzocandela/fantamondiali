@@ -22,14 +22,14 @@ if (!document.getElementById('fm-live-styles')) {
 
 // SCHEDULE UFFICIALE MONDIALI 2026
 const MATCHDAY_SCHEDULE = [
-    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-17T23:59:59' },
-    { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-18T00:00:00', end: '2026-06-23T23:59:59' },
-    { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-24T00:00:00', end: '2026-06-27T23:59:59' },
-    { round: 4, label: 'Sedicesimi', short: 'R32', start: '2026-06-28T00:00:00', end: '2026-07-03T23:59:59' },
-    { round: 5, label: 'Ottavi', short: 'R16', start: '2026-07-04T00:00:00', end: '2026-07-07T23:59:59' },
-    { round: 6, label: 'Quarti', short: 'QF', start: '2026-07-08T00:00:00', end: '2026-07-11T23:59:59' },
-    { round: 7, label: 'Semifinali', short: 'SF', start: '2026-07-12T00:00:00', end: '2026-07-15T23:59:59' },
-    { round: 8, label: 'Finali', short: 'F', start: '2026-07-16T00:00:00', end: '2026-07-19T23:59:59' },
+    { round: 1, label: 'Gironi', short: 'GJ1', start: '2026-06-11T00:00:00', end: '2026-06-18T08:00:00' },
+    { round: 2, label: 'Gironi', short: 'GJ2', start: '2026-06-18T08:00:01', end: '2026-06-24T08:00:00' },
+    { round: 3, label: 'Gironi', short: 'GJ3', start: '2026-06-24T08:00:01', end: '2026-06-28T08:00:00' },
+    { round: 4, label: 'Sedicesimi', short: 'R32', start: '2026-06-28T08:00:01', end: '2026-07-04T08:00:00' },
+    { round: 5, label: 'Ottavi', short: 'R16', start: '2026-07-04T08:00:01', end: '2026-07-08T08:00:00' },
+    { round: 6, label: 'Quarti', short: 'QF', start: '2026-07-08T08:00:01', end: '2026-07-12T08:00:00' },
+    { round: 7, label: 'Semifinali', short: 'SF', start: '2026-07-12T08:00:01', end: '2026-07-16T08:00:00' },
+    { round: 8, label: 'Finali', short: 'F', start: '2026-07-16T08:00:01', end: '2026-07-20T08:00:00' },
 ];
 export { MATCHDAY_SCHEDULE };
 
