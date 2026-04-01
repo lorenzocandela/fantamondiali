@@ -209,9 +209,9 @@ export async function loadCalendario() {
 
             document.getElementById('cal-matches-list').innerHTML = `
                 <div class="empty-state" style="margin-top: 60px;">
-                    <span class="material-symbols-outlined" style="font-size: 54px; color: var(--blue); margin-bottom: 16px; display: block; opacity: 0.8;">event_upcoming</span>
+                    <span class="material-symbols-outlined" style="font-size: 54px; color: var(--text-3); margin-bottom: 16px; display: block; opacity: 0.8;">event_upcoming</span>
                     <h3 style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px;">Competizione in attesa</h3>
-                    <p style="color: var(--text-2); font-size: 14px; line-height: 1.5;">Il calendario non è ancora stato generato dall'Admin.<br>La competizione deve ancora iniziare!</p>
+                    <p style="color: var(--text-2); font-size: 14px; line-height: 1.5;">Il calendario non è ancora stato generato.<br>La competizione deve ancora iniziare!</p>
                 </div>`;
             return;
         }
