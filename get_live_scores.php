@@ -80,8 +80,14 @@ if ($mode === 'test') {
     // PROD
     $round = $_GET['round'] ?? null;
     $roundLabels = [
-        1 => 'Group Stage - 1', 2 => 'Group Stage - 2', 3 => 'Group Stage - 3',
-        4 => 'Round of 16', 5 => 'Quarter-finals', 6 => 'Semi-finals', 7 => 'Final',
+        1 => 'Group Stage - 1', 
+        2 => 'Group Stage - 2', 
+        3 => 'Group Stage - 3',
+        4 => 'Round of 32',      // sedicesimi
+        5 => 'Round of 16',      // ottavi
+        6 => 'Quarter-finals',   // quarti
+        7 => 'Semi-finals',      // semifinali
+        8 => 'Final',            // finali
     ];
 
     if ($round && isset($roundLabels[(int)$round])) {
