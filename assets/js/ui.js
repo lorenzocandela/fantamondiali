@@ -270,7 +270,9 @@ export async function toggleJoinCompetition() {
 export function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file || !window.__user?.uid) return;
-    if (file.size > 500 * 1024) { toast('Immagine troppo grande (max 500KB)', 'error'); return; }
+    
+    if (file.size > 800 * 1024) { toast('Immagine troppo grande (max 800KB)', 'error'); return; }
+    
     const reader = new FileReader();
     reader.onload = async ev => {
         try {
@@ -279,7 +281,7 @@ export function handleAvatarUpload(e) {
             updateTopbarAvatar();
             renderProfiloHero();
             toast('Foto profilo aggiornata');
-        } catch { toast('Errore upload', 'error'); }
+        } catch { toast('Errore upload (file forse troppo pesante per il DB)', 'error'); }
     };
     reader.readAsDataURL(file);
 }
@@ -287,7 +289,9 @@ export function handleAvatarUpload(e) {
 export function handleLogoUpload(e) {
     const file = e.target.files[0];
     if (!file || !window.__user?.uid) return;
-    if (file.size > 300 * 1024) { toast('Logo troppo grande (max 300KB)', 'error'); return; }
+    
+    if (file.size > 800 * 1024) { toast('Logo troppo grande (max 800KB)', 'error'); return; }
+    
     const reader = new FileReader();
     reader.onload = async ev => {
         try {
@@ -299,7 +303,7 @@ export function handleLogoUpload(e) {
             renderProfiloHero();
             updateTopbarTeamLogo();
             toast('Logo squadra aggiornato');
-        } catch { toast('Errore upload logo', 'error'); }
+        } catch { toast('Errore upload logo (file forse troppo pesante per il DB)', 'error'); }
     };
     reader.readAsDataURL(file);
 }
